@@ -1,0 +1,122 @@
+/* === Input === */
+function void
+_input_init(Input_Context* input, f32 window_width, f32 window_height)
+{
+  AssertNoReentry();
+  MemoryZeroStruct(input);
+
+  input->mouse_current.screen_space.x = window_width/2;
+  input->mouse_current.screen_space.y = window_height/2;
+  
+  input->mouse_previous.screen_space.x = window_width/2;
+  input->mouse_previous.screen_space.y = window_height/2;
+
+  input->_g_ignore_next_mouse_move = false;
+  input->_g_is_cursor_locked       = false;
+}
+
+function void
+_input_update(Input_Context* input)
+{
+  // Compute new deltas
+  input->mouse_current.delta.x = input->mouse_current.screen_space.x - input->mouse_previous.screen_space.x; 
+  input->mouse_current.delta.y = input->mouse_current.screen_space.y - input->mouse_previous.screen_space.y;
+
+  MemoryCopy(&(input->keyboard_previous), &(input->keyboard_current), sizeof(Keyboard_State));
+  MemoryCopy(&(input->mouse_previous),    &(input->mouse_current),    sizeof(Mouse_State));
+}
+
+function b32
+input_is_key_up(Input_Context* input, Keyboard_Key key)
+{
+  b32 result = input->keyboard_current.keys[key] == false;
+  return result;
+}
+
+function b32
+input_is_key_down(Input_Context* input, Keyboard_Key key)
+{
+  b32 result = input->keyboard_current.keys[key] == true;
+  return result;
+}
+
+function b32
+input_was_key_up(Input_Context* input, Keyboard_Key key)
+{
+  b32 result = input->keyboard_previous.keys[key] == false;
+  return result;
+}
+
+function b32
+input_was_key_down(Input_Context* input, Keyboard_Key key)
+{
+  b32 result = input->keyboard_previous.keys[key] == true;
+  return result;
+}
+
+function b32
+input_is_key_clicked(Input_Context* input, Keyboard_Key key)
+{
+  return input_is_key_down(input, key) && input_was_key_up(input, key);
+}
+
+function void
+_input_process_keyboard_key(Input_Context* input, Keyboard_Key key, b8 is_pressed)
+{
+  if (input->keyboard_current.keys[key] != is_pressed)
+  {
+    input->keyboard_current.keys[key] = is_pressed;
+  }
+}
+
+function b32
+input_is_button_up(Input_Context* input, Mouse_Button button)
+{
+  b32 result = input->mouse_current.buttons[button] == false;
+  return result;
+}
+
+function b32
+input_is_button_down(Input_Context* input, Mouse_Button button)
+{
+  b32 result = input->mouse_current.buttons[button] == true;
+  return result;
+}
+
+function b32
+input_was_button_up(Input_Context* input, Mouse_Button button)
+{
+  b32 result = input->mouse_previous.buttons[button] == false;
+  return result;
+}
+
+function b32
+input_was_button_down(Input_Context* input, Mouse_Button button)
+{
+  b32 result = input->mouse_previous.buttons[button] == true;
+  return result;
+}
+
+function b32
+input_is_button_clicked(Input_Context* input, Mouse_Button button)
+{
+  b32 result = input_is_button_down(input, button) && input_was_button_up(input, button);
+  return result;
+}
+
+function void
+_input_process_mouse_button(Input_Context* input, Mouse_Button button, b32 is_pressed)
+{
+  if (input->mouse_current.buttons[button] != (b8)is_pressed)
+  {
+    input->mouse_current.buttons[button] = (b8)is_pressed;
+  }
+}
+
+function void
+_input_process_mouse_cursor(Input_Context* input, f32 x, f32 y)
+{
+  MemoryCopyStruct(&(input->mouse_previous), &(input->mouse_current));
+  input->mouse_current.screen_space.x = x;
+  input->mouse_current.screen_space.y = y; 
+}

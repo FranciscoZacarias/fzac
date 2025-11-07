@@ -1,0 +1,15 @@
+*
+
+!bin/
+!bin/**
+
+!external/
+!external/**
+
+!src/
+!src/**
+
+!build.bat
+!fzac.c
+!.gitignore
+!README.md
