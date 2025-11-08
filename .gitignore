@@ -9,6 +9,9 @@
 !src/
 !src/**
 
+!tests/
+!tests/**
+
 !build.bat
 !fzac.c
 !.gitignore
