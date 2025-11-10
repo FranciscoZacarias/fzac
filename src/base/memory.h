@@ -40,7 +40,7 @@ struct Scratch
   u64 temp_position;
 };
 
-function Scratch arena_temp_begin(Arena* arena);
-function void    arena_temp_end(Scratch* temp);
+function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Saves the current position. */
+function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
 #endif // MEMORY_H

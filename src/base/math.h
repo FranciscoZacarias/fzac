@@ -36,6 +36,8 @@ function Vec2f32 vec2f32_normalize(Vec2f32 v);
 function Vec2f32 vec2f32_negate(Vec2f32 v);
 function b32     vec2f32_equal(Vec2f32 a, Vec2f32 b);
 
+function void    vec2f32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Vector 3 types                                                        */
 /* --------------------------------------------------------------------- */
@@ -62,6 +64,8 @@ function Vec3f32 vec3f32_normalize(Vec3f32 v);
 function Vec3f32 vec3f32_negate(Vec3f32 v);
 function b32     vec3f32_equal(Vec3f32 a, Vec3f32 b);
 
+function void    vec3f32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Vector 4 types                                                        */
 /* --------------------------------------------------------------------- */
@@ -86,6 +90,8 @@ function f32     vec4f32_length(Vec4f32 v);
 function Vec4f32 vec4f32_normalize(Vec4f32 v);
 function Vec4f32 vec4f32_negate(Vec4f32 v);
 function b32     vec4f32_equal(Vec4f32 a, Vec4f32 b);
+
+function void    vec4f32_tests();
 
 /* --------------------------------------------------------------------- */
 /* Matrix 3 types – Column-Major                                         */
@@ -121,6 +127,8 @@ function Mat3f32 mat3f32_transpose(Mat3f32 m);
 function f32     mat3f32_determinant(Mat3f32 m);
 function Mat3f32 mat3f32_inverse(Mat3f32 m);
 function b32     mat3f32_equal(Mat3f32 a, Mat3f32 b);
+
+function void    mat3f32_tests();
 
 /* --------------------------------------------------------------------- */
 /* Matrix 4 types – Column-Major                                         */
@@ -159,6 +167,8 @@ function f32     mat4f32_determinant(Mat4f32 m);
 function Mat4f32 mat4f32_inverse(Mat4f32 m);
 function b32     mat4f32_equal(Mat4f32 a, Mat4f32 b);
 
+function void    mat4f32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Quaternion types                                                      */
 /* --------------------------------------------------------------------- */
@@ -185,6 +195,8 @@ function Quatf32 quatf32_inverse(Quatf32 q);
 function Vec3f32 quatf32_rotate_vector(Quatf32 q, Vec3f32 v);
 function b32     quatf32_equal(Quatf32 a, Quatf32 b);
 
+function void    quatf32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Transform 2 types                                                     */
 /* --------------------------------------------------------------------- */
@@ -202,6 +214,8 @@ function Transform2f32 transform2f32_combine(Transform2f32 a, Transform2f32 b);
 function Vec2f32       transform2f32_apply(Transform2f32 t, Vec2f32 v);
 function Transform2f32 transform2f32_inverse(Transform2f32 t);
 function b32           transform2f32_equal(Transform2f32 a, Transform2f32 b);
+
+function void          transform2f32_tests();
 
 /* --------------------------------------------------------------------- */
 /* Transform 3 types                                                     */
@@ -222,6 +236,8 @@ function Transform3f32 transform3f32_inverse(Transform3f32 t);
 function Mat4f32       transform3f32_to_mat4(Transform3f32 t);
 function b32           transform3f32_equal(Transform3f32 a, Transform3f32 b);
 
+function void          transform3f32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Rect types                                                            */
 /* --------------------------------------------------------------------- */
@@ -240,6 +256,8 @@ function b32     rectf32_contains_point(Rectf32 r, Vec2f32 p);
 function b32     rectf32_contains_rect(Rectf32 a, Rectf32 b);
 function b32     rectf32_equal(Rectf32 a, Rectf32 b);
 
+function void    rectf32_tests();
+
 /* --------------------------------------------------------------------- */
 /* Range types                                                           */
 /* --------------------------------------------------------------------- */
@@ -257,5 +275,7 @@ function Rangef32 rangef32_intersection(Rangef32 a, Rangef32 b);
 function b32      rangef32_contains_point(Rangef32 r, Vec2f32 p);
 function b32      rangef32_contains_range(Rangef32 a, Rangef32 b);
 function b32      rangef32_equal(Rangef32 a, Rangef32 b);
+
+function void     rangef32_tests();
 
 #endif /* MATH_H */

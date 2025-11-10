@@ -48,6 +48,8 @@
 
 #define Min(A,B) (((A)<(B))?(A):(B))
 #define Max(A,B) (((A)>(B))?(A):(B))
+#define ClampTop(A,X) Min(A,X)
+#define ClampBot(X,B) Max(X,B)
 #define Clamp(val,min,Max) (((val)<(min))?(min):((val)>(Max))?(Max):(val))
 
 #define IntFromPtr(p) (u64)((u8*)p - (u8*)0)
@@ -74,9 +76,9 @@
 #define IsPow2OrZero(x)    ((((x) - 1)&(x)) == 0)
 
 /* === Memory === */
-#define MemoryCopy(dst, src, size) memcpy((dst), (src), (size))
-#define MemoryMove(dst, src, size) memmove((dst), (src), (size))
-#define MemorySet(dst, val, size)  memset((dst), (val), (size))
+#define MemoryCopy(dst, src, size) memcpy((dst), (src), (size_t)(size))
+#define MemoryMove(dst, src, size) memmove((dst), (src), (size_t)(size))
+#define MemorySet(dst, val, size)  memset((dst), (val), (size_t)(size))
 #define MemoryMatch(a,b,size)     (memcmp((a),(b),(size)) == 0)
 
 #define MemoryCopyStruct(dst, src) Macro(MemoryCopy((dst), (src), sizeof(*(dst)));)

@@ -35,7 +35,8 @@ arena_alloc_sized(u64 reserve, u64 commit)
   }
   else
   {
-    emit_fatal(S("Error setting arena's memory"));
+    // TODO(Fz): Error
+    //emit_fatal(S("Error setting arena's memory"));
   }
   
   return arena;
@@ -70,7 +71,8 @@ arena_push_no_zero(Arena* arena, u64 size)
       }
       else
       {
-        emit_error(S("Could not commit memory when increasing the arena's committed memory."));
+        // TODO(Fz): Error
+        //emit_error(S("Could not commit memory when increasing the arena's committed memory."));
       }
     }
     result = (u8*)arena + position_memory;
@@ -78,9 +80,10 @@ arena_push_no_zero(Arena* arena, u64 size)
   }
   else
   {
-    Scratch scratch = scratch_begin(0,0);
-    emit_error(Sf(scratch.arena, "Trying to allocate too much memory to a non dynamic arena.\nSize: %llu\nArena->Position: %llu\nArena->reserved: %llu\nArena->Position+Size: %llu", size, arena->position, arena->reserved, arena->position+size));
-    scratch_end(&scratch);
+    // TODO(Fz): Error
+    //Scratch scratch = scratch_begin(0,0);
+    //emit_error(Sf(scratch.arena, "Trying to allocate too much memory to a non dynamic arena.\nSize: %llu\nArena->Position: %llu\nArena->reserved: %llu\nArena->Position+Size: %llu", size, arena->position, arena->reserved, arena->position+size));
+    //scratch_end(&scratch);
   }
   
   return result;
@@ -91,9 +94,10 @@ arena_pop(Arena* arena, u64 size)
 {
   if (size > arena->position)
   {
-    Scratch scratch = scratch_begin(0,0);
-    emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop %lld bytes from arena with %lld allocated. Will pop %lld instead of %lld.\n", size, arena->position, arena->position, size));
-    scratch_end(&scratch);
+    // TODO(Fz): Error
+    //Scratch scratch = scratch_begin(0,0);
+    //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop %lld bytes from arena with %lld allocated. Will pop %lld instead of %lld.\n", size, arena->position, arena->position, size));
+    //scratch_end(&scratch);
     size = arena->position;
   }
   arena->position -= size;
@@ -104,16 +108,18 @@ arena_pop_to(Arena* arena, u64 pos)
 {
   if (pos > arena->reserved)
   {
-    Scratch scratch = scratch_begin(0,0);
-    emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop over arena's reserved. Will pop only to %lld instead of %lld", arena->reserved, pos));
-    scratch_end(&scratch);
+    // TODO(Fz): Error
+    //Scratch scratch = scratch_begin(0,0);
+    //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop over arena's reserved. Will pop only to %lld instead of %lld", arena->reserved, pos));
+    //scratch_end(&scratch);
     pos = arena->reserved;
   }
   else if (pos < ARENA_HEADER_SIZE)
   {
-    Scratch scratch = scratch_begin(0,0);
-    emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop arena under it's header size (pos -> %llu). Truncating it to header size", pos));
-    scratch_end(&scratch);
+    // TODO(Fz): Error
+    //Scratch scratch = scratch_begin(0,0);
+    //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop arena under it's header size (pos -> %llu). Truncating it to header size", pos));
+    //scratch_end(&scratch);
     pos = ARENA_HEADER_SIZE;
   }
   arena->position = pos;
@@ -135,10 +141,15 @@ function void
 print_arena(Arena *arena, const u8* label)
 {
   Scratch scratch = scratch_begin(0,0);
-  f32 committed_percentage = ((f64)arena->position / arena->commited) * 100.0f;
-  f32 reserved_percentage  = ((f64)arena->position / arena->reserved) * 100.0f;
-  emit_info(Sf(scratch.arena, "%s: Arena { reserved: %llu, commited: %llu, commit_size: %llu, position: %llu, align: %llu, committed_percentage: %.2f%%, reserved_percentage: %.2f%% }\n",
-         label, arena->reserved, arena->commited, arena->commit_size, arena->position, arena->align, committed_percentage, reserved_percentage));
+  f64 committed_percentage = ((f64)arena->position / arena->commited) * 100.0f;
+  f64 reserved_percentage  = ((f64)arena->position / arena->reserved) * 100.0f;
+  
+  // TODO(Fz): Print
+  (void)label;
+  (void)committed_percentage;
+  (void)reserved_percentage;
+  //emit_info(Sf(scratch.arena, "%s: Arena { reserved: %llu, commited: %llu, commit_size: %llu, position: %llu, align: %llu, committed_percentage: %.2f%%, reserved_percentage: %.2f%% }\n",
+         //label, arena->reserved, arena->commited, arena->commit_size, arena->position, arena->align, committed_percentage, reserved_percentage));
   scratch_end(&scratch);
 }
 

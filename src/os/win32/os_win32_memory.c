@@ -18,27 +18,27 @@ os_memory_stats()
 }
 
 function void*
-os_memory_reserve(u32 size)
+os_memory_reserve(u64 size)
 {
-  void *result = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
+  void *result = VirtualAlloc(0, (size_t)size, MEM_RESERVE, PAGE_READWRITE);
   return result;
 }
 
 function b32
-os_memory_commit(void *ptr, u32 size)
+os_memory_commit(void *ptr, u64 size)
 {
-  b32 result = (VirtualAlloc(ptr, size, MEM_COMMIT, PAGE_READWRITE) != 0);
+  b32 result = (VirtualAlloc(ptr, (size_t)size, MEM_COMMIT, PAGE_READWRITE) != 0);
   return result;
 }
 
 function void
-os_memory_decommit(void *ptr, u32 size)
+os_memory_decommit(void *ptr, u64 size)
 {
-  VirtualFree(ptr, size, MEM_DECOMMIT);
+  VirtualFree(ptr, (size_t)size, MEM_DECOMMIT);
 }
 
 function void
-os_memory_release(void *ptr, u32 size)
+os_memory_release(void *ptr, u64 size)
 {
   (void)size; // NOTE(fz): Size not needed for windows. Though required for other OS's.
   VirtualFree(ptr, 0, MEM_RELEASE);
