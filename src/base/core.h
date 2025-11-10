@@ -58,6 +58,8 @@
 #define Member(T,m) (((T*)0)->m)
 #define OffsetOfMember(T,m) IntFromPtr(&Member(T,m))
 
+#define ignore_unused(var) ((void)var)
+
 /* === Numbers === */
 #define Kilobytes(n) ((u64)(n * 1024))
 #define Megabytes(n) ((u64)(n * 1024 * 1024))
@@ -79,7 +81,7 @@
 #define MemoryCopy(dst, src, size) memcpy((dst), (src), (size_t)(size))
 #define MemoryMove(dst, src, size) memmove((dst), (src), (size_t)(size))
 #define MemorySet(dst, val, size)  memset((dst), (val), (size_t)(size))
-#define MemoryMatch(a,b,size)     (memcmp((a),(b),(size)) == 0)
+#define MemoryMatch(a,b,size)     (memcmp((a),(b),(size_t)(size)) == 0)
 
 #define MemoryCopyStruct(dst, src) Macro(MemoryCopy((dst), (src), sizeof(*(dst)));)
 #define MemoryCopyArray(dst, src)  Macro(MemoryCopy((dst), (src), sizeof(src));)

@@ -30,6 +30,7 @@ struct String_List
   u64 total_size;
 };
 
+// String
 function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */
 function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena. */
 function String string_range(u8* first, u8* range); /* Create String from first pointer to range pointer (exclusive). */
@@ -41,12 +42,30 @@ function b32    string_find_first(String str, String substring, u64* index); /* 
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
 function b32    string_match(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
-function u64    string_hash(String str);
+function u64    string_hash(String str); /*  */
 
+// String list
+function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
+function String_List string_list_new(Arena* arena); /* Create new list with single string element. */
+function void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
+function String      string_list_pop(String_List* list); /* Remove and return first element from list. */
+function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string. */
 
-#define test_string_equal(test_result, string1, string2)                         \
-  test_typed_equal((test_result), u64, (string1), (string2))                     \
-  test_memory_equal((test_result), (string1).str, (string2).str, (string1).size)
+// Casts
+function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
+function u8*     cstring_from_string(Arena* arena, String str); /* Convert to null-terminated C string in arena. */
+function u32     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
+
+// Char
+function b32 char8_is_alpha(u8 c); /* Check if character is alphabetic. */
+function b32 char8_is_alphanum(u8 c); /* Check if character is alphanumeric. */
+function b32 char8_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
+function b32 char8_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
+function b32 char8_is_digit(u8 c); /* Check if character is digit 0-9. */
+function b32 char8_is_symbol(u8 c); /* Check if character is symbol/punctuation. */
+function b32 char8_is_space(u8 c); /* Check if character is whitespace. */
+function u8  char8_to_upper(u8 c); /* Convert character to uppercase. */
+function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 
 function void   string_test();
 

@@ -6,8 +6,8 @@
 typedef struct Test_Result Test_Result;
 struct Test_Result
 {
-  u64 total;
-  u64 passed;
+  u32 total;
+  u32 passed;
 };
 
 /* === Initialization === */
@@ -56,8 +56,8 @@ struct Test_Result
     }                                                            \
     else                                                         \
     {                                                            \
-      fprintf(stderr, "FAIL: %s:%d  memory mismatch (%s vs %s, %llu bytes)\n", \
-              __FILE__, __LINE__, #a, #b, (u64)(size));          \
+      fprintf(stderr, "FAIL: %s:%d  memory mismatch (%s vs %s, %u bytes)\n", \
+              __FILE__, __LINE__, #a, #b, (size));               \
     }                                                            \
   )
 
@@ -76,7 +76,7 @@ struct Test_Result
       fprintf(stderr, "FAIL: %s:%d  %s != %s  ("                 \
                       Stringify(type)                            \
                       ": %lld vs %lld)\n",                       \
-              __FILE__, __LINE__, #a, #b, (s64)A_, (s64)B_);     \
+              __FILE__, __LINE__, #a, #b, A_, B_);               \
     }                                                            \
   )
 
@@ -104,7 +104,7 @@ struct Test_Result
 
 #define test_summary(test_result)                                \
   Macro(                                                         \
-    printf("Tests: %llu/%llu passed\n",                          \
+    printf("Tests: %u/%u passed\n",                          \
            (test_result).passed, (test_result).total);           \
   )
 

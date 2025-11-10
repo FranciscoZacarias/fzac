@@ -40,7 +40,7 @@ os_memory_decommit(void *ptr, u64 size)
 function void
 os_memory_release(void *ptr, u64 size)
 {
-  (void)size; // NOTE(fz): Size not needed for windows. Though required for other OS's.
+  ignore_unused(size); // NOTE(fz): Size not needed for windows. Though required for other OS's.
   VirtualFree(ptr, 0, MEM_RELEASE);
 }
 

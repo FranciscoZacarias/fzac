@@ -145,9 +145,9 @@ print_arena(Arena *arena, const u8* label)
   f64 reserved_percentage  = ((f64)arena->position / arena->reserved) * 100.0f;
   
   // TODO(Fz): Print
-  (void)label;
-  (void)committed_percentage;
-  (void)reserved_percentage;
+  ignore_unused(label);
+  ignore_unused(committed_percentage);
+  ignore_unused(reserved_percentage);
   //emit_info(Sf(scratch.arena, "%s: Arena { reserved: %llu, commited: %llu, commit_size: %llu, position: %llu, align: %llu, committed_percentage: %.2f%%, reserved_percentage: %.2f%% }\n",
          //label, arena->reserved, arena->commited, arena->commit_size, arena->position, arena->align, committed_percentage, reserved_percentage));
   scratch_end(&scratch);

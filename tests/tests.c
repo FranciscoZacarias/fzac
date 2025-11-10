@@ -3,6 +3,7 @@
 
 int main(void)
 {
+  string_test();
 
   return 0;
 }
