@@ -9,7 +9,10 @@
 !src/
 !src/**
 
-!build.bat
+
+!tests/
+!tests/**
+
 !fzac.c
 !.gitignore
 !README.md
