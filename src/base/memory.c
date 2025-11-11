@@ -1,7 +1,7 @@
 function Arena*
 arena_alloc()
 {
-  Arena* arena = arena_alloc_sized(ARENA_RESERVE_SIZE, ARENA_COMMIT_SIZE);
+  Arena* arena = arena_alloc_sized(ArenaReserveSize, ArenaCommitSize);
   return arena;
 }
 
@@ -11,10 +11,10 @@ arena_alloc_sized(u64 reserve, u64 commit)
   void* memory = NULL;
   
   u64 page_size = os_memory_get_page_size();
-  reserve = AlignPow2(reserve, page_size);
-  commit  = AlignPow2(commit,  page_size);
+  reserve = align_power_of_two(reserve, page_size);
+  commit  = align_power_of_two(commit,  page_size);
   
-  Assert(ARENA_HEADER_SIZE < commit && commit <= reserve);
+  assert(ArenaHeaderSize < commit && commit <= reserve);
   
   memory = os_memory_reserve(reserve);
   if(!os_memory_commit(memory, commit))
@@ -30,8 +30,8 @@ arena_alloc_sized(u64 reserve, u64 commit)
     arena->reserved    = reserve;
     arena->commited    = commit;
     arena->commit_size = commit;
-    arena->position    = ARENA_HEADER_SIZE;
-    arena->align       = DEFAULT_ALIGNMENT;
+    arena->position    = ArenaHeaderSize;
+    arena->align       = DefaultAlignment;
   }
   else
   {
@@ -46,7 +46,7 @@ function void*
 arena_push(Arena* arena, u64 size)
 {
   void* result =  arena_push_no_zero(arena, size);
-  MemoryZero(result, size);
+  memory_zero(result, size);
   return result;
 }
 
@@ -57,13 +57,13 @@ arena_push_no_zero(Arena* arena, u64 size)
 
   if (arena->position + size <= arena->reserved)
   {
-    u64 position_memory = AlignPow2(arena->position, arena->align);
+    u64 position_memory = align_power_of_two(arena->position, arena->align);
     u64 new_position    = position_memory + size;
   
     if (arena->commited < new_position)
     {
-      u64 commit_aligned = AlignPow2(new_position, arena->commit_size);
-      u64 commit_clamped = ClampTop(commit_aligned, arena->reserved);
+      u64 commit_aligned = align_power_of_two(new_position, arena->commit_size);
+      u64 commit_clamped = clamp_top(commit_aligned, arena->reserved);
       u64 commit_size    = commit_clamped - arena->commited;
       if (os_memory_commit((u8*)arena + arena->commited, commit_size))
       {
@@ -114,13 +114,13 @@ arena_pop_to(Arena* arena, u64 pos)
     //scratch_end(&scratch);
     pos = arena->reserved;
   }
-  else if (pos < ARENA_HEADER_SIZE)
+  else if (pos < ArenaHeaderSize)
   {
     // TODO(Fz): Error
     //Scratch scratch = scratch_begin(0,0);
     //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop arena under it's header size (pos -> %llu). Truncating it to header size", pos));
     //scratch_end(&scratch);
-    pos = ARENA_HEADER_SIZE;
+    pos = ArenaHeaderSize;
   }
   arena->position = pos;
 }
@@ -128,7 +128,7 @@ arena_pop_to(Arena* arena, u64 pos)
 function void
 arena_clear(Arena* arena)
 {
-  arena_pop_to(arena, ARENA_HEADER_SIZE);
+  arena_pop_to(arena, ArenaHeaderSize);
 }
 
 function void

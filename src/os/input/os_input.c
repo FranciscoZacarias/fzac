@@ -2,8 +2,8 @@
 function void
 _input_init(Input_Context* input, f32 window_width, f32 window_height)
 {
-  AssertNoReentry();
-  MemoryZeroStruct(input);
+  assert_no_reentry();
+  memory_zero_struct(input);
 
   input->mouse_current.screen_space.x = window_width/2;
   input->mouse_current.screen_space.y = window_height/2;
@@ -22,8 +22,8 @@ _input_update(Input_Context* input)
   input->mouse_current.delta.x = input->mouse_current.screen_space.x - input->mouse_previous.screen_space.x; 
   input->mouse_current.delta.y = input->mouse_current.screen_space.y - input->mouse_previous.screen_space.y;
 
-  MemoryCopy(&(input->keyboard_previous), &(input->keyboard_current), sizeof(Keyboard_State));
-  MemoryCopy(&(input->mouse_previous),    &(input->mouse_current),    sizeof(Mouse_State));
+  memory_copy(&(input->keyboard_previous), &(input->keyboard_current), sizeof(Keyboard_State));
+  memory_copy(&(input->mouse_previous),    &(input->mouse_current),    sizeof(Mouse_State));
 }
 
 function b32
@@ -116,7 +116,7 @@ _input_process_mouse_button(Input_Context* input, Mouse_Button button, b32 is_pr
 function void
 _input_process_mouse_cursor(Input_Context* input, f32 x, f32 y)
 {
-  MemoryCopyStruct(&(input->mouse_previous), &(input->mouse_current));
+  memory_copy_struct(&(input->mouse_previous), &(input->mouse_current));
   input->mouse_current.screen_space.x = x;
   input->mouse_current.screen_space.y = y; 
 }

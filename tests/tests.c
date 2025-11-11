@@ -30,7 +30,7 @@ string_test(Test_Result* test)
     u8 buf[] = "abcdef";
     String s = string_range(buf + 1, buf + 4); // "bcd"
     test_equal(test, s.size, 3);
-    test_true(test, MemoryMatch(s.str, "bcd", 3));
+    test_true(test, memory_match(s.str, "bcd", 3));
   }
 
   // === string_concat ===
@@ -39,7 +39,7 @@ string_test(Test_Result* test)
     String b = S("bar");
     String c = string_concat(arena, a, b); // "foobar"
     test_equal(test, c.size, 6);
-    test_true(test, MemoryMatch(c.str, "foobar", 6));
+    test_true(test, memory_match(c.str, "foobar", 6));
   }
 
   // === string_slice ===
@@ -47,7 +47,7 @@ string_test(Test_Result* test)
     String s = S("testing");
     String sub = string_slice(s, 1, 4); // "est"
     test_equal(test, sub.size, 3);
-    test_true(test, MemoryMatch(sub.str, "est", 3));
+    test_true(test, memory_match(sub.str, "est", 3));
   }
 
   // === string_trim ===
@@ -102,7 +102,7 @@ string_test(Test_Result* test)
     test_true(test, string_match(list.last->value, S("three"), true));
 
     String joined = string_list_join(arena, &list);
-    test_true(test, string_match(joined, text, true));
+    test_true(test, string_match(joined, S("onetwothree"), true));
   }
 
   // === string_list_new / string_list_push / string_list_pop ===
@@ -118,8 +118,17 @@ string_test(Test_Result* test)
     test_equal(test, list.node_count, 2);
     test_true(test, string_match(list.last->value, S("second"), true));
 
-    String popped = string_list_pop(&list);
+    string_list_push(arena, &list, S("third"));
+    test_equal(test, list.node_count, 3);
+    test_true(test, string_match(list.last->value, S("third"), true));
+
+    String popped = string_list_remove_first(&list);
     test_true(test, string_match(popped, S("first"), true));
+    test_equal(test, list.node_count, 2);
+    test_true(test, string_match(list.first->value, S("second"), true));
+
+    popped = string_list_remove_last(&list);
+    test_true(test, string_match(popped, S("third"), true));
     test_equal(test, list.node_count, 1);
     test_true(test, string_match(list.first->value, S("second"), true));
   }
@@ -129,7 +138,7 @@ string_test(Test_Result* test)
     u8 cstr[] = "Hello";
     String s = string_from_cstring(cstr);
     test_equal(test, s.size, 5);
-    test_true(test, MemoryMatch(s.str, "Hello", 5));
+    test_true(test, memory_match(s.str, "Hello", 5));
 
     u8* roundtrip = cstring_from_string(arena, s);
     test_equal(test, cstring_length(roundtrip), 5);

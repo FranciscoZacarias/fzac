@@ -14,12 +14,19 @@ read_only global f32 EPSILON  = 0.000001f;
 /* --------------------------------------------------------------------- */
 /* Vector 2 types                                                        */
 /* --------------------------------------------------------------------- */
-typedef union Vec2f32
-{
-  f32 v[2];
-  struct { f32 x, y; };
-} Vec2f32;
 
+typedef struct Vec2f32 Vec2f32;
+struct Vec2f32
+{
+  union
+  {
+    f32 v[2];
+    struct
+    {
+      f32 x, y;
+    };
+  };
+};
 #define vec2f32(x,y)      (Vec2f32){(x),(y)}
 #define vec2f32_zero()    vec2f32(0.0f,0.0f)
 
@@ -41,12 +48,18 @@ function void    vec2f32_tests();
 /* --------------------------------------------------------------------- */
 /* Vector 3 types                                                        */
 /* --------------------------------------------------------------------- */
-typedef union Vec3f32
+typedef struct Vec3f32 Vec3f32;
+struct Vec3f32
 {
-  f32 v[3];
-  struct { f32 x, y, z; };
-} Vec3f32;
-
+  union
+  {
+    f32 v[3];
+    struct
+    {
+      f32 x, y, z;
+    };
+  };
+};
 #define vec3f32(x,y,z)    (Vec3f32){(x),(y),(z)}
 #define vec3f32_zero()    vec3f32(0.0f,0.0f,0.0f)
 
@@ -69,12 +82,18 @@ function void    vec3f32_tests();
 /* --------------------------------------------------------------------- */
 /* Vector 4 types                                                        */
 /* --------------------------------------------------------------------- */
-typedef union Vec4f32
+typedef struct Vec4f32 Vec4f32;
+struct Vec4f32
 {
-  f32 v[4];
-  struct { f32 x, y, z, w; };
-} Vec4f32;
-
+  union
+  {
+    f32 v[4];
+    struct
+    {
+      f32 x, y, z, w;
+    };
+  };
+};
 #define vec4f32(x,y,z,w)  (Vec4f32){(x),(y),(z),(w)}
 #define vec4f32_zero()    vec4f32(0.0f,0.0f,0.0f,0.0f)
 
@@ -96,24 +115,26 @@ function void    vec4f32_tests();
 /* --------------------------------------------------------------------- */
 /* Matrix 3 types – Column-Major                                         */
 /* --------------------------------------------------------------------- */
-typedef union Mat3f32
+typedef struct Mat3f32 Mat3f32;
+struct Mat3f32
 {
-  f32 v[9];
-  f32 vv[3][3];
-  struct
+  union
   {
-    f32 m0, m1, m2,
-        m3, m4, m5,
-        m6, m7, m8;
+    f32 v[9];
+    f32 vv[3][3];
+    struct
+    {
+      f32 m0, m1, m2,
+          m3, m4, m5,
+          m6, m7, m8;
+    };
   };
-} Mat3f32;
-
+};
 #define mat3f32(diagonal)                                 \
   (Mat3f32){ .v = {                                       \
     (diagonal), 0.0f, 0.0f,                               \
     0.0f, (diagonal), 0.0f,                               \
     0.0f, 0.0f, (diagonal) } }
-
 #define mat3f32_identity()  mat3f32(1.0f)
 
 /* ----- Mat3f32 functions ----- */
@@ -133,26 +154,28 @@ function void    mat3f32_tests();
 /* --------------------------------------------------------------------- */
 /* Matrix 4 types – Column-Major                                         */
 /* --------------------------------------------------------------------- */
-typedef union Mat4f32
+typedef struct Mat4f32 Mat4f32;
+struct Mat4f32
 {
-  f32 v[16];
-  f32 vv[4][4];
-  struct
+  union
   {
-    f32 m0, m1, m2, m3,
-        m4, m5, m6, m7,
-        m8, m9, m10, m11,
-        m12, m13, m14, m15;
+    f32 v[16];
+    f32 vv[4][4];
+    struct
+    {
+      f32 m0, m1, m2, m3,
+          m4, m5, m6, m7,
+          m8, m9, m10, m11,
+          m12, m13, m14, m15;
+    };
   };
-} Mat4f32;
-
+};
 #define mat4f32(diagonal)                                 \
   (Mat4f32){ .v = {                                       \
     (diagonal), 0.0f, 0.0f, 0.0f,                         \
     0.0f, (diagonal), 0.0f, 0.0f,                         \
     0.0f, 0.0f, (diagonal), 0.0f,                         \
     0.0f, 0.0f, 0.0f, (diagonal) } }
-
 #define mat4f32_identity()  mat4f32(1.0f)
 
 /* ----- Mat4f32 functions ----- */
@@ -172,12 +195,18 @@ function void    mat4f32_tests();
 /* --------------------------------------------------------------------- */
 /* Quaternion types                                                      */
 /* --------------------------------------------------------------------- */
-typedef union Quatf32
+typedef struct Quatf32 Quatf32;
+struct Quatf32
 {
-  f32 v[4];
-  struct { f32 x, y, z, w; };
-} Quatf32;
-
+  union
+  {
+    f32 v[4];
+    struct
+    {
+      f32 x, y, z, w;
+    };
+  };
+};
 #define quatf32(x,y,z,w)  (Quatf32){(x),(y),(z),(w)}
 #define quatf32_identity() quatf32(0.0f,0.0f,0.0f,1.0f)
 
@@ -200,13 +229,14 @@ function void    quatf32_tests();
 /* --------------------------------------------------------------------- */
 /* Transform 2 types                                                     */
 /* --------------------------------------------------------------------- */
-typedef struct Transform2f32
+
+typedef struct Transform2f32 Transform2f32;
+struct Transform2f32
 {
   Vec2f32 translation;
   f32     rotation;
   Vec2f32 scale;
-} Transform2f32;
-
+};
 #define transform2f32(t,r,s) (Transform2f32){(t),(r),(s)}
 
 /* ----- Transform2f32 functions ----- */
@@ -220,13 +250,13 @@ function void          transform2f32_tests();
 /* --------------------------------------------------------------------- */
 /* Transform 3 types                                                     */
 /* --------------------------------------------------------------------- */
-typedef struct Transform3f32
+typedef struct Transform3f32 Transform3f32;
+struct Transform3f32
 {
   Vec3f32 translation;
   Quatf32 rotation;
   Vec3f32 scale;
-} Transform3f32;
-
+};
 #define transform3f32(t,r,s) (Transform3f32){(t),(r),(s)}
 
 /* ----- Transform3f32 functions ----- */
@@ -241,12 +271,12 @@ function void          transform3f32_tests();
 /* --------------------------------------------------------------------- */
 /* Rect types                                                            */
 /* --------------------------------------------------------------------- */
-typedef struct Rectf32
+typedef struct Rectf32 Rectf32;
+struct Rectf32
 {
   Vec2f32 top_left;
   Vec2f32 size;
-} Rectf32;
-
+};
 #define rectf32(top_left,size) (Rectf32){(top_left),(size)}
 
 /* ----- Rectf32 functions ----- */
@@ -261,12 +291,12 @@ function void    rectf32_tests();
 /* --------------------------------------------------------------------- */
 /* Range types                                                           */
 /* --------------------------------------------------------------------- */
-typedef struct Rangef32
+typedef struct Rangef32 Rangef32;
+struct Rangef32
 {
   Vec2f32 top_left;
   Vec2f32 bot_right;
-} Rangef32;
-
+};
 #define rangef32(top_left,bot_right) (Rangef32){(top_left),(bot_right)}
 
 /* ----- Rangef32 functions ----- */

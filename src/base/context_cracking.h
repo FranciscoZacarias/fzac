@@ -58,7 +58,7 @@
 #
 #endif
 
-/* === Default Compiler Macros === */
+/* === Default Compiler macros === */
 #ifndef COMPILER_CLANG
 # define COMPILER_CLANG 0
 #endif

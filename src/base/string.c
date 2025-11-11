@@ -11,7 +11,7 @@ string_copy(Arena* arena, String source)
   String result;
   result.size = source.size;
   result.str  = push_array(arena, u8, result.size);
-  MemoryCopy(result.str, source.str, result.size);
+  memory_copy(result.str, source.str, result.size);
   return result;
 }
 
@@ -27,8 +27,8 @@ string_concat(Arena* arena, String a, String b)
 {
   String result = { 0 };
   result.size = a.size + b.size;result.str = push_array(arena, u8, result.size);
-  MemoryCopy(result.str, a.str, a.size);
-  MemoryCopy(result.str + a.size, b.str, b.size);
+  memory_copy(result.str, a.str, a.size);
+  memory_copy(result.str + a.size, b.str, b.size);
   return result;
 }
 
@@ -87,10 +87,10 @@ string_find_first(String str, String substring, u64* index)
 {
   if (substring.size > str.size) return false;
   b32 result = false;
-  *index = U64_MAX;
+  *index = U64Max;
   for (u64 i = 0; i <= str.size - substring.size; i++)
   {
-    if (MemoryMatch(&str.str[i], substring.str, substring.size))
+    if (memory_match(&str.str[i], substring.str, substring.size))
     {
       *index = i;
       result = true;
@@ -105,10 +105,10 @@ string_find_last(String str, String substring, u64* index)
 {
   if (substring.size > str.size) return false;
   b32 result = false;
-  *index = U64_MAX;
+  *index = U64Max;
   for (u64 i = str.size - substring.size + 1; i-- > 0;)
   {
-    if (MemoryMatch(&str.str[i], substring.str, substring.size))
+    if (memory_match(&str.str[i], substring.str, substring.size))
     {
       *index = i;
       result = true;
@@ -163,7 +163,7 @@ string_from_format(Arena* arena, char const* fmt, ...)
 
   result.size = (u64)len;
   result.str = push_array(arena, u8, result.size);
-  MemoryCopy(result.str, (u8*)temp, result.size);
+  memory_copy(result.str, (u8*)temp, result.size);
 
   return result;
 }
@@ -200,7 +200,7 @@ string_split(Arena* arena, String str, String delimiter)
 
     for (u8* scan = cursor; scan + delimiter.size <= end; scan++)
     {
-      if (MemoryMatch(scan, delimiter.str, delimiter.size) != 0)
+      if (memory_match(scan, delimiter.str, delimiter.size) != 0)
       {
         match = scan;
         break;
@@ -223,14 +223,13 @@ string_split(Arena* arena, String str, String delimiter)
 }
 
 function String_List
-string_list_new(Arena* arena)
+string_list_new()
 {
   String_List result = {0};
-  String_Node* node = push_array(arena, String_Node, 1);
-  result.first = node;
-  result.last  = node;
-  result.node_count = 1;
-  result.total_size = node->value.size;
+  result.first = NULL;
+  result.last  = NULL;
+  result.node_count = 0;
+  result.total_size = 0;
   return result;
 }
 
@@ -254,14 +253,39 @@ string_list_push(Arena* arena, String_List* list, String str)
 }
 
 function String
-string_list_pop(String_List* list)
+string_list_remove_first(String_List* list)
 {
   String result = {0};
-  if (list->node_count < 1)  return result;
-  
+  if (list->node_count < 1) return result;
+
+  String_Node* first_node = list->first;
+  result = first_node->value;
+  list->total_size -= result.size;
+
+  if (list->node_count == 1)
+  {
+    list->first = 0;
+    list->last = 0;
+    list->node_count = 0;
+  }
+  else
+  {
+    list->first = first_node->next;
+    list->node_count -= 1;
+  }
+
+  return result;
+}
+
+function String
+string_list_remove_last(String_List* list)
+{
+  String result = {0};
+  if (list->node_count < 1) return result;
+
   String_Node* last_node = list->last;
-  result            = last_node->value;
-  list->total_size -= last_node->value.size;
+  result = last_node->value;
+  list->total_size -= result.size;
 
   if (list->node_count == 1)
   {
@@ -291,7 +315,7 @@ string_list_join(Arena* arena, String_List* list)
   u8* ptr = dst;
   for (String_Node* node = list->first; node; node = node->next)
   {
-    MemoryCopy(ptr, node->value.str, node->value.size);
+    memory_copy(ptr, node->value.str, node->value.size);
     ptr += node->value.size;
   }
   return string_new(list->total_size, dst);
@@ -308,7 +332,7 @@ function u8*
 cstring_from_string(Arena* arena, String str)
 {
   u8* result = push_array(arena, u8, str.size + 1);
-  MemoryCopy(result, str.str, str.size);
+  memory_copy(result, str.str, str.size);
   result[str.size] = 0;
   return result;
 }

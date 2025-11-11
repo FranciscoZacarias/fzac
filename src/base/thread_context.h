@@ -1,19 +1,19 @@
 #ifndef THREAD_CONTEXT_H
 #define THREAD_CONTEXT_H
 
-#define DEFAULT_ARENAS_PER_THREAD_CONTEXT 2
-StaticAssert(DEFAULT_ARENAS_PER_THREAD_CONTEXT > 0, "There must be at least 1 arena per thread context")
+#define DefaultArenasPerThreadContext 2
+static_assert(DefaultArenasPerThreadContext > 0, "There must be at least 1 arena per thread context")
 
 typedef struct Thread_Context Thread_Context;
 struct Thread_Context
 {
-  Arena* arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT];
+  Arena* arenas[DefaultArenasPerThreadContext];
 };
 
 C_LINKAGE thread_static Thread_Context* ThreadContextThreadLocal = 0;
 global Thread_Context MainThreadContext;
 
-function void            thread_context_init_and_attach(Thread_Context* thread_context); /* Initializes a thread context with DEFAULT_ARENAS_PER_THREAD_CONTEXT arenas */
+function void            thread_context_init_and_attach(Thread_Context* thread_context); /* Initializes a thread context with DefaultArenasPerThreadContext arenas */
 function void            thread_context_free(); /* Frees the thread context */
 function Thread_Context* thread_context_get_equipped(); /* Returns current rhead context */
 function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count); /* Returns a scratch arena */

@@ -15,30 +15,30 @@ struct Test_Result
 
 /* === Basic equality === */
 #define test_equal(test_result, a, b)                            \
-  Macro(                                                         \
-    (test_result)->total += 1;                                    \
+  macro(                                                         \
+    (test_result)->total += 1;                                   \
     if ((a) == (b))                                              \
     {                                                            \
-      (test_result)->passed += 1;                                 \
+      (test_result)->passed += 1;                                \
     }                                                            \
     else                                                         \
     {                                                            \
-      fprintf(stderr, "FAIL: %s:%d  %s != %s  (%lld vs %lld)\n", \
-              __FILE__, __LINE__, #a, #b, (s64)(a), (s64)(b));   \
+      fprintf(stderr, "FAIL: %s:%d  %s!= %s  (%lld vs %lld)\n",  \
+              __FILE__, __LINE__, stringigy(a), stringigy(b), (s64)(a), (s64)(b));   \
     }                                                            \
   )
 
 #define test_not_equal(test_result, a, b)                        \
-  Macro(                                                         \
-    (test_result)->total += 1;                                    \
+  macro(                                                         \
+    (test_result)->total += 1;                                   \
     if ((a) != (b))                                              \
     {                                                            \
-      (test_result)->passed += 1;                                 \
+      (test_result)->passed += 1;                                \
     }                                                            \
     else                                                         \
     {                                                            \
       fprintf(stderr, "FAIL: %s:%d  %s == %s\n",                 \
-              __FILE__, __LINE__, #a, #b);                       \
+              __FILE__, __LINE__, stringigy(a), stringigy(b));                       \
     }                                                            \
   )
 
@@ -48,50 +48,50 @@ struct Test_Result
 
 /* === Memory comparison === */
 #define test_memory_equal(test_result, a, b, size)               \
-  Macro(                                                         \
-    (test_result)->total += 1;                                    \
-    if (MemoryMatch((a), (b), (size)))                           \
+  macro(                                                         \
+    (test_result)->total += 1;                                   \
+    if (memory_match((a), (b), (size)))                           \
     {                                                            \
-      (test_result)->passed += 1;                                 \
+      (test_result)->passed += 1;                                \
     }                                                            \
     else                                                         \
     {                                                            \
       fprintf(stderr, "FAIL: %s:%d  memory mismatch (%s vs %s, %u bytes)\n", \
-              __FILE__, __LINE__, #a, #b, (u32)(size));          \
+              __FILE__, __LINE__, stringigy(a), stringigy(b), (u32)(size));          \
     }                                                            \
   )
 
 /* === Numbers === */
 #define test_typed_equal(test_result, type, a, b)                \
-  Macro(                                                         \
-    (test_result)->total += 1;                                    \
+  macro(                                                         \
+    (test_result)->total += 1;                                   \
     type A_ = (a);                                               \
     type B_ = (b);                                               \
     if (A_ == B_)                                                \
     {                                                            \
-      (test_result)->passed += 1;                                 \
+      (test_result)->passed += 1;                                \
     }                                                            \
     else                                                         \
     {                                                            \
-      fprintf(stderr, "FAIL: %s:%d  %s != %s  (" Stringify(type) ": %lld vs %lld)\n", \
-              __FILE__, __LINE__, #a, #b, (s64)A_, (s64)B_);     \
+      fprintf(stderr, "FAIL: %s:%d  %s != %s  (" stringigy(type) ": %lld vs %lld)\n", \
+              __FILE__, __LINE__, stringigy(a), stringigy(b), (s64)A_, (s64)B_);     \
     }                                                            \
   )
 
 #define test_typed_equal_float(test_result, type, a, b, epsilon) \
-  Macro(                                                         \
-    (test_result)->total += 1;                                    \
+  macro(                                                         \
+    (test_result)->total += 1;                                   \
     f64 A_ = (f64)(a);                                           \
     f64 B_ = (f64)(b);                                           \
     f64 diff_ = fabs(A_ - B_);                                   \
     if (diff_ <= (epsilon))                                      \
     {                                                            \
-      (test_result)->passed += 1;                                 \
+      (test_result)->passed += 1;                                \
     }                                                            \
     else                                                         \
     {                                                            \
-      fprintf(stderr, "FAIL: %s:%d  %s != %s  (" Stringify(type) ": %f vs %f, diff=%f)\n", \
-              __FILE__, __LINE__, #a, #b, A_, B_, diff_);        \
+      fprintf(stderr, "FAIL: %s:%d  %s != %s  (" stringigy(type) ": %f vs %f, diff=%f)\n", \
+              __FILE__, __LINE__, stringigy(a), stringigy(b), A_, B_, diff_);        \
     }                                                            \
   )
 
@@ -99,19 +99,19 @@ struct Test_Result
 #define test_section(name) printf("\n== %s ==\n", (name))
 
 #define test_summary(test_result)                                \
-  Macro(                                                         \
+  macro(                                                         \
     printf("Tests: %u/%u passed\n",                              \
-           (test_result)->passed, (test_result)->total);           \
+           (test_result)->passed, (test_result)->total);         \
   )
 
-/* === Assert helper === */
+/* === assert helper === */
 #define test_assert(expr)                                        \
-  Macro(                                                         \
+  macro(                                                         \
     if (!(expr))                                                 \
     {                                                            \
       fprintf(stderr, "ASSERT FAIL: %s:%d  %s\n",                \
               __FILE__, __LINE__, #expr);                        \
-      Breakpoint();                                              \
+      breakpoint();                                              \
     }                                                            \
   )
 

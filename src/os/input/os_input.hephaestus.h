@@ -137,7 +137,7 @@ enum
   Keyboard_Key_Semicolon,
   Keyboard_Key_Plus,
   Keyboard_Key_Comma,
-  Keyboard_Key_Minus,
+  Keyboard_Key_minus,
   Keyboard_Key_Period,
   Keyboard_Key_Slash,
   Keyboard_Key_Grave_Accent,
@@ -283,7 +283,7 @@ global const char* keyboard_key_strings[] =
   "Semicolon",
   "Plus",
   "Comma",
-  "Minus",
+  "minus",
   "Period",
   "Slash",
   "Grave_Accent",
@@ -429,7 +429,7 @@ global u64 _win32_key_table[Keyboard_Key_Count] =
   VK_OEM_1, /* Semicolon */
   VK_OEM_PLUS, /* Plus */
   VK_OEM_COMMA, /* Comma */
-  VK_OEM_MINUS, /* Minus */
+  VK_OEM_MINUS, /* minus */
   VK_OEM_PERIOD, /* Period */
   VK_OEM_2, /* Slash */
   VK_OEM_3, /* Grave_Accent */
@@ -576,7 +576,7 @@ global u64 _linux_key_table[Keyboard_Key_Count] =
   KEY_SEMICOLON, /* Semicolon */
   KEY_EQUAL, /* Plus */
   KEY_COMMA, /* Comma */
-  KEY_MINUS, /* Minus */
+  KEY_MINUS, /* minus */
   KEY_DOT, /* Period */
   KEY_SLASH, /* Slash */
   KEY_GRAVE, /* Grave_Accent */

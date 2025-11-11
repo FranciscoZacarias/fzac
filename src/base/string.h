@@ -46,9 +46,10 @@ function u64    string_hash(String str); /*  */
 
 // String list
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
-function String_List string_list_new(Arena* arena); /* Create new list with single string element. */
+function String_List string_list_new(); /* Create new list with single string element. */
 function void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
-function String      string_list_pop(String_List* list); /* Remove and return first element from list. */
+function String      string_list_remove_first(String_List* list); /* Remove and return first element from list. */
+function String      string_list_remove_last(String_List* list); /* Remove and return last element from list. */
 function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string. */
 
 // Casts

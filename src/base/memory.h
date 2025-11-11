@@ -1,11 +1,11 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#ifndef ARENA_RESERVE_SIZE
-# define ARENA_RESERVE_SIZE Megabytes(64)
+#ifndef ArenaReserveSize
+# define ArenaReserveSize megabytes(64)
 #endif
-#ifndef ARENA_COMMIT_SIZE
-# define ARENA_COMMIT_SIZE Kilobytes(64)
+#ifndef ArenaCommitSize
+# define ArenaCommitSize kilobytes(64)
 #endif
 
 typedef struct Arena Arena;
@@ -17,7 +17,7 @@ struct Arena
   u64 position;      // Current position of the arena
   u64 align;         // Arena's memory alignment
 };
-#define ARENA_HEADER_SIZE AlignPow2(sizeof(Arena), os_memory_get_page_size())
+#define ArenaHeaderSize align_power_of_two(sizeof(Arena), os_memory_get_page_size())
 
 function Arena* arena_alloc(); /* Allocates an arena with the default reserve and commit size */
 function Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
