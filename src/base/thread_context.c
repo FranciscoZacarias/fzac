@@ -2,7 +2,7 @@ function void
 thread_context_init_and_attach(Thread_Context* thread_context)
 {
   MemoryZeroStruct(thread_context);
-  Arena **arena_ptr = thread_context->arenas;
+  Arena** arena_ptr = thread_context->arenas;
   for (u64 i = 0; i < ArrayCount(thread_context->arenas); i += 1, arena_ptr += 1)
   {
     *arena_ptr = arena_alloc();
@@ -31,10 +31,10 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
   Thread_Context *thread_context = thread_context_get_equipped();
   Assert(thread_context);
 
-  Arena *result = 0;
+  Arena* result = 0;
   for (u64 i = 0; i < ArrayCount(thread_context->arenas); i += 1)
   {
-    Arena *candidate = thread_context->arenas[i];
+    Arena* candidate = thread_context->arenas[i];
     b32 has_conflict = 0;
 
     for (u64 j = 0; j < count; j += 1)

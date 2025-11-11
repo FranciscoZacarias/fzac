@@ -67,6 +67,4 @@ function b32 char8_is_space(u8 c); /* Check if character is whitespace. */
 function u8  char8_to_upper(u8 c); /* Convert character to uppercase. */
 function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 
-function void   string_test();
-
 #endif // STRING_H
