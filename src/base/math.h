@@ -83,18 +83,31 @@ struct V3f32
 #define v3f32_zero() v3f32(0.0f,0.0f,0.0f)
 
 /* ----- V3f32 functions ----- */
-function V3f32 v3f32_add(V3f32 a, V3f32 b);
-function V3f32 v3f32_sub(V3f32 a, V3f32 b);
-function V3f32 v3f32_mul(V3f32 a, V3f32 b);
-function V3f32 v3f32_div(V3f32 a, V3f32 b);
-function V3f32 v3f32_scale(V3f32 v, f32 s);
-function f32   v3f32_dot(V3f32 a, V3f32 b);
-function V3f32 v3f32_cross(V3f32 a, V3f32 b);
-function f32   v3f32_length_squared(V3f32 v);
-function f32   v3f32_length(V3f32 v);
-function V3f32 v3f32_normalize(V3f32 v);
-function V3f32 v3f32_negate(V3f32 v);
-function b32   v3f32_equal(V3f32 a, V3f32 b);
+function V3f32 v3f32_add(V3f32 a, V3f32 b); /* Adds two 3D vectors */
+function V3f32 v3f32_sub(V3f32 a, V3f32 b); /* Subtracts one 3D vector from another */
+function V3f32 v3f32_scale(V3f32 v, f32 scalar); /* Scales a 3D vector by a scalar */
+function V3f32 v3f32_mul(V3f32 a, V3f32 b); /* Multiplies two 3D vectors component-wise */
+function V3f32 v3f32_cross(V3f32 a, V3f32 b); /* Computes the cross product of two 3D vectors */
+function V3f32 v3f32_perpendicular(V3f32 v); /* Returns a perpendicular vector to the given 3D vector */
+function f32   v3f32_length(V3f32 v); /* Returns the length (magnitude) of the 3D vector */
+function f32   v3f32_length_sqr(V3f32 v); /* Returns the squared length of the 3D vector */
+function f32   v3f32_dot(V3f32 a, V3f32 b); /* Computes the dot product of two 3D vectors */
+function f32   v3f32_distance(V3f32 a, V3f32 b); /* Returns the distance between two 3D points */
+function f32   v3f32_distanceSqr(V3f32 a, V3f32 b); /* Returns the squared distance between two 3D points */
+function f32   v3f32_angle(V3f32 a, V3f32 b); /* Returns the angle (in radians) between two 3D vectors */
+function V3f32 v3f32_div(V3f32 a, V3f32 b); /* Divides two 3D vectors component-wise */
+function V3f32 v3f32_normalize(V3f32 v); /* Returns the normalized (unit length) version of a 3D vector */
+function void  v3f32_ortho_normalize(V3f32* a, V3f32* b); /* Makes two 3D vectors orthogonal and normalizes them */
+function V3f32 v3f32_transform(V3f32 v, M4f32 mat); /* Transforms a 3D vector by a 4x4 matrix */
+function V3f32 v3f32_rotate_by_quaternion(V3f32 v, Qf32 q); /* Rotates a 3D vector by a quaternion */
+function V3f32 v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle); /* Rotates a 3D vector around an axis by an angle */
+function V3f32 v3f32_lerp(V3f32 a, V3f32 b, f32 amount); /* Linearly interpolates between two 3D vectors */
+function V3f32 v3f32_reflect(V3f32 v, V3f32 normal); /* Reflects a 3D vector about a normal */
+function V3f32 v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c); /* Computes barycentric coordinates for a point in a triangle */
+function V3f32 v3f32_unproject(V3f32 source, M4f32 projection, M4f32 view); /* Converts from screen space to world space */
+function V3f32 v3f32_invert(V3f32 v); /* Returns the inverse (negated) of a 3D vector */
+function b32   v3f32_equals(V3f32 p, V3f32 q); /* Checks if two 3D vectors are equal */
+function V3f32 v3f32_refract(V3f32 v, V3f32 n, f32 r); /* Computes refraction of a 3D vector given a normal and ratio */
 
 /* --------------------------------------------------------------------- */
 /* Vector 4 types                                                        */

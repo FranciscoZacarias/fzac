@@ -145,8 +145,8 @@ v2f32_rotate(V2f32 v, f32 angle)
 function b32
 v2f32_equals(V2f32 a, V2f32 b)
 {
-  b32 result = ((fabsf(a.x - b.x)) <= (EPSILON*fmaxf(1.0f, fmaxf(fabsf(a.x), fabsf(b.x))))) &&
-               ((fabsf(a.y - b.y)) <= (EPSILON*fmaxf(1.0f, fmaxf(fabsf(a.y), fabsf(b.y)))));
+  b32 result = ((fabsf(a.x - b.x)) <= (Epsilon32*fmaxf(1.0f, fmaxf(fabsf(a.x), fabsf(b.x))))) &&
+               ((fabsf(a.y - b.y)) <= (Epsilon32*fmaxf(1.0f, fmaxf(fabsf(a.y), fabsf(b.y)))));
 
   return result;
 }
@@ -166,3 +166,159 @@ v2f32_refract(V2f32 incident, V2f32 surface_normal, f32 refraction_ratio)
   }
   return result;
 }
+
+/* ----- V3f32 functions ----- */
+# pragma warning(push)
+# pragma warning(disable: 4100) // Avoids known warning from winnls.h
+
+function V3f32
+v3f32_add(V3f32 a, V3f32 b)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_sub(V3f32 a, V3f32 b)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_scale(V3f32 v, f32 scalar)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_mul(V3f32 a, V3f32 b)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_cross(V3f32 a, V3f32 b)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_perpendicular(V3f32 v)
+{
+  return v3f32_zero();
+}
+
+function f32
+v3f32_length(V3f32 v)
+{
+  return 0;
+}
+
+function f32
+v3f32_length_sqr(V3f32 v)
+{
+  return 0;
+}
+
+function f32
+v3f32_dot(V3f32 a, V3f32 b)
+{
+  return 0;
+}
+
+function f32
+v3f32_distance(V3f32 a, V3f32 b)
+{
+  return 0;
+}
+
+function f32
+v3f32_distanceSqr(V3f32 a, V3f32 b)
+{
+  return 0;
+}
+
+function f32
+v3f32_angle(V3f32 a, V3f32 b)
+{
+  return 0;
+}
+
+function V3f32
+v3f32_div(V3f32 a, V3f32 b)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_normalize(V3f32 v)
+{
+  return v3f32_zero();
+}
+
+function void
+v3f32_ortho_normalize(V3f32* a, V3f32* b)
+{
+
+}
+
+function V3f32
+v3f32_transform(V3f32 v, M4f32 mat)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_rotate_by_quaternion(V3f32 v, Qf32 q)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_lerp(V3f32 a, V3f32 b, f32 amount)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_reflect(V3f32 v, V3f32 normal)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_unproject(V3f32 source, M4f32 projection, M4f32 view)
+{
+  return v3f32_zero();
+}
+
+function V3f32
+v3f32_invert(V3f32 v)
+{
+  return v3f32_zero();
+}
+
+function b32
+v3f32_equals(V3f32 p, V3f32 q)
+{
+  return false;
+}
+
+function V3f32
+v3f32_refract(V3f32 v, V3f32 n, f32 r)
+{
+  return v3f32_zero();
+}
+
+# pragma warning(pop)

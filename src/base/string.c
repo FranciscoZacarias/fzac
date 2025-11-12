@@ -26,7 +26,8 @@ function String
 string_concat(Arena* arena, String a, String b)
 {
   String result = { 0 };
-  result.size = a.size + b.size;result.str = push_array(arena, u8, result.size);
+  result.size = a.size + b.size;
+  result.str = push_array(arena, u8, result.size);
   memory_copy(result.str, a.str, a.size);
   memory_copy(result.str + a.size, b.str, b.size);
   return result;
