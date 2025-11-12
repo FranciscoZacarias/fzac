@@ -162,13 +162,13 @@
   @foreach(OS_Key_Table) `  Keyboard_Key_$(name),\n`
   `  Keyboard_Key_Count,\n};\n`
   `\n`
-  `global const char* keyboard_key_strings[] = \n{\n`
+  `global const char* KeyboardKeyStrings[] = \n{\n`
   @foreach(OS_Key_Table) `  "$(name)",\n`
   `};\n`
   `\n`
 
   `#if OS_WINDOWS\n`
-  `global u64 _win32_key_table[Keyboard_Key_Count] = \n{\n`
+  `global u64 _Win32KeyTable[Keyboard_Key_Count] = \n{\n`
   @foreach(OS_Key_Table) `  $(windows_code), /* $(name) */\n`
   `};\n`
   `#endif`
@@ -177,7 +177,7 @@
   `\n`
 
   `#if OS_LINUX\n`
-  `global u64 _linux_key_table[Keyboard_Key_Count] = \n{\n`
+  `global u64 _LinuxKeyTable[Keyboard_Key_Count] = \n{\n`
   @foreach(OS_Key_Table) `  $(linux_code), /* $(name) */\n`
   `};\n`
   `#endif`

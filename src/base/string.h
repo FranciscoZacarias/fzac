@@ -9,7 +9,7 @@ struct String
   u8* str;
 };
 #define S(s) (String){sizeof(s)-1, (u8*)(s)}
-#define Sf(arena,fmt,...) // TODO(Fz): string_from_format(arena, fmt, __VA_ARGS__)
+#define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
 
 #define S_FMT "%.*s"
 #define S_ARG(str8) (s32)str8.size, str8.str

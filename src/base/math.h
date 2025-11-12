@@ -2,21 +2,35 @@
 #define MATH_H
 
 /* --------------------------------------------------------------------- */
-/* Global qualifiers & constants                                         */
+/* Global qualifiers, constants & forward declarations                   */
 /* --------------------------------------------------------------------- */
 
-read_only global f32 PI       = 3.14159265358979323846f;
-read_only global f32 EPSILON  = 0.000001f;
+read_only global f32 Pi32      = 3.14159265358979323846f;
+read_only global f32 Epsilon32 = 0.000001f;
 
 #define Degrees(r) ((r) * (180.0f / PI))
 #define Radians(d) ((d) * (PI / 180.0f))
 
+typedef struct V2f32    V2f32;    /* */
+typedef struct V3f32    V3f32;    /* */
+typedef struct V4f32    V4f32;    /* */
+typedef struct M4f32    M4f32;    /* Matrix type (OpenGL style 4x4 - right handed, column major) */
+typedef struct Qf32     Qf32;     /* */
+typedef struct T2f32    T2f32;    /* */
+typedef struct T3f32    T3f32;    /* */
+typedef struct Rectf32  Rectf32;  /* */
+typedef struct Rangef32 Rangef32; /* */
+
+/* --------------------------------------------------------------------- */
+/* Float helpers                                                         */
+/* --------------------------------------------------------------------- */
+
+
+
 /* --------------------------------------------------------------------- */
 /* Vector 2 types                                                        */
 /* --------------------------------------------------------------------- */
-
-typedef struct Vec2f32 Vec2f32;
-struct Vec2f32
+struct V2f32
 {
   union
   {
@@ -27,29 +41,34 @@ struct Vec2f32
     };
   };
 };
-#define vec2f32(x,y)      (Vec2f32){(x),(y)}
-#define vec2f32_zero()    vec2f32(0.0f,0.0f)
+#define v2f32(x,y)  (V2f32){(x),(y)}
+#define v2f32_zero() v2f32(0.0f,0.0f)
 
-/* ----- Vec2f32 functions ----- */
-function Vec2f32 vec2f32_add(Vec2f32 a, Vec2f32 b);
-function Vec2f32 vec2f32_subtract(Vec2f32 a, Vec2f32 b);
-function Vec2f32 vec2f32_multiply(Vec2f32 a, Vec2f32 b);
-function Vec2f32 vec2f32_divide(Vec2f32 a, Vec2f32 b);
-function Vec2f32 vec2f32_scale(Vec2f32 v, f32 s);
-function f32     vec2f32_dot(Vec2f32 a, Vec2f32 b);
-function f32     vec2f32_length_squared(Vec2f32 v);
-function f32     vec2f32_length(Vec2f32 v);
-function Vec2f32 vec2f32_normalize(Vec2f32 v);
-function Vec2f32 vec2f32_negate(Vec2f32 v);
-function b32     vec2f32_equal(Vec2f32 a, Vec2f32 b);
-
-function void    vec2f32_tests();
+/* ----- V2f32 functions ----- */
+function V2f32 v2f32_add(V2f32 a, V2f32 b); /* Adds two 2D vectors component-wise */
+function V2f32 v2f32_sub(V2f32 a, V2f32 b); /* Subtracts vector b from vector a */
+function V2f32 v2f32_mul(V2f32 a, V2f32 b); /* Multiplies two 2D vectors component-wise */
+function V2f32 v2f32_div(V2f32 a, V2f32 b); /* Divides two 2D vectors component-wise */
+function f32   v2f32_dot(V2f32 a, V2f32 b); /* Returns the dot product of two 2D vectors */
+function V2f32 v2f32_normalize(V2f32 v); /* Returns the normalized (unit length) version of a vector */
+function V2f32 v2f32_transform(V2f32 v, M4f32 m); /* Transforms a 2D vector using a 4x4 matrix */
+function f32   v2f32_len(V2f32 v); /* Returns the length (magnitude) of a vector */
+function f32   v2f32_len_sqr(V2f32 v); /* Returns the squared length of a vector (avoids sqrt for efficiency) */
+function f32   v2f32_cross(V2f32 a, V2f32 b); /* Returns the scalar 2D cross product (perpendicular magnitude) of two vectors */
+function V2f32 v2f32_scale(V2f32 v, f32 scale); /* Scales a vector by a scalar value */
+function V2f32 v2f32_lerp(V2f32 a, V2f32 b, f32 step); /* Linearly interpolates between vectors a and b by step (0–1) */
+function f32   v2f32_dist(V2f32 a, V2f32 b); /* Returns the distance between two points/vectors */
+function f32   v2f32_dist_sqr(V2f32 a, V2f32 b); /* Returns the squared distance between two points/vectors */
+function f32   v2f32_angle(V2f32 a, V2f32 b); /* Signed angle from a to b, relative to (0,0). Coordinate system convention: Positive X: right, Positive Y: up, Positive Angle: CCW, Negative Angle: CW */
+function V2f32 v2f32_reflect(V2f32 v, V2f32 normal); /* Reflects a vector around a surface normal */
+function V2f32 v2f32_rotate(V2f32 v, f32 angle); /* Rotates a vector by a given angle (in radians) */
+function b32   v2f32_equals(V2f32 a, V2f32 b); /* Returns true if two vectors are equal (component-wise comparison) */
+function V2f32 v2f32_refract(V2f32 incident, V2f32 surface_normal, f32 refraction_ratio); /* Computes the refracted direction of an incident vector given a surface normal and refraction ratio (per Snell’s law) */
 
 /* --------------------------------------------------------------------- */
 /* Vector 3 types                                                        */
 /* --------------------------------------------------------------------- */
-typedef struct Vec3f32 Vec3f32;
-struct Vec3f32
+struct V3f32
 {
   union
   {
@@ -60,30 +79,27 @@ struct Vec3f32
     };
   };
 };
-#define vec3f32(x,y,z)    (Vec3f32){(x),(y),(z)}
-#define vec3f32_zero()    vec3f32(0.0f,0.0f,0.0f)
+#define v3f32(x,y,z) (V3f32){(x),(y),(z)}
+#define v3f32_zero() v3f32(0.0f,0.0f,0.0f)
 
-/* ----- Vec3f32 functions ----- */
-function Vec3f32 vec3f32_add(Vec3f32 a, Vec3f32 b);
-function Vec3f32 vec3f32_subtract(Vec3f32 a, Vec3f32 b);
-function Vec3f32 vec3f32_multiply(Vec3f32 a, Vec3f32 b);
-function Vec3f32 vec3f32_divide(Vec3f32 a, Vec3f32 b);
-function Vec3f32 vec3f32_scale(Vec3f32 v, f32 s);
-function f32     vec3f32_dot(Vec3f32 a, Vec3f32 b);
-function Vec3f32 vec3f32_cross(Vec3f32 a, Vec3f32 b);
-function f32     vec3f32_length_squared(Vec3f32 v);
-function f32     vec3f32_length(Vec3f32 v);
-function Vec3f32 vec3f32_normalize(Vec3f32 v);
-function Vec3f32 vec3f32_negate(Vec3f32 v);
-function b32     vec3f32_equal(Vec3f32 a, Vec3f32 b);
-
-function void    vec3f32_tests();
+/* ----- V3f32 functions ----- */
+function V3f32 v3f32_add(V3f32 a, V3f32 b);
+function V3f32 v3f32_sub(V3f32 a, V3f32 b);
+function V3f32 v3f32_mul(V3f32 a, V3f32 b);
+function V3f32 v3f32_div(V3f32 a, V3f32 b);
+function V3f32 v3f32_scale(V3f32 v, f32 s);
+function f32   v3f32_dot(V3f32 a, V3f32 b);
+function V3f32 v3f32_cross(V3f32 a, V3f32 b);
+function f32   v3f32_length_squared(V3f32 v);
+function f32   v3f32_length(V3f32 v);
+function V3f32 v3f32_normalize(V3f32 v);
+function V3f32 v3f32_negate(V3f32 v);
+function b32   v3f32_equal(V3f32 a, V3f32 b);
 
 /* --------------------------------------------------------------------- */
 /* Vector 4 types                                                        */
 /* --------------------------------------------------------------------- */
-typedef struct Vec4f32 Vec4f32;
-struct Vec4f32
+struct V4f32
 {
   union
   {
@@ -94,68 +110,26 @@ struct Vec4f32
     };
   };
 };
-#define vec4f32(x,y,z,w)  (Vec4f32){(x),(y),(z),(w)}
-#define vec4f32_zero()    vec4f32(0.0f,0.0f,0.0f,0.0f)
+#define v4f32(x,y,z,w) (V4f32){(x),(y),(z),(w)}
+#define v4f32_zero()   v4f32(0.0f,0.0f,0.0f,0.0f)
 
-/* ----- Vec4f32 functions ----- */
-function Vec4f32 vec4f32_add(Vec4f32 a, Vec4f32 b);
-function Vec4f32 vec4f32_subtract(Vec4f32 a, Vec4f32 b);
-function Vec4f32 vec4f32_multiply(Vec4f32 a, Vec4f32 b);
-function Vec4f32 vec4f32_divide(Vec4f32 a, Vec4f32 b);
-function Vec4f32 vec4f32_scale(Vec4f32 v, f32 s);
-function f32     vec4f32_dot(Vec4f32 a, Vec4f32 b);
-function f32     vec4f32_length_squared(Vec4f32 v);
-function f32     vec4f32_length(Vec4f32 v);
-function Vec4f32 vec4f32_normalize(Vec4f32 v);
-function Vec4f32 vec4f32_negate(Vec4f32 v);
-function b32     vec4f32_equal(Vec4f32 a, Vec4f32 b);
-
-function void    vec4f32_tests();
-
-/* --------------------------------------------------------------------- */
-/* Matrix 3 types – Column-Major                                         */
-/* --------------------------------------------------------------------- */
-typedef struct Mat3f32 Mat3f32;
-struct Mat3f32
-{
-  union
-  {
-    f32 v[9];
-    f32 vv[3][3];
-    struct
-    {
-      f32 m0, m1, m2,
-          m3, m4, m5,
-          m6, m7, m8;
-    };
-  };
-};
-#define mat3f32(diagonal)                                 \
-  (Mat3f32){ .v = {                                       \
-    (diagonal), 0.0f, 0.0f,                               \
-    0.0f, (diagonal), 0.0f,                               \
-    0.0f, 0.0f, (diagonal) } }
-#define mat3f32_identity()  mat3f32(1.0f)
-
-/* ----- Mat3f32 functions ----- */
-function Mat3f32 mat3f32_add(Mat3f32 a, Mat3f32 b);
-function Mat3f32 mat3f32_subtract(Mat3f32 a, Mat3f32 b);
-function Mat3f32 mat3f32_multiply(Mat3f32 a, Mat3f32 b);
-function Mat3f32 mat3f32_multiply_vector(Mat3f32 m, Vec3f32 v);
-function Vec3f32 mat3f32_multiply_vector_transpose(Vec3f32 v, Mat3f32 m);
-function Mat3f32 mat3f32_scale(Mat3f32 m, f32 s);
-function Mat3f32 mat3f32_transpose(Mat3f32 m);
-function f32     mat3f32_determinant(Mat3f32 m);
-function Mat3f32 mat3f32_inverse(Mat3f32 m);
-function b32     mat3f32_equal(Mat3f32 a, Mat3f32 b);
-
-function void    mat3f32_tests();
+/* ----- V4f32 functions ----- */
+function V4f32 v4f32_add(V4f32 a, V4f32 b);
+function V4f32 v4f32_sub(V4f32 a, V4f32 b);
+function V4f32 v4f32_mul(V4f32 a, V4f32 b);
+function V4f32 v4f32_div(V4f32 a, V4f32 b);
+function V4f32 v4f32_scale(V4f32 v, f32 s);
+function f32   v4f32_dot(V4f32 a, V4f32 b);
+function f32   v4f32_length_squared(V4f32 v);
+function f32   v4f32_length(V4f32 v);
+function V4f32 v4f32_normalize(V4f32 v);
+function V4f32 v4f32_negate(V4f32 v);
+function b32   v4f32_equal(V4f32 a, V4f32 b);
 
 /* --------------------------------------------------------------------- */
 /* Matrix 4 types – Column-Major                                         */
 /* --------------------------------------------------------------------- */
-typedef struct Mat4f32 Mat4f32;
-struct Mat4f32
+struct M4f32
 {
   union
   {
@@ -163,40 +137,37 @@ struct Mat4f32
     f32 vv[4][4];
     struct
     {
-      f32 m0, m1, m2, m3,
-          m4, m5, m6, m7,
-          m8, m9, m10, m11,
-          m12, m13, m14, m15;
+      f32 m0,  m4,  m8,  m12;  // Row 0: X-axis + translation X
+      f32 m1,  m5,  m9,  m13;  // Row 1: Y-axis + translation Y
+      f32 m2,  m6,  m10, m14;  // Row 2: Z-axis + translation Z
+      f32 m3,  m7,  m11, m15;  // Row 3: perspective row
     };
   };
 };
-#define mat4f32(diagonal)                                 \
-  (Mat4f32){ .v = {                                       \
-    (diagonal), 0.0f, 0.0f, 0.0f,                         \
-    0.0f, (diagonal), 0.0f, 0.0f,                         \
-    0.0f, 0.0f, (diagonal), 0.0f,                         \
+#define m4f32(diagonal)            \
+  (M4f32){ .v = {                  \
+    (diagonal), 0.0f, 0.0f, 0.0f,  \
+    0.0f, (diagonal), 0.0f, 0.0f,  \
+    0.0f, 0.0f, (diagonal), 0.0f,  \
     0.0f, 0.0f, 0.0f, (diagonal) } }
-#define mat4f32_identity()  mat4f32(1.0f)
+#define m4f32_identity()  m4f32(1.0f)
 
-/* ----- Mat4f32 functions ----- */
-function Mat4f32 mat4f32_add(Mat4f32 a, Mat4f32 b);
-function Mat4f32 mat4f32_subtract(Mat4f32 a, Mat4f32 b);
-function Mat4f32 mat4f32_multiply(Mat4f32 a, Mat4f32 b);
-function Mat4f32 mat4f32_multiply_vector(Mat4f32 m, Vec4f32 v);
-function Vec4f32 mat4f32_multiply_vector_transpose(Vec4f32 v, Mat4f32 m);
-function Mat4f32 mat4f32_scale(Mat4f32 m, f32 s);
-function Mat4f32 mat4f32_transpose(Mat4f32 m);
-function f32     mat4f32_determinant(Mat4f32 m);
-function Mat4f32 mat4f32_inverse(Mat4f32 m);
-function b32     mat4f32_equal(Mat4f32 a, Mat4f32 b);
-
-function void    mat4f32_tests();
+/* ----- M4f32 functions ----- */
+function M4f32 m4f32_add(M4f32 a, M4f32 b);
+function M4f32 m4f32_sub(M4f32 a, M4f32 b);
+function M4f32 m4f32_mul(M4f32 a, M4f32 b);
+function M4f32 m4f32_mul_vector(M4f32 m, V4f32 v);
+function V4f32 m4f32_mul_vector_transpose(V4f32 v, M4f32 m);
+function M4f32 m4f32_scale(M4f32 m, f32 s);
+function M4f32 m4f32_transpose(M4f32 m);
+function f32   m4f32_determinant(M4f32 m);
+function M4f32 m4f32_inverse(M4f32 m);
+function b32   m4f32_equal(M4f32 a, M4f32 b);
 
 /* --------------------------------------------------------------------- */
 /* Quaternion types                                                      */
 /* --------------------------------------------------------------------- */
-typedef struct Quatf32 Quatf32;
-struct Quatf32
+struct Qf32
 {
   union
   {
@@ -207,105 +178,95 @@ struct Quatf32
     };
   };
 };
-#define quatf32(x,y,z,w)  (Quatf32){(x),(y),(z),(w)}
-#define quatf32_identity() quatf32(0.0f,0.0f,0.0f,1.0f)
+#define qf32(x,y,z,w)  (Qf32){(x),(y),(z),(w)}
+#define qf32_identity() qf32(0.0f,0.0f,0.0f,1.0f)
 
-/* ----- Quatf32 functions ----- */
-function Quatf32 quatf32_add(Quatf32 a, Quatf32 b);
-function Quatf32 quatf32_subtract(Quatf32 a, Quatf32 b);
-function Quatf32 quatf32_multiply(Quatf32 a, Quatf32 b);
-function Quatf32 quatf32_scale(Quatf32 q, f32 s);
-function f32     quatf32_dot(Quatf32 a, Quatf32 b);
-function f32     quatf32_length_squared(Quatf32 q);
-function f32     quatf32_length(Quatf32 q);
-function Quatf32 quatf32_normalize(Quatf32 q);
-function Quatf32 quatf32_conjugate(Quatf32 q);
-function Quatf32 quatf32_inverse(Quatf32 q);
-function Vec3f32 quatf32_rotate_vector(Quatf32 q, Vec3f32 v);
-function b32     quatf32_equal(Quatf32 a, Quatf32 b);
-
-function void    quatf32_tests();
+/* ----- Qf32 functions ----- */
+function Qf32  qf32_add(Qf32 a, Qf32 b);
+function Qf32  qf32_sub(Qf32 a, Qf32 b);
+function Qf32  qf32_mul(Qf32 a, Qf32 b);
+function Qf32  qf32_scale(Qf32 q, f32 s);
+function f32   qf32_dot(Qf32 a, Qf32 b);
+function f32   qf32_length_squared(Qf32 q);
+function f32   qf32_length(Qf32 q);
+function Qf32  qf32_normalize(Qf32 q);
+function Qf32  qf32_conjugate(Qf32 q);
+function Qf32  qf32_inverse(Qf32 q);
+function V3f32 qf32_rotate_vector(Qf32 q, V3f32 v);
+function b32   qf32_equal(Qf32 a, Qf32 b);
 
 /* --------------------------------------------------------------------- */
 /* Transform 2 types                                                     */
 /* --------------------------------------------------------------------- */
 
-typedef struct Transform2f32 Transform2f32;
-struct Transform2f32
+struct T2f32
 {
-  Vec2f32 translation;
-  f32     rotation;
-  Vec2f32 scale;
+  V2f32 translation;
+  f32   rotation;
+  V2f32 scale;
 };
-#define transform2f32(t,r,s) (Transform2f32){(t),(r),(s)}
+#define t2f32(t,r,s) (T2f32){(t),(r),(s)}
+#define t2f32_zero() (T2f32){v2f32_zero(),0.0f,v2f32_zero()}
 
-/* ----- Transform2f32 functions ----- */
-function Transform2f32 transform2f32_combine(Transform2f32 a, Transform2f32 b);
-function Vec2f32       transform2f32_apply(Transform2f32 t, Vec2f32 v);
-function Transform2f32 transform2f32_inverse(Transform2f32 t);
-function b32           transform2f32_equal(Transform2f32 a, Transform2f32 b);
-
-function void          transform2f32_tests();
+/* ----- T2f32 functions ----- */
+function T2f32 t2f32_combine(T2f32 a, T2f32 b);
+function V2f32 t2f32_apply(T2f32 t, V2f32 v);
+function T2f32 t2f32_inverse(T2f32 t);
+function b32   t2f32_equal(T2f32 a, T2f32 b);
 
 /* --------------------------------------------------------------------- */
 /* Transform 3 types                                                     */
 /* --------------------------------------------------------------------- */
-typedef struct Transform3f32 Transform3f32;
-struct Transform3f32
+struct T3f32
 {
-  Vec3f32 translation;
-  Quatf32 rotation;
-  Vec3f32 scale;
+  V3f32 translation;
+  Qf32 rotation;
+  V3f32 scale;
 };
-#define transform3f32(t,r,s) (Transform3f32){(t),(r),(s)}
+#define t3f32(t,r,s) (T3f32){(t),(r),(s)}
+#define t3f32_zero() (T3f32){v3f32_zero(),qf32_identity(),v3f32_zero()}
 
-/* ----- Transform3f32 functions ----- */
-function Transform3f32 transform3f32_combine(Transform3f32 a, Transform3f32 b);
-function Vec3f32       transform3f32_apply(Transform3f32 t, Vec3f32 v);
-function Transform3f32 transform3f32_inverse(Transform3f32 t);
-function Mat4f32       transform3f32_to_mat4(Transform3f32 t);
-function b32           transform3f32_equal(Transform3f32 a, Transform3f32 b);
+/* ----- T3f32 functions ----- */
+function T3f32 t3f32_combine(T3f32 a, T3f32 b);
+function V3f32 t3f32_apply(T3f32 t, V3f32 v);
+function T3f32 t3f32_inverse(T3f32 t);
+function M4f32 t3f32_to_mat4(T3f32 t);
+function b32   t3f32_equal(T3f32 a, T3f32 b);
 
-function void          transform3f32_tests();
+function void t3f32_tests();
 
 /* --------------------------------------------------------------------- */
 /* Rect types                                                            */
 /* --------------------------------------------------------------------- */
-typedef struct Rectf32 Rectf32;
 struct Rectf32
 {
-  Vec2f32 top_left;
-  Vec2f32 size;
+  V2f32 top_left;
+  V2f32 size;
 };
 #define rectf32(top_left,size) (Rectf32){(top_left),(size)}
 
 /* ----- Rectf32 functions ----- */
 function Rectf32 rectf32_union(Rectf32 a, Rectf32 b);
 function Rectf32 rectf32_intersection(Rectf32 a, Rectf32 b);
-function b32     rectf32_contains_point(Rectf32 r, Vec2f32 p);
+function b32     rectf32_contains_point(Rectf32 r, V2f32 p);
 function b32     rectf32_contains_rect(Rectf32 a, Rectf32 b);
 function b32     rectf32_equal(Rectf32 a, Rectf32 b);
-
-function void    rectf32_tests();
 
 /* --------------------------------------------------------------------- */
 /* Range types                                                           */
 /* --------------------------------------------------------------------- */
-typedef struct Rangef32 Rangef32;
 struct Rangef32
 {
-  Vec2f32 top_left;
-  Vec2f32 bot_right;
+  V2f32 top_left;
+  V2f32 bot_right;
 };
 #define rangef32(top_left,bot_right) (Rangef32){(top_left),(bot_right)}
 
 /* ----- Rangef32 functions ----- */
 function Rangef32 rangef32_union(Rangef32 a, Rangef32 b);
 function Rangef32 rangef32_intersection(Rangef32 a, Rangef32 b);
-function b32      rangef32_contains_point(Rangef32 r, Vec2f32 p);
+function b32      rangef32_contains_point(Rangef32 r, V2f32 p);
 function b32      rangef32_contains_range(Rangef32 a, Rangef32 b);
 function b32      rangef32_equal(Rangef32 a, Rangef32 b);
-
-function void     rangef32_tests();
 
 #endif /* MATH_H */

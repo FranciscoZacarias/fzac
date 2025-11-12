@@ -9,9 +9,12 @@
 !src/
 !src/**
 
+!modules/
+!modules/**
+
 !tests/
 !tests/**
 
-!fzac.c
+!fzac.h
 !.gitignore
 !README.md
