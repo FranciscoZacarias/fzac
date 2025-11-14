@@ -1,6 +1,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+// @Section: Arena Allocator
+
 #ifndef ArenaReserveSize
 # define ArenaReserveSize megabytes(64)
 #endif

@@ -5,8 +5,15 @@ set compiler=cl
 set entry=..\tests\tests.c
 set build_dir=build
 
+REM === Directory include ===
+REM Include directory: modules
+set directory_includes=/I../modules
+REM Include directory: external
+set directory_includes=%directory_includes% /I../external
 REM Include directory: src
-set cl_default_flags=/Isrc
+set directory_includes=%directory_includes% /I../src
+
+REM === CL Compiler flags ===
 REM Suppress logo
 set cl_default_flags=%cl_default_flags% /nologo
 REM Full path info in diagnostics
@@ -17,10 +24,6 @@ REM Warning level 4
 set cl_default_flags=%cl_default_flags% /W4
 REM Treat warnings as errors
 set cl_default_flags=%cl_default_flags% /WX
-set external_include=/I"..\src\fz_std" /I"..\src\fz_std\external"
-
-REM Ignore specific warnings (start with C4201: nonstandard extension used: nameless struct/union)
-set cl_ignore_warnings=/wd4201
 
 REM === Args ===
 set arg=%1
@@ -45,7 +48,7 @@ goto end
 if not exist %build_dir% mkdir %build_dir%
 pushd %build_dir%
 echo Compiling %entry%
-%compiler% %entry% %cl_default_flags% %cl_ignore_warnings% %external_include% /Fe"tests.exe"
+%compiler% %entry% %cl_default_flags% %directory_includes% /Fe"tests.exe"
 popd
 goto end
 

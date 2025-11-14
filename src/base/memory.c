@@ -20,7 +20,7 @@ arena_alloc_sized(u64 reserve, u64 commit)
   if(!os_memory_commit(memory, commit))
   {
     memory = NULL;
-    os_memory_release(memory, reserve);
+    os_memory_free(memory, reserve);
   }
   
   Arena* arena = (Arena*) memory;
@@ -134,7 +134,7 @@ arena_clear(Arena* arena)
 function void
 arena_free(Arena* arena)
 {
-  os_memory_release((u8*)arena, arena->reserved);
+  os_memory_free((u8*)arena, arena->reserved);
 }
 
 function void

@@ -1,15 +1,12 @@
 #include "../fzac.h"
 
-function void
-string_test(Test_Result* test)
-{
-  Arena* arena = arena_alloc();
-  (void)test;
+#include "lexer/lexer.h"
+#include "lexer/lexer.c"
 
-  arena_free(arena);
-}
-
-int main(void)
+int
+main(void)
 {
+
+
   return 0;
 }

@@ -28,9 +28,11 @@
 # Structure
 - `src\base\`: Core library.
 - `src\os\`: OS related functionality with OS specific implementations.
-- `external\`: External code imported into this library. These are "opt-in" - they need to be explicitly included.
-- `modules\`: Small and focused opt-in code provided by the code base. These can depend on `src\base` and `src\os`
+- `src\lexer`: Generic lexer 
+- `external\`: Opt-in external code imported into this library.
 - `tests\`: For development, should not be included in projects. 
+
+> `Opt-in` means that it has to be explicitly included by the user
 
 # Coding standards
 
@@ -81,3 +83,5 @@
 - Create dependency graph to make sure that the unity build actually has dependency tree and its not circular
 - Generate HTML documentation.
 - Capitalize documentation if not. Add period (.) at the end of documentation phrases if not there.
+- List TODOs
+- Mark parts of the code from: // @Section:
