@@ -16,9 +16,6 @@ typedef struct V3f32    V3f32;    /* */
 typedef struct V4f32    V4f32;    /* */
 typedef struct M4f32    M4f32;    /* Matrix type (OpenGL style 4x4 - right handed, column major) */
 typedef struct Qf32     Qf32;     /* */
-typedef struct T2f32    T2f32;    /* */
-typedef struct T3f32    T3f32;    /* */
-typedef struct Rectf32  Rectf32;  /* */
 typedef struct Rangef32 Rangef32; /* */
 
 /* --------------------------------------------------------------------- */
@@ -236,22 +233,6 @@ function Qf32  qf32_from_euler(f32 pitch, f32 yaw, f32 roll); /* Creates a quate
 function V3f32 qf32_to_euler(Qf32 q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
 function Qf32  qf32_transform(Qf32 q, M4f32 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32   qf32_equals(Qf32 p, Qf32 q); /* Returns true if two quaternions are equal component-wise */
-
-/* --------------------------------------------------------------------- */
-/* Rect types                                                            */
-/* --------------------------------------------------------------------- */
-struct Rectf32
-{
-  V2f32 top_left;
-  V2f32 size;
-};
-
-/* ----- Rectf32 functions ----- */
-#define          rectf32(top_left,size) (Rectf32){(top_left),(size)}
-function Rectf32 rectf32_intersection(Rectf32 a, Rectf32 b);
-function b32     rectf32_contains_point(Rectf32 r, V2f32 p);
-function b32     rectf32_contains_rect(Rectf32 a, Rectf32 b); /* Is b completely inside a? */
-function b32     rectf32_equal(Rectf32 a, Rectf32 b);
 
 /* --------------------------------------------------------------------- */
 /* Range types                                                           */

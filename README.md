@@ -6,6 +6,7 @@
   - [ ] Remove fz_std (make it standalone)
   - [ ] Remove +1 and -1 variable splicing
   - [ ] BUG: If comments (//) are not the first thing in a template, it thinks its a hph file comment
+  - [ ] Put generated files inside a 'generated' directory
 - [ ] Error
 - [ ] Logging
 - [ ] Custom entry point
@@ -23,6 +24,13 @@
 - [ ] Launch window
   - [ ] Allow multiple windows
   - [ ] Graphics context
+
+# Structure
+- `src\base\`: Core library.
+- `src\os\`: OS related functionality with OS specific implementations.
+- `external\`: External code imported into this library. These are "opt-in" - they need to be explicitly included.
+- `modules\`: Small and focused opt-in code provided by the code base. These can depend on `src\base` and `src\os`
+- `tests\`: For development, should not be included in projects. 
 
 # Coding standards
 
@@ -67,3 +75,9 @@
     u32 a; /* Comment on attribute A */
     u32 b; /* Comment on attribute B */
   };
+
+----
+# Ideas for project parser
+- Create dependency graph to make sure that the unity build actually has dependency tree and its not circular
+- Generate HTML documentation.
+- Capitalize documentation if not. Add period (.) at the end of documentation phrases if not there.
