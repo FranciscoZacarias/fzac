@@ -1,12 +1,9 @@
 #include "../fzac.h"
 
-#include "lexer/lexer.h"
-#include "lexer/lexer.c"
-
 int
 main(void)
 {
-
-
+  printf("We are not your kind!\n");
+  
   return 0;
 }

@@ -25,10 +25,13 @@
   - [ ] Allow multiple windows
   - [ ] Graphics context
 
+# How to
+`fzac.h` Includes the all the `base\` headers in the project. These are the 
+bare minimum modules for the library which are to be included in each project.
+
 # Structure
 - `src\base\`: Core library.
-- `src\os\`: OS related functionality with OS specific implementations.
-- `src\lexer`: Generic lexer 
+- `src\modules\`: Opt-In modules provided by the library.
 - `external\`: Opt-in external code imported into this library.
 - `tests\`: For development, should not be included in projects. 
 
@@ -80,8 +83,13 @@
 
 ----
 # Ideas for project parser
+
+### 
 - Create dependency graph to make sure that the unity build actually has dependency tree and its not circular
 - Generate HTML documentation.
 - Capitalize documentation if not. Add period (.) at the end of documentation phrases if not there.
 - List TODOs
-- Mark parts of the code from: // @Section:
+- Mark parts of the code from: "// @Section: <Section_Name>" 
+- Mark files as: "// @File: ". Contains documentation for this file
+- Mark Modules as: "// @Module: ". Contains documentation for the module. Each module should have a "Main module file". If it requires multiple implementations (Such as OS stufF), switch the OS_TYPE in this main file and include it, so that the user only has to include the main file.
+- Generate header files (So that we only need to worry about the implementation).

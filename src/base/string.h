@@ -13,13 +13,13 @@ function u8  char8_to_upper(u8 c); /* Convert character to uppercase. */
 function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 
 // @Section: 8 Bit strings
-typedef struct String String; /* 8 bit string */
+typedef struct String String; /* 8 bit string. */
 struct String
 {
   u64 size;
-  u8* str;
+  u8* cstring;
 };
-#define S(s) (String){sizeof(s)-1, (u8*)(s)}
+#define S(s) (String){sizeof(s)-1,(u8*)(s)}
 #define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
 
 #define S_FMT "%.*s"
@@ -62,8 +62,7 @@ function String      string_list_remove_last(String_List* list); /* Remove and r
 function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string. */
 
 function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
-function u8*     cstring_from_string(Arena* arena, String str); /* Convert to null-terminated C string in arena. */
-function u32     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
+function u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
 
 // @Section: 32 bit characters
 typedef u32 Rune; /* 32 bit character */
@@ -75,5 +74,407 @@ struct Text
   u64 size;
   Rune* str;
 };
+
+// @Section: 8 Bit character implementation
+
+function b32
+char8_is_alpha(u8 c)
+{
+  return char8_is_alpha_upper(c) || char8_is_alpha_lower(c);
+}
+
+function b32
+char8_is_alphanum(u8 c)
+{
+  return char8_is_alpha(c) || char8_is_digit(c);
+}
+
+function b32
+char8_is_alpha_upper(u8 c)
+{
+  return c >= 'A' && c <= 'Z';
+}
+
+function b32
+char8_is_alpha_lower(u8 c)
+{
+  return c >= 'a' && c <= 'z';
+}
+
+function b32
+char8_is_digit(u8 c)
+{
+  return c >= '1' && c <= '9';
+}
+
+function b32
+char8_is_symbol(u8 c)
+{
+  return (c == '~' || c == '!'  || c == '$' || c == '%' || c == '^' ||
+          c == '&' || c == '*'  || c == '-' || c == '=' || c == '+' ||
+          c == '<' || c == '.'  || c == '>' || c == '/' || c == '?' ||
+          c == '|' || c == '\\' || c == '{' || c == '}' || c == '(' ||
+          c == ')' || c == '\\' || c == '[' || c == ']' || c == '#' ||
+          c == ',' || c == ';'  || c == ':' || c == '@');
+}
+
+function b32
+char8_is_space(u8 c)
+{
+  return c == ' ' || c == '\r' || c == '\t' || c == '\f' || c == '\v' || c == '\n';
+}
+
+function u8
+char8_to_upper(u8 c)
+{
+  return (c >= 'a' && c <= 'z') ? ('A' + (c - 'a')) : c;
+}
+
+function u8
+char8_to_lower(u8 c)
+{
+  return (c >= 'A' && c <= 'Z') ? ('a' + (c - 'A')) : c;
+}
+
+// @Section: 8 Bit string implementation
+
+function String
+string_new(u64 size, u8* str)
+{
+  String result = { size, str };
+  return result;
+}
+
+function String
+string_copy(Arena* arena, String source)
+{
+  String result;
+  result.size = source.size;
+  result.cstring  = push_array(arena, u8, result.size);
+  memory_copy(result.cstring, source.cstring, result.size);
+  return result;
+}
+
+function String
+string_range(u8* first, u8* range)
+{
+  String result = (String){(u64)(range - first), first};
+  return result;
+}
+
+function String
+string_concat(Arena* arena, String a, String b)
+{
+  String result = { 0 };
+  result.size = a.size + b.size;
+  result.cstring = push_array(arena, u8, result.size);
+  memory_copy(result.cstring, a.cstring, a.size);
+  memory_copy(result.cstring + a.size, b.cstring, b.size);
+  return result;
+}
+
+function String
+string_slice(String str, u64 start, u64 end)
+{
+  if (start > str.size) start = str.size;
+  if (end > str.size)   end   = str.size;
+  if (start > end)      start = end;
+  String result = (String){ .size = end - start, .cstring  = str.cstring + start };
+  return result;
+}
+
+function String
+string_trim(String str)
+{
+  u64 start = 0;
+  while (start < str.size)
+  {
+    u8 c = str.cstring[start];
+    if (!char8_is_space(c))
+    {
+      break;
+    }
+    start += 1;
+  }
+
+  if (start == str.size)
+  {
+    return (String){0, str.cstring + str.size};
+  }
+
+  u64 end = str.size;
+  while (end > start)
+  {
+    u8 c = str.cstring[end - 1];
+    if (!char8_is_space(c))
+    {
+      break;
+    }
+    end -= 1;
+  }
+
+  return (String){end - start, str.cstring + start};
+}
+
+function b32
+string_contains(String str, String substring)
+{
+  u64 index;
+  return string_find_first(str, substring, &index);
+}
+
+function b32
+string_find_first(String str, String substring, u64* index)
+{
+  if (substring.size > str.size) return false;
+  b32 result = false;
+  *index = U64_MAX;
+  for (u64 i = 0; i <= str.size - substring.size; i++)
+  {
+    if (memory_match(&str.cstring[i], substring.cstring, substring.size))
+    {
+      *index = i;
+      result = true;
+      break;
+    }
+  }
+  return result;
+}
+
+function b32
+string_find_last(String str, String substring, u64* index)
+{
+  if (substring.size > str.size) return false;
+  b32 result = false;
+  *index = U64_MAX;
+  for (u64 i = str.size - substring.size + 1; i-- > 0;)
+  {
+    if (memory_match(&str.cstring[i], substring.cstring, substring.size))
+    {
+      *index = i;
+      result = true;
+      break;
+    }
+  }
+  return result;
+}
+
+function b32
+string_match(String a, String b, b32 case_sensitive)
+{
+  if(a.size != b.size)
+  {
+    return false;
+  }
+
+  for(u64 i = 0; i < a.size; i += 1)
+  {
+    u8 ca = a.cstring[i];
+    u8 cb = b.cstring[i];
+
+    if(!case_sensitive)
+    {
+      if(ca >= 'A' && ca <= 'Z') ca += 32;
+      if(cb >= 'A' && cb <= 'Z') cb += 32;
+    }
+
+    if(ca != cb) return false;
+  }
+
+  return true;
+}
+
+function String
+string_from_format(Arena* arena, char const* fmt, ...)
+{
+  String result = {0};
+
+  va_list args;
+  va_start(args, fmt);
+
+  // Try to format into a fixed buffer first
+  char temp[8192];
+  int len = vsnprintf(temp, sizeof(temp), fmt, args);
+  va_end(args);
+
+  if (len <= 0)
+  {
+    return result;
+  }
+
+  result.size = (u64)len;
+  result.cstring = push_array(arena, u8, result.size);
+  memory_copy(result.cstring, (u8*)temp, result.size);
+
+  return result;
+}
+
+function u64
+string_hash(String str)
+{
+  u64 hash = 5381;
+  for (u64 i = 0; i < str.size; i += 1)
+  {
+    hash = ((hash << 5) + hash) + (u8)(str.cstring[i]);
+  }
+  hash ^= str.size;
+  return hash;
+}
+
+
+function String_List
+string_split(Arena* arena, String str, String delimiter)
+{
+  String_List result = {0};
+  if (delimiter.size == 0)
+  {
+    printf("string_split: delimiter must not be empty\n");
+    return result;
+  }
+
+  u8* cursor = str.cstring;
+  u8* end    = str.cstring + str.size;
+
+  while (cursor < end)
+  {
+    u8* match = NULL;
+
+    for (u8* scan = cursor; scan + delimiter.size <= end; scan++)
+    {
+      if (memory_match(scan, delimiter.cstring, delimiter.size) != 0)
+      {
+        match = scan;
+        break;
+      }
+    }
+
+    if (match)
+    {
+      string_list_push(arena, &result, string_range(cursor, match));
+      cursor = match + delimiter.size;
+    }
+    else
+    {
+      string_list_push(arena, &result, string_range(cursor, end));
+      break;
+    }
+  }
+
+  return result;
+}
+
+function String_List
+string_list_new()
+{
+  String_List result = {0};
+  result.first = NULL;
+  result.last  = NULL;
+  result.node_count = 0;
+  result.total_size = 0;
+  return result;
+}
+
+function void
+string_list_push(Arena* arena, String_List* list, String str)
+{
+  String_Node* node = push_array(arena, String_Node, sizeof(String_Node));
+  node->value = str;
+  if (!list->first && !list->last)
+  {
+    list->first = node;
+    list->last  = node;
+  }
+  else
+  {
+    list->last->next = node;
+    list->last       = node;
+  }
+  list->node_count += 1;
+  list->total_size += node->value.size;
+}
+
+function String
+string_list_remove_first(String_List* list)
+{
+  String result = {0};
+  if (list->node_count < 1) return result;
+
+  String_Node* first_node = list->first;
+  result = first_node->value;
+  list->total_size -= result.size;
+
+  if (list->node_count == 1)
+  {
+    list->first = 0;
+    list->last = 0;
+    list->node_count = 0;
+  }
+  else
+  {
+    list->first = first_node->next;
+    list->node_count -= 1;
+  }
+
+  return result;
+}
+
+function String
+string_list_remove_last(String_List* list)
+{
+  String result = {0};
+  if (list->node_count < 1) return result;
+
+  String_Node* last_node = list->last;
+  result = last_node->value;
+  list->total_size -= result.size;
+
+  if (list->node_count == 1)
+  {
+    list->first = 0;
+    list->last = 0;
+    list->node_count = 0;
+  }
+  else
+  {
+    String_Node* current = list->first;
+    while (current->next != last_node)
+    {
+      current = current->next;
+    }
+    current->next = 0;
+    list->last = current;
+    list->node_count -= 1;
+  }
+
+  return result;
+}
+
+function String
+string_list_join(Arena* arena, String_List* list)
+{
+  u8* dst = push_array(arena, u8, list->total_size);
+  u8* ptr = dst;
+  for (String_Node* node = list->first; node; node = node->next)
+  {
+    memory_copy(ptr, node->value.cstring, node->value.size);
+    ptr += node->value.size;
+  }
+  return string_new(list->total_size, dst);
+}
+
+function String
+string_from_cstring(u8* cstring)
+{
+  String result = string_new(cstring_length(cstring), cstring);
+  return result;
+}
+
+function u64
+cstring_length(u8* cstring)
+{
+  u64 result = 0;
+  while (cstring[result] != '\0') { result += 1; }
+  return result;
+}
 
 #endif // STRING_H

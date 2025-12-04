@@ -74,6 +74,25 @@
 #
 # define OS_WINDOWS 1
 #
+# ifdef UNICODE
+#  undef UNICODE
+# endif // UNICODE
+#
+# pragma warning(push)
+# pragma warning(disable: 4042) // Avoids known warning from winnls.h
+#
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#
+# ifdef min
+#  undef min
+# endif
+#
+# ifdef max
+#  undef max
+# endif
+# pragma warning(pop)
+#
 #elif defined(__APPLE__) && defined(__MACH__)
 #
 # define OS_MAC 1

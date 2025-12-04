@@ -7,23 +7,14 @@
 #include <stdio.h>
 #include <math.h>
 
-// Header only
-#include "src\base\context_cracking.h"
-#include "src\base\core.h" 
-#include "src\base\test.h" 
+#include "src\base\Context_Cracking.h"
+#include "src\base\Core.h" 
 
-// Headers
-#include "src\base\math.h"
-#include "src\base\memory.h"
-#include "src\base\thread_context.h"
-#include "src\os\os.h"
-#include "src\base\string.h"
+#include "src\base\Math.h"
 
-// Implementation
-#include "src\base\math.c"
-#include "src\base\memory.c"
-#include "src\base\thread_context.c"
-#include "src\os\os.c"
-#include "src\base\string.c"
+#include "src\base\Memory.h"
+#include "src\base\Allocator.h"
+#include "src\base\String.h"
+
 
 #endif // BASE_H
