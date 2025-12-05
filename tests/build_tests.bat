@@ -7,7 +7,7 @@ set build_dir=build
 
 REM === Directory include ===
 REM Include directory: modules
-set directory_includes=/I../modules
+set directory_includes=/I../src/modules
 REM Include directory: external
 set directory_includes=%directory_includes% /I../external
 REM Include directory: src

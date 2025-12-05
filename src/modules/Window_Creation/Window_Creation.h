@@ -5,9 +5,9 @@
   @Module: Handles window related functionality, such as window creation.
 */
 
-typedef struct Window Windoow;
+typedef struct Window Window;
 
-function Window* window_create(String title, u32 width, u32 height);
+function Window* window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y);
 
 #if OS_WINDOWS
 #

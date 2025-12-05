@@ -53,6 +53,7 @@ typedef struct Vector3    Vector3;    /* */
 typedef struct Vector4    Vector4;    /* */
 typedef struct Matrix4    Matrix4;    /* Matrix type (OpenGL style 4x4 - right handed, column major) */
 typedef struct Quaternion Quaternion; /* */
+typedef struct Rect       Rect;       /* */
 
 // @Section: Vector2
 struct Vector2 { f32 x, y; };
@@ -173,8 +174,7 @@ function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nea
 function Matrix4 matrix4_look_at(Vector3 eye, Vector3 target, Vector3 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
 
 // @Section: Quaternion
-struct Quaternion
-{ f32 x, y, z, w; };
+struct Quaternion { f32 x, y, z, w; };
 #define quaternion(x,y,z)     (Quaternion){(x),(y),(z),1.0f}
 #define quaternion_w(x,y,z,w) (Quaternion){(x),(y),(z),(w)}
 #define quaternion_identity() (Quaternion){0.0f,0.0f,0.0f,1.0f}
@@ -201,6 +201,8 @@ function Vector3    quaternion_to_euler(Quaternion q); /* Converts a quaternion 
 function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
 
+// @Section: Rect
+struct Rect { s32 left, top, right, bottom; };
 
 // @Section: Implementation
 function Vector2
