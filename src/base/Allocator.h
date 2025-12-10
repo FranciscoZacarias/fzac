@@ -76,10 +76,11 @@ function void
 thread_context_init_and_attach(Thread_Context* thread_context)
 {
   memory_zero_struct(thread_context);
-  Arena** arena_ptr = thread_context->temporary_arenas;
-  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1, arena_ptr += 1)
+
+  thread_context->arena = arena_alloc();
+  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
   {
-    *arena_ptr = arena_alloc();
+    thread_context->temporary_arenas[i] = arena_alloc();
   }
   ThreadContextThreadLocal = thread_context;
 }

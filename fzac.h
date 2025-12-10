@@ -18,5 +18,6 @@
 #include "src\base\Allocator.h"
 #include "src\base\String.h"
 
+#include "src\base\Entry_Point.h"
 
 #endif // BASE_H
