@@ -28,6 +28,12 @@ struct Command_Line
   u32              args_count;
 };
 
+struct Program_Arguments
+{
+  int count;
+  char** args;
+};
+
 function Command_Line_Arg command_line_arg_new(String key, String value, b32 is_flag);
 function Command_Line     command_line_parse(String input); /* Parses a command line type from a String */
 function Command_Line     command_line_parse_from_argc_argv(s32 argc, u8** argv); /* Parses a Command line from a c style argc/argv argument */
@@ -129,9 +135,13 @@ function Command_Line
 command_line_parse(String input)
 {
   Command_Line result = {0};
+  if (input.size <= 1)
+  {
+    return result;
+  }
 
   static u8 exe_buffer[MAX_PATH];
-  DWORD exe_len = GetModuleFileNameA(0, exe_buffer, MAX_PATH);
+  DWORD exe_len = GetModuleFileNameA(0, (LPSTR)exe_buffer, MAX_PATH);
   result.executable = (String){ exe_len, exe_buffer };
 
   // Copy input into stable memory
@@ -141,7 +151,7 @@ command_line_parse(String input)
 
   u64 len = input.size;
   if (len >= sizeof(temp_buffer)) len = sizeof(temp_buffer) - 1;
-  MemoryCopy(temp_buffer, input.cstring, len);
+  memory_copy(temp_buffer, input.cstring, len);
   temp_buffer[len] = 0;
 
   result.raw_args = (String){ len, temp_buffer };
@@ -165,7 +175,7 @@ command_line_parse(String input)
         .size = key.size,
         .cstring = parsed_buffer + parsed_cursor
       };
-      MemoryCopy(key_copy.cstring, key.cstring, key.size);
+      memory_copy(key_copy.cstring, key.cstring, key.size);
       parsed_cursor += key.size;
 
       // Peek for value
@@ -185,7 +195,7 @@ command_line_parse(String input)
           .size = val.size,
           .cstring = parsed_buffer + parsed_cursor
         };
-        MemoryCopy(val_copy.cstring, val.cstring, val.size);
+        memory_copy(val_copy.cstring, val.cstring, val.size);
         parsed_cursor += val.size;
 
         result.args[result.args_count++] = command_line_arg_new(key_copy, val_copy, false);

@@ -1,26 +1,18 @@
 #ifndef ENTRY_POINT_H
 #define ENTRY_POINT_H
 
-function void entry_point(Command_Line command_line); /* Application entry point, defined by user. */
+#include "Command_Line.h"
+
+function void entry_point(Command_Line* command_line); /* Application entry point, defined by user. */
 
 function void
-main_thread_base_entry_point(int argc, char **argv)
+main_thread_base_entry_point(String command_line)
 {
-  Scratch scratch = scratch_begin(0, 0);
-  os_time_init();
+  local_persist Thread_Context thread_context;
+  thread_context_init_and_attach(&thread_context);
 
-  // Setup log system
-  {
-    String8 log_path = os_executable_path(scratch.arena);
-    log_path = os_directory_pop(log_path); // Pop the applicatin.exe file
-    log_path = os_directory_pop(log_path); // Pop from build directory
-    log_init(log_path);
-    emit_info(S(">>>> Entry point <<<<"));
-  }
-
-  Command_Line cmd_line = command_line_parse_from_argc_argv(argc, argv);
+  Command_Line cmd_line = command_line_parse(command_line);
   entry_point(&cmd_line);
-  scratch_end(&scratch);
 }
 
 #if OS_WINDOWS
@@ -33,13 +25,22 @@ main_thread_base_entry_point(int argc, char **argv)
 # include <windows.h>
 
 int WINAPI
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) 
+wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-  local_persist Thread_Context thread_context;
-  thread_context_init_and_attach(&thread_context);
+  String command_line = S("");
 
-  main_thread_base_entry_point(__argc, __argv);
-  return _g_application_return;
+  // Convert PWSTR to String
+  s32 needed = WideCharToMultiByte(CP_UTF8, 0, pCmdLine, -1, 0, 0, 0, 0);
+  if (needed > 1)
+  {
+    u8* buf = (u8*)VirtualAlloc(0, needed, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+    WideCharToMultiByte(CP_UTF8, 0, pCmdLine, -1, (LPSTR)buf, needed, 0, 0);
+    command_line.size    = (u64)needed - 1;
+    command_line.cstring = buf;
+  }
+
+  main_thread_base_entry_point(command_line);
+  return 0;
 }
 
 #elif OS_LINUX

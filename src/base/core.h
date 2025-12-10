@@ -52,8 +52,6 @@
 #define member(T,m) (((T*)0)->m)
 #define offset_of_member(T,m) int_from_pointer(&member(T,m))
 
-#define ignore_unused(var) ((void)var)
-
 /* === Numbers === */
 #define kilobytes(n) ((u64)(n * 1024))
 #define megabytes(n) ((u64)(n * 1024 * 1024))
