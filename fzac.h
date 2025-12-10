@@ -4,6 +4,7 @@
 #pragma warning(disable: 4201) // Nonstandard extension used: nameless struct/union
 #pragma warning(disable: 4700) // Uninitalized local variable used
 #pragma warning(disable: 4100) // Unreferenced parameters
+#pragma warning(disable: 4094) // Untagged structs
 
 
 #include <string.h> // @TODO(fz): Implement memset, memmove, memcmp, memcpy
@@ -18,6 +19,8 @@
 #include "src\base\Memory.h"
 #include "src\base\Allocator.h"
 #include "src\base\String.h"
+
+#include "src\base\Data_Structures.h"
 
 #include "src\base\Entry_Point.h"
 

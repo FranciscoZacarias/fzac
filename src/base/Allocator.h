@@ -3,7 +3,7 @@
 
 // @File: Implements memory allocators and thread context (used for temporary memory)
 
-// @Section: Arena Allocator Header
+// @Section: Arena Allocator
 
 #ifndef ARENA_RESERVE_SIZE
 # define ARENA_RESERVE_SIZE megabytes(64)
@@ -47,7 +47,7 @@ struct Scratch
 function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Saves the current position. */
 function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
-// @Section: Thread context Header
+// @Section: Thread context
 
 #define DEFAULT_ARENAS_PER_THREAD_CONTEXT 2
 static_assert(DEFAULT_ARENAS_PER_THREAD_CONTEXT > 0, "There must be at least 1 arena per thread context")
@@ -70,7 +70,7 @@ function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count
 #define scratch_begin(conflicts, count) arena_temp_begin(_thread_context_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) arena_temp_end(scratch)
 
-// @Section: Thread Context Implementation
+// @Section: Implementation
 
 function void
 thread_context_init_and_attach(Thread_Context* thread_context)
@@ -135,8 +135,6 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
 
   return result;
 }
-
-// @Section: Arena Allocator Implementation
 
 function Arena*
 arena_alloc()

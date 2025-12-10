@@ -8,10 +8,11 @@
 typedef struct Window Window;
 
 function Window* window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y);
+function void    console_attach();
 
 #if OS_WINDOWS
 
-# include "Window_Creation_Win32.c"
+# include "Window/Window_Win32.c"
 
 #else
 # error Operating System not supported
