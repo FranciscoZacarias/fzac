@@ -2,6 +2,8 @@
 #define BASE_H
 
 #pragma warning(disable: 4201) // Nonstandard extension used: nameless struct/union
+#pragma warning(disable: 4700) // Uninitalized local variable used
+
 
 #include <string.h> // TODO(fz): Implement memset, memmove, memcmp, memcpy
 #include <stdio.h>

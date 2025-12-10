@@ -11,7 +11,10 @@ function Window* window_create(Window* parent, String title, u32 width, u32 heig
 
 #if OS_WINDOWS
 #
-# include "Window_Creation_WIN32.c"
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#
+# include "Window_Creation_Win32.c"
 #
 #else
 # error Operating System not supported
