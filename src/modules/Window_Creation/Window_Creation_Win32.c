@@ -1,5 +1,5 @@
 
-#define WINDOW_CLASS_NAME L"DefaultWindowClass";
+#define WINDOW_CLASS_NAME L"DefaultWindowClass"
 
 #define WINDOWED_STYLE         WS_OVERLAPPEDWINDOW;
 #define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP;
@@ -24,6 +24,40 @@ global Window* WindowListHead = NULL;
 global b32 WindowClassInited = 0;
 
 function void _init_window_class(); /* Only needs to be called one time per process. */
+
+void PrintLastError(const wchar_t* msg)
+{
+    DWORD error = GetLastError();
+    if (error == 0)
+    {
+        wprintf(L"%s: No error.\n", msg);
+        return;
+    }
+
+    LPWSTR buffer = NULL;
+
+    DWORD size = FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        error,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPWSTR)&buffer,
+        0,
+        NULL
+    );
+
+    if (size == 0)
+    {
+        wprintf(L"%s: Unknown error %lu\n", msg, error);
+        return;
+    }
+
+    wprintf(L"%s failed with error %lu: %s\n", msg, error, buffer);
+
+    LocalFree(buffer);
+}
 
 function Window*
 window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
@@ -58,30 +92,27 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
   
   if (title.size >= 126)
   {
-    // TODO(fz): Error, title too long
+    // @TODO(fz): Error, title too long
     return NULL;
   }
 
-  wchar_t class_w[126];
-  s32 written = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)title.cstring, -1, class_w, 0);
-  if (written == 0)
+  wchar_t title_w[126];
   {
-    // TODO(fz): function failed
-    return NULL;
-  }
-
-  wchar_t title_w[256];
-  written = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)title.cstring, -1, title_w, 0);
-  if (written == 0)
-  {
-    // TODO(fz): Function failed
-    return NULL;
+    char* src = (char*)title.cstring;
+    s32 required = MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.size, NULL, 0);
+    if (required == 0 || required > 256)
+    {
+      // @TODO(fz): Error
+      return NULL;
+    }
+    MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.size, title_w, required);
+    title_w[required] = 0;
   }
 
 
   HWND hwnd = CreateWindowExW(
     0,
-    class_w,
+    WINDOW_CLASS_NAME,
     title_w,
     style,
     x,
@@ -96,12 +127,18 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
 
   if (hwnd == NULL)
   {
-    // TODO(fz): Error CreateWindowExW return 0
+    PrintLastError(L"CreateWindowExW");
+    // @TODO(fz): Error CreateWindowExW return 0
     return NULL;
   }
 
-  Window* result;
-  memory_zero_struct(result);
+  HANDLE heap = GetProcessHeap();
+  Window* result = HeapAlloc(heap, HEAP_ZERO_MEMORY, sizeof(Window)); // @Leak: @TODO(Fz): We may just want to pass an arena to this function
+  if (!result)
+  {
+    // @TODO(fz): Error allocating 
+    return NULL;
+  }
 
   result->next   = parent;
   result->title  = title;
@@ -122,11 +159,13 @@ _window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
   switch (message)
   {
-    default:
+    case WM_CLOSE:
+    case WM_QUIT:
     {
     }
     break;
   }
+
   return DefWindowProcW(hwnd, message, wparam, lparam);
 }
 

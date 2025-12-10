@@ -55,7 +55,8 @@ static_assert(DEFAULT_ARENAS_PER_THREAD_CONTEXT > 0, "There must be at least 1 a
 typedef struct Thread_Context Thread_Context;
 struct Thread_Context
 {
-  Arena* arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT];
+  Arena* arena; /* Persistant arena for lifetime allocations */
+  Arena* temporary_arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT]; /* Used for scratches arenas */
 };
 
 C_LINKAGE thread_static Thread_Context* ThreadContextThreadLocal = 0;
@@ -75,8 +76,8 @@ function void
 thread_context_init_and_attach(Thread_Context* thread_context)
 {
   memory_zero_struct(thread_context);
-  Arena** arena_ptr = thread_context->arenas;
-  for (u64 i = 0; i < array_count(thread_context->arenas); i += 1, arena_ptr += 1)
+  Arena** arena_ptr = thread_context->temporary_arenas;
+  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1, arena_ptr += 1)
   {
     *arena_ptr = arena_alloc();
   }
@@ -86,9 +87,9 @@ thread_context_init_and_attach(Thread_Context* thread_context)
 function void
 thread_context_free()
 {
-  for(u64 i = 0; i < array_count(ThreadContextThreadLocal->arenas); i += 1)
+  for(u64 i = 0; i < array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
   {
-    arena_free(ThreadContextThreadLocal->arenas[i]);
+    arena_free(ThreadContextThreadLocal->temporary_arenas[i]);
   }
 }
 
@@ -105,9 +106,9 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
   assert(thread_context);
 
   Arena* result = 0;
-  for (u64 i = 0; i < array_count(thread_context->arenas); i += 1)
+  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
   {
-    Arena* candidate = thread_context->arenas[i];
+    Arena* candidate = thread_context->temporary_arenas[i];
     b32 has_conflict = 0;
 
     for (u64 j = 0; j < count; j += 1)
@@ -128,7 +129,7 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
 
   if (result == 0)
   {
-    result = thread_context->arenas[0];
+    result = thread_context->temporary_arenas[0];
   }
 
   return result;
@@ -173,7 +174,7 @@ arena_alloc_sized(u64 reserve, u64 commit)
   }
   else
   {
-    // TODO(Fz): Error
+    // @TODO(Fz): Error
     //emit_fatal(S("Error setting arena's memory"));
   }
   
@@ -209,7 +210,7 @@ arena_push_no_zero(Arena* arena, u64 size)
       }
       else
       {
-        // TODO(Fz): Error
+        // @TODO(Fz): Error
         //emit_error(S("Could not commit memory when increasing the arena's committed memory."));
       }
     }
@@ -218,7 +219,7 @@ arena_push_no_zero(Arena* arena, u64 size)
   }
   else
   {
-    // TODO(Fz): Error
+    // @TODO(Fz): Error
     //Scratch scratch = scratch_begin(0,0);
     //emit_error(Sf(scratch.arena, "Trying to allocate too much memory to a non dynamic arena.\nSize: %llu\nArena->Position: %llu\nArena->reserved: %llu\nArena->Position+Size: %llu", size, arena->position, arena->reserved, arena->position+size));
     //scratch_end(&scratch);
@@ -232,7 +233,7 @@ arena_pop(Arena* arena, u64 size)
 {
   if (size > arena->position)
   {
-    // TODO(Fz): Error
+    // @TODO(Fz): Error
     //Scratch scratch = scratch_begin(0,0);
     //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop %lld bytes from arena with %lld allocated. Will pop %lld instead of %lld.\n", size, arena->position, arena->position, size));
     //scratch_end(&scratch);
@@ -246,7 +247,7 @@ arena_pop_to(Arena* arena, u64 pos)
 {
   if (pos > arena->reserved)
   {
-    // TODO(Fz): Error
+    // @TODO(Fz): Error
     //Scratch scratch = scratch_begin(0,0);
     //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop over arena's reserved. Will pop only to %lld instead of %lld", arena->reserved, pos));
     //scratch_end(&scratch);
@@ -254,7 +255,7 @@ arena_pop_to(Arena* arena, u64 pos)
   }
   else if (pos < ARENA_HEADER_SIZE)
   {
-    // TODO(Fz): Error
+    // @TODO(Fz): Error
     //Scratch scratch = scratch_begin(0,0);
     //emit_warn(Sf(scratch.arena, "Warning :: Arena :: Trying to pop arena under it's header size (pos -> %llu). Truncating it to header size", pos));
     //scratch_end(&scratch);
@@ -282,7 +283,7 @@ print_arena(Arena *arena, const u8* label)
   f64 committed_percentage = ((f64)arena->position / arena->commited) * 100.0f;
   f64 reserved_percentage  = ((f64)arena->position / arena->reserved) * 100.0f;
   
-  // TODO(Fz): Print
+  // @TODO(Fz): Print
   ignore_unused(label);
   ignore_unused(committed_percentage);
   ignore_unused(reserved_percentage);
