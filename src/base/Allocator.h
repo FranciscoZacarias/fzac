@@ -1,22 +1,42 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
-// @File: Implements memory allocators and thread context (used for temporary memory)
+/* @File: Implements memory allocators and thread context (used for temporary memory)
+*/ 
+
 
 // @Section: Allocator
 typedef struct Allocator Allocator;
 struct Allocator
 {
-  void* (*alloc)(size_t bytes, void* context);
-  void* (*free) (size_t bytes, void* ptr, void* context);
-  void* context;
+  void* (*alloc)(size_t bytes, void* context);            /* Allocates memory zeroed out */
+  void* (*alloc_no_zero)(size_t bytes, void* context);    /* Allocates memory without necessairly zeroing it out */
+  void* (*free) (size_t bytes, void* ptr, void* context); /* Frees allocated memory */
+  void* context;                                          /* Allocator specific context */
+
 };
 
-// Stdlib allocator
-function void* _stdlib_malloc(u64 bytes, void* context) { return malloc(bytes); }
-function void* _stdlib_free(u64 bytes, void* ptr, void* context) { free(ptr); return NULL; }
 
-global Allocator AllocatorStdlib = { .alloc = _stdlib_malloc, .free = _stdlib_free, NULL };
+// Stdlib allocator
+
+function void* _stdlib_alloc(u64 bytes, void* context)
+{
+  return calloc(1, bytes);
+}
+function void* _stdlib_alloc_no_zero(u64 bytes, void* context)
+{
+  return malloc(bytes);
+}
+function void* _stdlib_free(u64 bytes, void* ptr, void* context)
+{
+  free(ptr); return NULL;
+}
+global Allocator AllocatorStdlib = {
+  .alloc         = _stdlib_alloc,
+  .alloc_no_zero = _stdlib_alloc_no_zero,
+  .free          = _stdlib_free,
+  .context       = NULL,
+};
 
 // @Section: Arena Allocator
 
