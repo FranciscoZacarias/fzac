@@ -3,6 +3,21 @@
 
 // @File: Implements memory allocators and thread context (used for temporary memory)
 
+// @Section: Allocator
+typedef struct Allocator Allocator;
+struct Allocator
+{
+  void* (*alloc)(size_t bytes, void* context);
+  void* (*free) (size_t bytes, void* ptr, void* context);
+  void* context;
+};
+
+// Stdlib allocator
+function void* _stdlib_malloc(u64 bytes, void* context) { return malloc(bytes); }
+function void* _stdlib_free(u64 bytes, void* ptr, void* context) { free(ptr); return NULL; }
+
+global Allocator AllocatorStdlib = { .alloc = _stdlib_malloc, .free = _stdlib_free, NULL };
+
 // @Section: Arena Allocator
 
 #ifndef ARENA_RESERVE_SIZE

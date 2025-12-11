@@ -35,13 +35,16 @@
 #define PI64 (f64) 3.141592653589793
 
 // @Section: Utils
-#define min(A,B) (((A)<(B))?(A):(B))
-#define max(A,B) (((A)>(B))?(A):(B))
-#define abs(val) (val < 0) ? val : val
+#undef min
+#undef max
+#undef abs
+#define min(A,B) (((A) < (B)) ? (A) : (B))
+#define max(A,B) (((A) > (B)) ? (A) : (B))
+#define abs(val) (((val) < 0) ? -(val) : (val))
 
 #define clamp_top(A,X) min(A,X)
 #define clamp_bot(X,B) max(X,B)
-#define clamp(val,min,max) (((val)<(min))?(min):((val)>(max))?(max):(val))
+#define clamp(val,lo,hi) (((val) < (lo)) ? (lo) : (((val) > (hi)) ? (hi) : (val)))
 
 #define to_degrees(r) ((r) * (180.0f / PI32))
 #define to_radians(d) ((d) * (PI32 / 180.0f))
