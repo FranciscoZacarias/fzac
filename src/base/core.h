@@ -1,8 +1,8 @@
 #ifndef CORE_H
 #define CORE_H
 
-/* === macro Helpers === */
-#define macro(m) do{ m }while(0)
+/* === Macro Helpers === */
+#define statement(m) do{ m }while(0)
 #define stringigy_(S) #S
 #define stringigy(S) stringigy_(S)
 #define glue_(A,B) A##B
@@ -33,8 +33,8 @@
 /* === asserts === */
 #if DEBUG
 # define assert_break(condition) (*(volatile int*)0 = 0)
-# define assert(condition) macro(if (!(condition)){ assert_break(condition); })
-# define assert_no_reentry() macro(local_persist b32 __triggered__ = 0; assert(__triggered__ == 0); __triggered__ = 1;) 
+# define assert(condition) statement(if (!(condition)){ assert_break(condition); })
+# define assert_no_reentry() statement(local_persist b32 __triggered__ = 0; assert(__triggered__ == 0); __triggered__ = 1;) 
 # define static_assert(condition,label) typedef u8 glue(label,__LINE__) [(condition)?1:-1]
 #else
 # define assert_break(condition)
@@ -76,8 +76,8 @@
 #define memory_set(dst, val, size)  memset((dst), (val), (size_t)(size))
 #define memory_match(a,b,size)     (memcmp((a),(b),(size_t)(size)) == 0)
 
-#define memory_copy_struct(dst, src) macro(memory_copy((dst), (src), sizeof(*(dst)));)
-#define memory_copy_array(dst, src)  macro(memory_copy((dst), (src), sizeof(src));)
+#define memory_copy_struct(dst, src) statement(memory_copy((dst), (src), sizeof(*(dst)));)
+#define memory_copy_array(dst, src)  statement(memory_copy((dst), (src), sizeof(src));)
 
 #define memory_zero(ptr, size) memory_set((ptr), 0, (size))
 #define memory_zero_struct(ptr) memory_zero((ptr), sizeof(*(ptr)))

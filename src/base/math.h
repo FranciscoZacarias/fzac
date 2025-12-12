@@ -176,8 +176,7 @@ function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nea
 function Matrix4 matrix4_look_at(Vector3 eye, Vector3 target, Vector3 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
 
 // @Section: Quaternion
-struct Quaternion
-{ f32 x, y, z, w; };
+struct Quaternion { f32 x, y, z, w; };
 #define quaternion(x,y,z)     (Quaternion){(x),(y),(z),1.0f}
 #define quaternion_w(x,y,z,w) (Quaternion){(x),(y),(z),(w)}
 #define quaternion_identity() (Quaternion){0.0f,0.0f,0.0f,1.0f}
