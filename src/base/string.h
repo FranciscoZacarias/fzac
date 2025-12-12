@@ -64,6 +64,17 @@ function String      string_list_join(Arena* arena, String_List* list); /* Conca
 function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
 function u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
 
+#if OS_WINDOWS
+// @Section: 16 bit character
+// Pretty much only used for interfacing with windows api
+typedef struct String_Wide String_Wide;
+struct String_Wide
+{
+  u64 size;
+  LPCWSTR str;
+};
+#endif
+
 // @Section: 32 bit characters
 typedef u32 Rune; /* 32 bit character */
 

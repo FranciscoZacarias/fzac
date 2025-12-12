@@ -93,3 +93,4 @@ bare minimum modules for the library which are to be included in each project.
 - Mark files as: "// @File: ". Contains documentation for this file
 - Mark Modules as: "// @Module: ". Contains documentation for the module. Each module should have a "Main module file". If it requires multiple implementations (Such as OS stufF), switch the OS_TYPE in this main file and include it, so that the user only has to include the main file.
 - Generate header files (So that we only need to worry about the implementation).
+- Ensure all scratch arenas are closed at the end of their scope

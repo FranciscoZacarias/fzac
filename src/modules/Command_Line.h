@@ -2,8 +2,8 @@
 #define COMMAND_LINE_H
 
 // The acceptable commands are:
-// --command "this is my value" -no-string
-// key: "command", value: "this is my value", is-flag: false
+// --key "this is my value" -no-string
+// key: "key", value: "this is my value", is-flag: false
 // -no-string
 // key: "no-string", value: "no-string", is-flag: true
 
@@ -15,7 +15,7 @@ typedef struct Command_Line_Arg Command_Line_Arg;
 typedef struct Command_Line Command_Line;
 
 struct Command_Line_Arg {
-  b32     is_flag;
+  b32    is_flag;
   String key;
   String value;
 };
@@ -26,12 +26,6 @@ struct Command_Line
   String raw_args;
   Command_Line_Arg args[MAX_COMMAND_LINE_ARGS];
   u32              args_count;
-};
-
-struct Program_Arguments
-{
-  int count;
-  char** args;
 };
 
 function Command_Line_Arg command_line_arg_new(String key, String value, b32 is_flag);
@@ -140,13 +134,13 @@ command_line_parse(String input)
     return result;
   }
 
-  static u8 exe_buffer[MAX_PATH];
+  local_persist u8 exe_buffer[MAX_PATH];
   DWORD exe_len = GetModuleFileNameA(0, (LPSTR)exe_buffer, MAX_PATH);
   result.executable = (String){ exe_len, exe_buffer };
 
   // Copy input into stable memory
-  static u8 temp_buffer[TEMP_BUFFER_SIZE];
-  static u8 parsed_buffer[PARSED_BUFFER_SIZE];
+  local_persist u8 temp_buffer[TEMP_BUFFER_SIZE];
+  local_persist u8 parsed_buffer[PARSED_BUFFER_SIZE];
   u64 parsed_cursor = 0;
 
   u64 len = input.size;
