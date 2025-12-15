@@ -21,8 +21,8 @@ struct Array_Header
 #define array_new(type, allocator)                 _array_init_implementation(sizeof(type), ARRAY_INITIAL_CAPACITY, allocator)
 #define array_new_sized(type, allocator, capacity) _array_init_implementation(sizeof(type), capacity, allocator)
 #define array_free(arr)                            _array_free(arr);
-#define array_add(arr, value)                 ((arr) = _array_ensure_capacity(arr, 1), (arr)[array_header(arr)->length] = (value), &(arr)[array_header((arr))->length++])
-#define array_print(arr)                        printf("array: size=%llu, capacity=%llu\n", (u64)((Array_Header*)arr - 1)->length, (u64)((Array_Header*)arr - 1)->capacity);
+#define array_add(arr, value)             ((arr) = _array_ensure_capacity(arr, 1), (arr)[array_header(arr)->length] = (value), &(arr)[array_header((arr))->length++])
+#define array_print(arr)                           printf("array: size=%llu, capacity=%llu\n", (u64)((Array_Header*)arr - 1)->length, (u64)((Array_Header*)arr - 1)->capacity);
 
 function void*
 _array_init_implementation(u64 size, u64 capacity, Allocator* allocator)

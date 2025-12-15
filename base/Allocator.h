@@ -9,9 +9,9 @@
 typedef struct Allocator Allocator;
 struct Allocator
 {
-  void* (*alloc)(size_t bytes, void* context);            /* Allocates memory zeroed out */
-  void* (*alloc_no_zero)(size_t bytes, void* context);    /* Allocates memory without necessairly zeroing it out */
-  void* (*free) (size_t bytes, void* ptr, void* context); /* Frees allocated memory */
+  void* (*alloc)(u64 bytes, void* context);            /* Allocates memory zeroed out */
+  void* (*alloc_no_zero)(u64 bytes, void* context);    /* Allocates memory without necessairly zeroing it out */
+  void* (*free) (u64 bytes, void* ptr, void* context); /* Frees allocated memory */
   void* context;                                          /* Allocator specific context */
 
 };
@@ -21,11 +21,11 @@ struct Allocator
 
 function void* _stdlib_alloc(u64 bytes, void* context)
 {
-  return calloc(1, bytes);
+  return calloc(1, (size_t)bytes);
 }
 function void* _stdlib_alloc_no_zero(u64 bytes, void* context)
 {
-  return malloc(bytes);
+  return malloc((size_t)bytes);
 }
 function void* _stdlib_free(u64 bytes, void* ptr, void* context)
 {
