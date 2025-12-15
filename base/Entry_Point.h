@@ -1,7 +1,7 @@
 #ifndef ENTRY_POINT_H
 #define ENTRY_POINT_H
 
-#include "Command_Line.h"
+#include "..\modules\Command_Line.h"
 
 function void entry_point(Command_Line* command_line); /* Application entry point, defined by user. */
 

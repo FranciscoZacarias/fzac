@@ -13,17 +13,17 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "src\base\Context_Cracking.h"
-#include "src\base\Core.h" 
+#include "base\Context_Cracking.h"
+#include "base\Core.h" 
 
-#include "src\base\Math.h"
+#include "base\Math.h"
 
-#include "src\base\Memory.h"
-#include "src\base\Allocator.h"
-#include "src\base\String.h"
+#include "base\Memory.h"
+#include "base\Allocator.h"
+#include "base\String.h"
 
-#include "src\base\Data_Structures.h"
+#include "base\Data_Structures.h"
 
-#include "src\base\Entry_Point.h"
+#include "base\Entry_Point.h"
 
 #endif // BASE_H
