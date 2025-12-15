@@ -7,6 +7,7 @@
 function void
 entry_point(Command_Line* command_line)
 {
+  Arena* arena = arena_alloc();
   console_attach();
 
   String f = S("C:/Users/francisco.zacarias/Documents/Francisco/fzac/new_file.x");
@@ -18,6 +19,11 @@ entry_point(Command_Line* command_line)
 
   file_delete(f);
   if (!file_exists(f)) printf("Correct\n"); else printf("Incorrect\n");
+
+  Path path = path_from_string(arena, S("C:\\Users\\francisco.zacarias\\Documents\\Francisco\\fzac"));
+  String s = string_from_path(arena, path);
+
+  printf("Path: "S_FMT"", S_ARG(s));
 
   b32 alive = true;
   while (alive)

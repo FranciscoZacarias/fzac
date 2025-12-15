@@ -15,7 +15,7 @@ typedef struct Command_Line_Arg Command_Line_Arg;
 typedef struct Command_Line Command_Line;
 
 struct Command_Line_Arg {
-  b32    is_flag;
+  b32    is_flag; /* This just means: Is this a standalone value, or is this a key/value pair? */
   String key;
   String value;
 };

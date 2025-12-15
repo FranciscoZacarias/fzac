@@ -10,10 +10,12 @@ struct Path
   b32    trailing_slash;
 
   String* words; /* Array of parsed components */
-  u32     word_count; 
+  u32     word_count;
 };
 
-function Path path_from_string(Arena* arena, String input);
+function b32    path_is_char8_separator_slash(u8 c);
+function Path   path_from_string(Arena* arena, String input);
+function String string_from_path(Arena* arena, Path path);
 
 // @Section: File
 function b32    file_create(String path); /* Creates file. If file exists, returns true anyway. */

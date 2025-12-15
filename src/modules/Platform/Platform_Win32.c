@@ -10,12 +10,110 @@ utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
   return wstr;
 }
 
+function b32
+path_is_char8_separator_slash(u8 c)
+{
+  b32 result = (c == '/' || c == '\\' );
+  return result;
+}
+
 function Path
 path_from_string(Arena* arena, String input)
 {
   Path result = {0};
-  // @TODO(Fz): finish
+
+  Scratch scratch = scratch_begin(0,0);
+
+  u64 i = 0;
+  while (i < input.size && path_is_char8_separator_slash(input.cstring[i]))
+  {
+    result.number_of_leading_slashes += 1;
+    i += 1;
+  }
+
+  if (input.size > 0 && path_is_char8_separator_slash(input.cstring[input.size - 1]))
+  {
+    result.trailing_slash = true;
+  }
+
+  // Split into words
+  String_List words = string_list_new();
+  u64 word_start = i;
+  for (; i <= input.size; i += 1)
+  {
+    b32 at_end   = (i == input.size);
+    b32 is_slash = (!at_end && path_is_char8_separator_slash(input.cstring[i]));
+
+    if (at_end || is_slash)
+    {
+      if (i > word_start)
+      {
+        String part = string_range(input.cstring + word_start, input.cstring + i);
+        string_list_push(scratch.arena, &words, part);
+      }
+      word_start = i + 1;
+    }
+  }
+
+  // Parse header (E.g. C:)
+  if (words.node_count > 0)
+  {
+    String first = words.first->value;
+    if (first.size >= 2 && first.cstring[first.size - 1] == ':')
+    {
+      result.header_string = string_copy(arena, first);
+      string_list_remove_first(&words);
+    }
+  }
+
+  // Final word array
+  result.word_count = (u32)words.node_count;
+  if (result.word_count > 0)
+  {
+    result.words = push_array(arena, String, result.word_count);
+
+    String_Node* node = words.first;
+    for (u32 w = 0; w < result.word_count; w += 1)
+    {
+      result.words[w] = string_copy(arena, node->value);
+      node = node->next;
+    }
+  }
+
+  scratch_end(&scratch);
   return result;
+}
+
+function String
+string_from_path(Arena* arena, Path path)
+{
+  String_List out = string_list_new();
+
+  if (path.header_string.size > 0)
+  {
+    string_list_push(arena, &out, path.header_string);
+  }
+
+  for (u32 i = 0; i < path.number_of_leading_slashes; i += 1)
+  {
+    string_list_push(arena, &out, S("\\"));
+  }
+
+  for (u32 i = 0; i < path.word_count; i += 1)
+  {
+    if (i > 0 || path.number_of_leading_slashes > 0 || path.header_string.size > 0)
+    {
+      string_list_push(arena, &out, S("\\"));
+    }
+    string_list_push(arena, &out, path.words[i]);
+  }
+
+  if (path.trailing_slash && path.word_count > 0)
+  {
+    string_list_push(arena, &out, S("\\"));
+  }
+
+  return string_list_join(arena, &out);
 }
 
 function b32

@@ -23,7 +23,7 @@ struct String
 #define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
 
 #define S_FMT "%.*s"
-#define S_ARG(str8) (s32)str8.size, str8.str
+#define S_ARG(s) (s32)s.size, s.cstring
 
 typedef struct String_Node String_Node; /* 8 bit string node */
 struct String_Node
@@ -47,6 +47,7 @@ function String string_range(u8* first, u8* range); /* Create String from first 
 function String string_concat(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena. */
 function String string_slice(String str, u64 start, u64 end); /* Extract substring from start to end (exclusive). */
 function String string_trim(String str); /* Remove leading and trailing whitespace. */
+function String string_substring(String str, u64 start, u64 end); /* Returns a substring view into the string provided */
 function b32    string_contains(String str, String substring); /* Check if str contains substring. */
 function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
@@ -225,6 +226,18 @@ string_trim(String str)
   }
 
   return (String){end - start, str.cstring + start};
+}
+
+function String
+string_substring(String str, u64 start, u64 end)
+{
+  String r = {0};
+  if (end > start)
+  {
+    r.size    = end - start;
+    r.cstring = str.cstring + start;
+  }
+  return r;
 }
 
 function b32
