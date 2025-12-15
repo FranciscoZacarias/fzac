@@ -16,14 +16,14 @@ function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 typedef struct String String; /* 8 bit string. */
 struct String
 {
-  u64 size;
+  u64 count;
   u8* cstring;
 };
 #define S(s) (String){sizeof(s)-1,(u8*)(s)}
 #define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
 
 #define S_FMT "%.*s"
-#define S_ARG(s) (s32)s.size, s.cstring
+#define S_ARG(s) (s32)s.count, s.cstring
 
 typedef struct String_Node String_Node; /* 8 bit string node */
 struct String_Node
@@ -161,9 +161,9 @@ function String
 string_copy(Arena* arena, String source)
 {
   String result;
-  result.size = source.size;
-  result.cstring  = push_array(arena, u8, result.size);
-  memory_copy(result.cstring, source.cstring, result.size);
+  result.count = source.count;
+  result.cstring  = push_array(arena, u8, result.count);
+  memory_copy(result.cstring, source.cstring, result.count);
   return result;
 }
 
@@ -178,20 +178,20 @@ function String
 string_concat(Arena* arena, String a, String b)
 {
   String result = { 0 };
-  result.size = a.size + b.size;
-  result.cstring = push_array(arena, u8, result.size);
-  memory_copy(result.cstring, a.cstring, a.size);
-  memory_copy(result.cstring + a.size, b.cstring, b.size);
+  result.count = a.count + b.count;
+  result.cstring = push_array(arena, u8, result.count);
+  memory_copy(result.cstring, a.cstring, a.count);
+  memory_copy(result.cstring + a.count, b.cstring, b.count);
   return result;
 }
 
 function String
 string_slice(String str, u64 start, u64 end)
 {
-  if (start > str.size) start = str.size;
-  if (end > str.size)   end   = str.size;
+  if (start > str.count) start = str.count;
+  if (end > str.count)   end   = str.count;
   if (start > end)      start = end;
-  String result = (String){ .size = end - start, .cstring  = str.cstring + start };
+  String result = (String){ .count = end - start, .cstring  = str.cstring + start };
   return result;
 }
 
@@ -199,7 +199,7 @@ function String
 string_trim(String str)
 {
   u64 start = 0;
-  while (start < str.size)
+  while (start < str.count)
   {
     u8 c = str.cstring[start];
     if (!char8_is_space(c))
@@ -209,12 +209,12 @@ string_trim(String str)
     start += 1;
   }
 
-  if (start == str.size)
+  if (start == str.count)
   {
-    return (String){0, str.cstring + str.size};
+    return (String){0, str.cstring + str.count};
   }
 
-  u64 end = str.size;
+  u64 end = str.count;
   while (end > start)
   {
     u8 c = str.cstring[end - 1];
@@ -234,7 +234,7 @@ string_substring(String str, u64 start, u64 end)
   String r = {0};
   if (end > start)
   {
-    r.size    = end - start;
+    r.count    = end - start;
     r.cstring = str.cstring + start;
   }
   return r;
@@ -250,12 +250,12 @@ string_contains(String str, String substring)
 function b32
 string_find_first(String str, String substring, u64* index)
 {
-  if (substring.size > str.size) return false;
+  if (substring.count > str.count) return false;
   b32 result = false;
   *index = U64_MAX;
-  for (u64 i = 0; i <= str.size - substring.size; i++)
+  for (u64 i = 0; i <= str.count - substring.count; i++)
   {
-    if (memory_match(&str.cstring[i], substring.cstring, substring.size))
+    if (memory_match(&str.cstring[i], substring.cstring, substring.count))
     {
       *index = i;
       result = true;
@@ -268,12 +268,12 @@ string_find_first(String str, String substring, u64* index)
 function b32
 string_find_last(String str, String substring, u64* index)
 {
-  if (substring.size > str.size) return false;
+  if (substring.count > str.count) return false;
   b32 result = false;
   *index = U64_MAX;
-  for (u64 i = str.size - substring.size + 1; i-- > 0;)
+  for (u64 i = str.count - substring.count + 1; i-- > 0;)
   {
-    if (memory_match(&str.cstring[i], substring.cstring, substring.size))
+    if (memory_match(&str.cstring[i], substring.cstring, substring.count))
     {
       *index = i;
       result = true;
@@ -286,12 +286,12 @@ string_find_last(String str, String substring, u64* index)
 function b32
 string_match(String a, String b, b32 case_sensitive)
 {
-  if(a.size != b.size)
+  if(a.count != b.count)
   {
     return false;
   }
 
-  for(u64 i = 0; i < a.size; i += 1)
+  for(u64 i = 0; i < a.count; i += 1)
   {
     u8 ca = a.cstring[i];
     u8 cb = b.cstring[i];
@@ -326,9 +326,9 @@ string_from_format(Arena* arena, char const* fmt, ...)
     return result;
   }
 
-  result.size = (u64)len;
-  result.cstring = push_array(arena, u8, result.size);
-  memory_copy(result.cstring, (u8*)temp, result.size);
+  result.count = (u64)len;
+  result.cstring = push_array(arena, u8, result.count);
+  memory_copy(result.cstring, (u8*)temp, result.count);
 
   return result;
 }
@@ -337,11 +337,11 @@ function u64
 string_hash(String str)
 {
   u64 hash = 5381;
-  for (u64 i = 0; i < str.size; i += 1)
+  for (u64 i = 0; i < str.count; i += 1)
   {
     hash = ((hash << 5) + hash) + (u8)(str.cstring[i]);
   }
-  hash ^= str.size;
+  hash ^= str.count;
   return hash;
 }
 
@@ -350,22 +350,22 @@ function String_List
 string_split(Arena* arena, String str, String delimiter)
 {
   String_List result = {0};
-  if (delimiter.size == 0)
+  if (delimiter.count == 0)
   {
     printf("string_split: delimiter must not be empty\n");
     return result;
   }
 
   u8* cursor = str.cstring;
-  u8* end    = str.cstring + str.size;
+  u8* end    = str.cstring + str.count;
 
   while (cursor < end)
   {
     u8* match = NULL;
 
-    for (u8* scan = cursor; scan + delimiter.size <= end; scan++)
+    for (u8* scan = cursor; scan + delimiter.count <= end; scan++)
     {
-      if (memory_match(scan, delimiter.cstring, delimiter.size) != 0)
+      if (memory_match(scan, delimiter.cstring, delimiter.count) != 0)
       {
         match = scan;
         break;
@@ -375,7 +375,7 @@ string_split(Arena* arena, String str, String delimiter)
     if (match)
     {
       string_list_push(arena, &result, string_range(cursor, match));
-      cursor = match + delimiter.size;
+      cursor = match + delimiter.count;
     }
     else
     {
@@ -414,7 +414,7 @@ string_list_push(Arena* arena, String_List* list, String str)
     list->last       = node;
   }
   list->node_count += 1;
-  list->total_size += node->value.size;
+  list->total_size += node->value.count;
 }
 
 function String
@@ -425,7 +425,7 @@ string_list_remove_first(String_List* list)
 
   String_Node* first_node = list->first;
   result = first_node->value;
-  list->total_size -= result.size;
+  list->total_size -= result.count;
 
   if (list->node_count == 1)
   {
@@ -450,7 +450,7 @@ string_list_remove_last(String_List* list)
 
   String_Node* last_node = list->last;
   result = last_node->value;
-  list->total_size -= result.size;
+  list->total_size -= result.count;
 
   if (list->node_count == 1)
   {
@@ -480,8 +480,8 @@ string_list_join(Arena* arena, String_List* list)
   u8* ptr = dst;
   for (String_Node* node = list->first; node; node = node->next)
   {
-    memory_copy(ptr, node->value.cstring, node->value.size);
-    ptr += node->value.size;
+    memory_copy(ptr, node->value.cstring, node->value.count);
+    ptr += node->value.count;
   }
   return string_new(list->total_size, dst);
 }

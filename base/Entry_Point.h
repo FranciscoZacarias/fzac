@@ -35,7 +35,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
   {
     u8* buf = (u8*)VirtualAlloc(0, needed, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
     WideCharToMultiByte(CP_UTF8, 0, pCmdLine, -1, (LPSTR)buf, needed, 0, 0);
-    command_line.size    = (u64)needed - 1;
+    command_line.count   = (u64)needed - 1;
     command_line.cstring = buf;
   }
 

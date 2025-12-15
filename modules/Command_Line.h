@@ -57,9 +57,9 @@ _command_line_skip_whitespace(u8** cursor)
 function String
 _command_line_strip_quotes(String in)
 {
-  if (in.size >= 2 && in.cstring[0] == '"' && in.cstring[in.size - 1] == '"')
+  if (in.count >= 2 && in.cstring[0] == '"' && in.cstring[in.count - 1] == '"')
   {
-    return string_new(in.size - 2,  in.cstring + 1);
+    return string_new(in.count - 2,  in.cstring + 1);
   }
   return in;
 }
@@ -68,11 +68,11 @@ function String
 _command_line_strip_leading_dashes(String in)
 {
   u64 offset = 0;
-  while (offset < in.size && in.cstring[offset] == '-')
+  while (offset < in.count && in.cstring[offset] == '-')
   {
     offset++;
   }
-  return string_new(in.size - offset, in.cstring + offset);
+  return string_new(in.count - offset, in.cstring + offset);
 }
 
 function String
@@ -129,7 +129,7 @@ function Command_Line
 command_line_parse(String input)
 {
   Command_Line result = {0};
-  if (input.size <= 1)
+  if (input.count <= 1)
   {
     return result;
   }
@@ -143,7 +143,7 @@ command_line_parse(String input)
   local_persist u8 parsed_buffer[PARSED_BUFFER_SIZE];
   u64 parsed_cursor = 0;
 
-  u64 len = input.size;
+  u64 len = input.count;
   if (len >= sizeof(temp_buffer)) len = sizeof(temp_buffer) - 1;
   memory_copy(temp_buffer, input.cstring, len);
   temp_buffer[len] = 0;
@@ -158,7 +158,7 @@ command_line_parse(String input)
     if (*cursor == 0) break;
 
     String token = _command_line_parse_token(&cursor);
-    if (token.size == 0) break;
+    if (token.count == 0) break;
 
     if (token.cstring[0] == '-')
     {
@@ -166,11 +166,11 @@ command_line_parse(String input)
 
       // Copy key to stable memory
       String key_copy = {
-        .size = key.size,
+        .count = key.count,
         .cstring = parsed_buffer + parsed_cursor
       };
-      memory_copy(key_copy.cstring, key.cstring, key.size);
-      parsed_cursor += key.size;
+      memory_copy(key_copy.cstring, key.cstring, key.count);
+      parsed_cursor += key.count;
 
       // Peek for value
       _command_line_skip_whitespace(&cursor);
@@ -186,11 +186,11 @@ command_line_parse(String input)
 
         // Copy value to stable memory
         String val_copy = {
-          .size = val.size,
+          .count = val.count,
           .cstring = parsed_buffer + parsed_cursor
         };
-        memory_copy(val_copy.cstring, val.cstring, val.size);
-        parsed_cursor += val.size;
+        memory_copy(val_copy.cstring, val.cstring, val.count);
+        parsed_cursor += val.count;
 
         result.args[result.args_count++] = command_line_arg_new(key_copy, val_copy, false);
       }

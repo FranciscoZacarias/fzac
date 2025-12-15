@@ -25,13 +25,13 @@ path_from_string(Arena* arena, String input)
   Scratch scratch = scratch_begin(0,0);
 
   u64 i = 0;
-  while (i < input.size && path_is_char8_separator_slash(input.cstring[i]))
+  while (i < input.count && path_is_char8_separator_slash(input.cstring[i]))
   {
     result.number_of_leading_slashes += 1;
     i += 1;
   }
 
-  if (input.size > 0 && path_is_char8_separator_slash(input.cstring[input.size - 1]))
+  if (input.count > 0 && path_is_char8_separator_slash(input.cstring[input.count - 1]))
   {
     result.trailing_slash = true;
   }
@@ -39,9 +39,9 @@ path_from_string(Arena* arena, String input)
   // Split into words
   String_List words = string_list_new();
   u64 word_start = i;
-  for (; i <= input.size; i += 1)
+  for (; i <= input.count; i += 1)
   {
-    b32 at_end   = (i == input.size);
+    b32 at_end   = (i == input.count);
     b32 is_slash = (!at_end && path_is_char8_separator_slash(input.cstring[i]));
 
     if (at_end || is_slash)
@@ -59,7 +59,7 @@ path_from_string(Arena* arena, String input)
   if (words.node_count > 0)
   {
     String first = words.first->value;
-    if (first.size >= 2 && first.cstring[first.size - 1] == ':')
+    if (first.count >= 2 && first.cstring[first.count - 1] == ':')
     {
       result.header_string = string_copy(arena, first);
       string_list_remove_first(&words);
@@ -89,7 +89,7 @@ string_from_path(Arena* arena, Path path)
 {
   String_List out = string_list_new();
 
-  if (path.header_string.size > 0)
+  if (path.header_string.count > 0)
   {
     string_list_push(arena, &out, path.header_string);
   }
@@ -101,7 +101,7 @@ string_from_path(Arena* arena, Path path)
 
   for (u32 i = 0; i < path.word_count; i += 1)
   {
-    if (i > 0 || path.number_of_leading_slashes > 0 || path.header_string.size > 0)
+    if (i > 0 || path.number_of_leading_slashes > 0 || path.header_string.count > 0)
     {
       string_list_push(arena, &out, S("\\"));
     }
@@ -121,7 +121,7 @@ file_create(String path)
 {
   b32 result  = true;
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);
   if((file != INVALID_HANDLE_VALUE))
@@ -140,7 +140,7 @@ function b32
 file_delete(String path)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   b32 result = DeleteFileW(wpath);
   scratch_end(&scratch);
   return result;
@@ -150,7 +150,7 @@ function b32
 file_exists(String path)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   DWORD attr = GetFileAttributesW(wpath);
   scratch_end(&scratch);
   b32 result = (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
@@ -161,7 +161,7 @@ function u32
 file_write(String path, u8* data, u64 data_size)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);
   if(file == INVALID_HANDLE_VALUE) return 0;
@@ -176,7 +176,7 @@ function u32
 file_append(String path, u8* data, u64 data_size)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, FILE_APPEND_DATA, 0, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);
   if(file == INVALID_HANDLE_VALUE) return 0;
@@ -192,7 +192,7 @@ function b32
 file_wipe(String path)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);
   if(file == INVALID_HANDLE_VALUE) return 0;
@@ -207,7 +207,7 @@ function u32
 file_size(String path)
 {
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   WIN32_FILE_ATTRIBUTE_DATA attr;
   b32 ok = GetFileAttributesExW(wpath, GetFileExInfoStandard, &attr);
   scratch_end(&scratch);
@@ -225,7 +225,7 @@ file_load(Arena* arena, String path)
   String result = {0};
 
   Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.size);
+  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);
 
@@ -238,7 +238,7 @@ file_load(Arena* arena, String path)
   {
     result.cstring = buffer;
     result.cstring[file_size] = '\0';
-    result.size    = file_size;
+    result.count    = file_size;
   }
 
   CloseHandle(file);

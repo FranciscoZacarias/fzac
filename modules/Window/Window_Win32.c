@@ -56,7 +56,7 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
   u32 client_width  = (u32)(rect.right  - rect.left);
   u32 client_height = (u32)(rect.bottom - rect.top);
   
-  if (title.size >= 126)
+  if (title.count >= 126)
   {
     // @TODO(fz): Error, title too long
     return NULL;
@@ -65,13 +65,13 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
   wchar_t title_w[126];
   {
     char* src = (char*)title.cstring;
-    s32 required = MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.size, NULL, 0);
+    s32 required = MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.count, NULL, 0);
     if (required == 0 || required > 256)
     {
       // @TODO(fz): Error
       return NULL;
     }
-    MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.size, title_w, required);
+    MultiByteToWideChar(CP_UTF8, 0, src, (s32)title.count, title_w, required);
     title_w[required] = 0;
   }
 
