@@ -8,7 +8,7 @@
 typedef struct Array_Header Array_Header;
 struct Array_Header
 {
-  u64 length;             /* Total elements in the array */
+  u64 length;           /* Total elements in the array */
   u64 capacity;         /* Max allocated */
   u64 item_size;        /* Size of the data type. We need this because if we have an implicit cast to a different sized data type, the array breaks. I.e. if we have array of u64, doing array_add(a,1); '1' will cast to s32, with half the size that is actually expected. */
   Allocator* allocator; /* Allocator */
@@ -99,6 +99,95 @@ _array_free(void* array)
   {
     // @TODO(fz): Handle not being able to free memory
   }
+}
+
+// @Section: Dynamic String Buffer
+#include <stdarg.h>
+#define STB_SPRINTF_IMPLEMENTATION
+#include "Extern/stb_sprintf.h"
+
+typedef struct String_Buffer String_Buffer;
+struct String_Buffer
+{
+  u8* data;
+  u64 count;
+  u64 capacity;
+  Allocator* allocator;
+};
+
+function void string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity); /* Initializes the buffer */
+function void string_buffer_add(String_Buffer* buffer, const char* fmt, ...); /* Adds data to the buffer */
+function void string_buffer_free(String_Buffer* buffer); /* Frees the buffer */
+
+function void
+string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity)
+{
+  buffer->allocator = allocator;
+  buffer->count     = 0;
+  buffer->capacity  = initial_capacity;
+
+  if (initial_capacity > 0)
+  {
+    buffer->data = (u8*)allocator->alloc_no_zero(initial_capacity, allocator->context);
+  }
+  else
+  {
+    buffer->data = NULL;
+  }
+}
+
+function void
+string_buffer_add(String_Buffer* buffer, const char* fmt, ...)
+{
+  if (buffer->data == NULL)
+  {
+    // @TODO(Fz): Log error
+    printf("Buffer not initialized");
+    return;
+  }
+
+  for (;;)
+  {
+    u64 available = buffer->capacity - buffer->count;
+
+    va_list args;
+    va_start(args, fmt);
+    int written = stbsp_vsnprintf((char*)(buffer->data + buffer->count), (int)available, fmt, args);
+    va_end(args);
+
+    if (written < 0) return;
+    if ((u64)written < available)
+    {
+      buffer->count += (u64)written;
+      return;
+    }
+
+    u64 new_capacity = buffer->capacity * 2;
+    while (new_capacity < buffer->count + (u64)written) new_capacity *= 2;
+
+    u8* new_data = (u8*)buffer->allocator->alloc_no_zero(new_capacity, buffer->allocator->context);
+    if (buffer->data)
+    {
+      memory_copy(new_data, buffer->data, buffer->count); // copy old data
+      buffer->allocator->free(buffer->capacity, buffer->data, buffer->allocator->context);
+    }
+
+    buffer->data     = new_data;
+    buffer->capacity = new_capacity;
+  }
+}
+
+function void
+string_buffer_free(String_Buffer* buffer)
+{
+  if (buffer->data)
+  {
+    buffer->allocator->free(buffer->capacity, buffer->data, buffer->allocator->context);
+    buffer->data = NULL;
+  }
+
+  buffer->count    = 0;
+  buffer->capacity = 0;
 }
 
 #endif // DATA_STRUCTURES_H

@@ -116,7 +116,7 @@ char8_is_alpha_lower(u8 c)
 function b32
 char8_is_digit(u8 c)
 {
-  return c >= '1' && c <= '9';
+  return c >= '0' && c <= '9';
 }
 
 function b32

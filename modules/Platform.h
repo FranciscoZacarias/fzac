@@ -1,6 +1,9 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+// @Section: Console
+function void console_attach(); /* Opens application terminal */
+
 // @Section: Path
 typedef struct Path Path;
 struct Path

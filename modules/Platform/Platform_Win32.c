@@ -1,12 +1,36 @@
+function void
+console_attach()
+{
+  if (!AllocConsole()) return; // @TODO(fz): Handle error allocating console.
+
+  FILE* fp;
+  freopen_s(&fp, "CONOUT$", "w", stdout);
+  freopen_s(&fp, "CONOUT$", "w", stderr);
+
+  // Try to enable color
+  HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (handle != INVALID_HANDLE_VALUE)
+  {
+    DWORD mode = 0;
+    if (GetConsoleMode(handle, &mode))
+    {
+      if ((mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0)
+      {
+        SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+      }
+    }
+  }
+}
+
 function wchar_t*
 utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
 {
-  if (utf8_size == 0 || utf8 == 0) return NULL;
+  if (utf8 == 0 || utf8_size <= 0) return NULL;
   s32 required = MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,(char*)utf8,(s32)utf8_size,0,0);
   if (required <= 0) return NULL;
-
-  wchar_t* wstr = push_array(arena, wchar_t, required);
+  wchar_t* wstr = push_array(arena, wchar_t, (u64)required + 1);
   MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,(char*)utf8,(s32)utf8_size,wstr,required);
+  wstr[required] = '\0';
   return wstr;
 }
 

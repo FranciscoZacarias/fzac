@@ -12,13 +12,10 @@ struct Allocator
   void* (*alloc)(u64 bytes, void* context);            /* Allocates memory zeroed out */
   void* (*alloc_no_zero)(u64 bytes, void* context);    /* Allocates memory without necessairly zeroing it out */
   void* (*free) (u64 bytes, void* ptr, void* context); /* Frees allocated memory */
-  void* context;                                          /* Allocator specific context */
-
+  void* context;                                       /* Allocator specific context */
 };
 
-
-// Stdlib allocator
-
+// @Section: Malloc Allocator
 function void* _stdlib_alloc(u64 bytes, void* context)
 {
   return calloc(1, (size_t)bytes);
@@ -31,7 +28,8 @@ function void* _stdlib_free(u64 bytes, void* ptr, void* context)
 {
   free(ptr); return NULL;
 }
-global Allocator AllocatorStdlib = {
+
+global Allocator MallocAllocator = {
   .alloc         = _stdlib_alloc,
   .alloc_no_zero = _stdlib_alloc_no_zero,
   .free          = _stdlib_free,
@@ -67,7 +65,6 @@ function void  arena_pop(Arena* arena, u64 size); /* Moves the arena pointer bac
 function void  arena_pop_to(Arena* arena, u64 pos); /* Moves the arena pointer to the specific <pos> position */
 function void  arena_clear(Arena* arena); /* Resets the arena position */
 function void  arena_free(Arena* arena); /* Frees the arena's memory */
-function void  print_arena(Arena *arena, const u8* label);
 
 #define push_array(arena, type, count)         (type*) arena_push((arena), sizeof(type)*(count))
 #define push_array_no_zero(arena, type, count) (type*) arena_push_no_zero((arena), sizeof(type)*(count))
@@ -82,94 +79,7 @@ struct Scratch
 function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Saves the current position. */
 function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
-// @Section: Thread context
-
-#define DEFAULT_ARENAS_PER_THREAD_CONTEXT 2
-static_assert(DEFAULT_ARENAS_PER_THREAD_CONTEXT > 0, "There must be at least 1 arena per thread context")
-
-typedef struct Thread_Context Thread_Context;
-struct Thread_Context
-{
-  Arena* arena; /* Persistant arena for lifetime allocations */
-  Arena* temporary_arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT]; /* Used for scratches arenas */
-};
-
-C_LINKAGE thread_static Thread_Context* ThreadContextThreadLocal = 0;
-global Thread_Context MainThreadContext;
-
-function void            thread_context_init_and_attach(Thread_Context* thread_context); /* Initializes a thread context with DEFAULT_ARENAS_PER_THREAD_CONTEXT arenas */
-function void            thread_context_free(); /* Frees the thread context */
-function Thread_Context* thread_context_get(); /* Returns current thread context */
-function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count); /* Returns a scratch arena */
-
-#define scratch_begin(conflicts, count) arena_temp_begin(_thread_context_get_scratch((conflicts), (count)))
-#define scratch_end(scratch) arena_temp_end(scratch)
-
 // @Section: Implementation
-
-function void
-thread_context_init_and_attach(Thread_Context* thread_context)
-{
-  memory_zero_struct(thread_context);
-
-  thread_context->arena = arena_alloc();
-  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
-  {
-    thread_context->temporary_arenas[i] = arena_alloc();
-  }
-  ThreadContextThreadLocal = thread_context;
-}
-
-function void
-thread_context_free()
-{
-  for(u64 i = 0; i < array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
-  {
-    arena_free(ThreadContextThreadLocal->temporary_arenas[i]);
-  }
-}
-
-function Thread_Context*
-thread_context_get_equipped()
-{
-  return ThreadContextThreadLocal;
-}
-
-function Arena*
-_thread_context_get_scratch(Arena **conflicts, u64 count)
-{
-  Thread_Context *thread_context = thread_context_get_equipped();
-  assert(thread_context);
-
-  Arena* result = 0;
-  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
-  {
-    Arena* candidate = thread_context->temporary_arenas[i];
-    b32 has_conflict = 0;
-
-    for (u64 j = 0; j < count; j += 1)
-    {
-      if (candidate == conflicts[j])
-      {
-        has_conflict = 1;
-        break;
-      }
-    }
-
-    if (!has_conflict)
-    {
-      result = candidate;
-      break;
-    }
-  }
-
-  if (result == 0)
-  {
-    result = thread_context->temporary_arenas[0];
-  }
-
-  return result;
-}
 
 function Arena*
 arena_alloc()
@@ -308,19 +218,6 @@ function void
 arena_free(Arena* arena)
 {
   os_memory_free((u8*)arena, arena->reserved);
-}
-
-function void
-print_arena(Arena *arena, const u8* label)
-{
-  Scratch scratch = scratch_begin(0,0);
-
-  // f64 committed_percentage = ((f64)arena->position / arena->commited) * 100.0f;
-  // f64 reserved_percentage  = ((f64)arena->position / arena->reserved) * 100.0f;
-  // @TODO(Fz): Print
-  //emit_info(Sf(scratch.arena, "%s: Arena { reserved: %llu, commited: %llu, commit_size: %llu, position: %llu, align: %llu, committed_percentage: %.2f%%, reserved_percentage: %.2f%% }\n",
-         //label, arena->reserved, arena->commited, arena->commit_size, arena->position, arena->align, committed_percentage, reserved_percentage));
-  scratch_end(&scratch);
 }
 
 function Scratch

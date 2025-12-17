@@ -104,30 +104,6 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
   return result;
 }
 
-function void
-console_attach()
-{
-  if (!AllocConsole()) return; // @TODO(fz): Handle error allocating console.
-
-  FILE* fp;
-  freopen_s(&fp, "CONOUT$", "w", stdout);
-  freopen_s(&fp, "CONOUT$", "w", stderr);
-
-  // Try to enable color
-  HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-  if (handle != INVALID_HANDLE_VALUE)
-  {
-    DWORD mode = 0;
-    if (GetConsoleMode(handle, &mode))
-    {
-      if ((mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0)
-      {
-        SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-      }
-    }
-  }
-}
-
 function LRESULT CALLBACK
 _window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
