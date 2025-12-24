@@ -138,35 +138,38 @@ arena_push_no_zero(Arena* arena, u64 size)
 {
   void* result = NULL;
 
-  if (arena->position + size <= arena->reserved)
+  if (size != 0)
   {
-    u64 position_memory = align_power_of_two(arena->position, arena->align);
-    u64 new_position    = position_memory + size;
-  
-    if (arena->commited < new_position)
+    if (arena->position + size <= arena->reserved)
     {
-      u64 commit_aligned = align_power_of_two(new_position, arena->commit_size);
-      u64 commit_clamped = clamp_top(commit_aligned, arena->reserved);
-      u64 commit_size    = commit_clamped - arena->commited;
-      if (os_memory_commit((u8*)arena + arena->commited, commit_size))
+      u64 position_memory = align_power_of_two(arena->position, arena->align);
+      u64 new_position    = position_memory + size;
+  
+      if (arena->commited < new_position)
       {
-        arena->commited = commit_clamped;
+        u64 commit_aligned = align_power_of_two(new_position, arena->commit_size);
+        u64 commit_clamped = clamp_top(commit_aligned, arena->reserved);
+        u64 commit_size    = commit_clamped - arena->commited;
+        if (os_memory_commit((u8*)arena + arena->commited, commit_size))
+        {
+          arena->commited = commit_clamped;
+        }
+        else
+        {
+          // @TODO(Fz): Error
+          //emit_error(S("Could not commit memory when increasing the arena's committed memory."));
+        }
       }
-      else
-      {
-        // @TODO(Fz): Error
-        //emit_error(S("Could not commit memory when increasing the arena's committed memory."));
-      }
+      result = (u8*)arena + position_memory;
+      arena->position = new_position;
     }
-    result = (u8*)arena + position_memory;
-    arena->position = new_position;
-  }
-  else
-  {
-    // @TODO(Fz): Error
-    //Scratch scratch = scratch_begin(0,0);
-    //emit_error(Sf(scratch.arena, "Trying to allocate too much memory to a non dynamic arena.\nSize: %llu\nArena->Position: %llu\nArena->reserved: %llu\nArena->Position+Size: %llu", size, arena->position, arena->reserved, arena->position+size));
-    //scratch_end(&scratch);
+    else
+    {
+      // @TODO(Fz): Error
+      //Scratch scratch = scratch_begin(0,0);
+      //emit_error(Sf(scratch.arena, "Trying to allocate too much memory to a non dynamic arena.\nSize: %llu\nArena->Position: %llu\nArena->reserved: %llu\nArena->Position+Size: %llu", size, arena->position, arena->reserved, arena->position+size));
+      //scratch_end(&scratch);
+    }
   }
   
   return result;

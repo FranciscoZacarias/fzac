@@ -2,7 +2,6 @@
 #define THREAD_CONTEXT_H
 
 #define DEFAULT_ARENAS_PER_THREAD_CONTEXT 2
-static_assert(DEFAULT_ARENAS_PER_THREAD_CONTEXT > 0, "There must be at least 1 arena per thread context")
 
 typedef struct Thread_Context Thread_Context;
 struct Thread_Context

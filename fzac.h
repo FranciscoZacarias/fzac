@@ -7,6 +7,9 @@
 #pragma warning(disable: 4100) // Unreferenced parameters
 #pragma warning(disable: 4094) // Untagged structs
 
+#if DEBUG
+#pragma warning(disable: 4702) // Unreachable code
+#endif
 
 #include <stdlib.h>
 #include <string.h> // @TODO(fz): Implement memset, memmove, memcmp, memcpy

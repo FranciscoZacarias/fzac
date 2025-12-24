@@ -116,7 +116,7 @@ struct String_Buffer
 };
 
 function void string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity); /* Initializes the buffer */
-function void string_buffer_add(String_Buffer* buffer, const char* fmt, ...); /* Adds data to the buffer */
+function void string_buffer_push(String_Buffer* buffer, const char* fmt, ...); /* Adds data to the buffer */
 function void string_buffer_free(String_Buffer* buffer); /* Frees the buffer */
 
 function void
@@ -137,7 +137,7 @@ string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capa
 }
 
 function void
-string_buffer_add(String_Buffer* buffer, const char* fmt, ...)
+string_buffer_push(String_Buffer* buffer, const char* fmt, ...)
 {
   if (buffer->data == NULL)
   {
