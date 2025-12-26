@@ -20,6 +20,7 @@ function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count
 
 #define scratch_begin(conflicts, count) arena_temp_begin(_thread_context_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) arena_temp_end(scratch)
+#define scratch_memory() defer_loop(Scratch scratch = scratch_begin(0,0), scratch_end(&scratch))
 
 function void
 thread_context_init_and_attach(Thread_Context* thread_context)

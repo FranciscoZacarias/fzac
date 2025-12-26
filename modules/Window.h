@@ -8,7 +8,7 @@
 typedef struct Window Window;
 
 function Window* window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y);
-function void    console_attach();
+function void    use_console();
 
 #if OS_WINDOWS
 

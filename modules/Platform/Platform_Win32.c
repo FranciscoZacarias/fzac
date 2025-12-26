@@ -1,26 +1,32 @@
 function void
-console_attach()
+use_console()
 {
-  if (!AllocConsole()) return; // @TODO(fz): Handle error allocating console.
+  if (!AttachConsole(ATTACH_PARENT_PROCESS))
+  {
+    // No parent console (e.g. double-clicked exe)
+    if (!AllocConsole())
+    {
+      // @TODO(fz): Handle error
+      return;
+    }
+  }
 
   FILE* fp;
   freopen_s(&fp, "CONOUT$", "w", stdout);
   freopen_s(&fp, "CONOUT$", "w", stderr);
+  freopen_s(&fp, "CONIN$",  "r", stdin);
 
-  // Try to enable color
   HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
   if (handle != INVALID_HANDLE_VALUE)
   {
     DWORD mode = 0;
     if (GetConsoleMode(handle, &mode))
     {
-      if ((mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0)
-      {
-        SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-      }
+      SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
   }
 }
+
 
 function wchar_t*
 utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
