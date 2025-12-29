@@ -1,14 +1,10 @@
 function void
 use_console()
 {
-  if (!AttachConsole(ATTACH_PARENT_PROCESS))
+  if (!AllocConsole())
   {
-    // No parent console (e.g. double-clicked exe)
-    if (!AllocConsole())
-    {
-      // @TODO(fz): Handle error
-      return;
-    }
+    // @TODO(fz): Handle error
+    return;
   }
 
   FILE* fp;
@@ -272,5 +268,124 @@ file_load(Arena* arena, String path)
   }
 
   CloseHandle(file);
+  return result;
+}
+
+function void
+win32_log_error(char const* msg, String path)
+{
+  char buffer[512];
+  wsprintfA(buffer, "%s: %.*s\n", msg, (s32)path.count, path.cstring);
+  OutputDebugStringA(buffer);
+}
+
+function b32
+win32_is_dot_dir(char const* name)
+{
+  b32 result = (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0)));
+  return result;
+}
+
+function b32
+win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
+{
+  b32 found_file = 0;
+
+  String search = string_concat(arena, dir_path, S("\\*"));
+
+  WIN32_FIND_DATAA find_data = {0};
+  HANDLE handle = FindFirstFileA((char*)search.cstring, &find_data);
+
+  if(handle == INVALID_HANDLE_VALUE) return 0;
+
+  do
+  {
+    if(win32_is_dot_dir(find_data.cFileName))
+    {
+      continue;
+    }
+
+    String name = string_new((u64)strlen(find_data.cFileName), (u8*)find_data.cFileName);
+
+    String full_path = string_concat(arena, string_concat(arena, dir_path, S("\\")), name);
+
+    if(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+    {
+      b32 subtree_has_files = win32_collect_recursive(arena, out, full_path);
+
+      if(!subtree_has_files)
+      {
+        string_list_push(arena, out, full_path);
+      }
+
+      found_file |= subtree_has_files;
+    }
+    else
+    {
+      string_list_push(arena, out, full_path);
+      found_file = 1;
+    }
+
+  } while(FindNextFileA(handle, &find_data));
+
+  FindClose(handle);
+  return found_file;
+}
+
+function void
+win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
+{
+  String search = string_concat(arena, dir_path, S("\\*"));
+
+  WIN32_FIND_DATAA find_data = {0};
+  HANDLE handle = FindFirstFileA((char*)search.cstring, &find_data);
+
+  if(handle == INVALID_HANDLE_VALUE)
+  {
+    win32_log_error("FindFirstFileA failed", dir_path);
+    return;
+  }
+
+  do
+  {
+    if(win32_is_dot_dir(find_data.cFileName))
+    {
+      continue;
+    }
+    String name = string_new((u64)strlen(find_data.cFileName), (u8*)find_data.cFileName);
+    String full_path = string_concat(arena, string_concat(arena, dir_path, S("\\")), name);
+    string_list_push(arena, out, full_path);
+  } while(FindNextFileA(handle, &find_data));
+
+  FindClose(handle);
+}
+
+function String_List
+file_get_files_in_path(Arena* arena, String path, b32 recursive)
+{
+  String_List result = string_list_new();
+
+  DWORD attrib = GetFileAttributesA((char*)path.cstring);
+  if(attrib == INVALID_FILE_ATTRIBUTES)
+  {
+    win32_log_error("Path does not exist", path);
+    return result;
+  }
+
+  if(!(attrib & FILE_ATTRIBUTE_DIRECTORY))
+  {
+    string_list_push(arena, &result, string_copy(arena, path));
+    return result;
+  }
+
+  if(recursive)
+  {
+    win32_collect_recursive(arena, &result, path);
+  }
+  else
+  {
+    win32_collect_non_recursive(arena, &result, path);
+  }
+
   return result;
 }

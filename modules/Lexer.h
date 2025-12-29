@@ -99,7 +99,7 @@ typedef enum
 #define X(name) name,
   TOKEN_KIND
 #undef X
-   
+  
   Token_Count
 
 } Token_Kind;
@@ -120,8 +120,10 @@ struct Token
 typedef u8 Trivia_Flags;
 enum
 {
+  Trivia_None = 0,
+
   Trivia_Whitespace       = (1 << 0),
-  Trivia_Carriage_Return  = (1 << 1), /* Here for the sake of completion. But this lexer skips it. */
+  Trivia_Carriage_Return  = (1 << 1), /* @NOTE(fz): Here for the sake of completion. But this lexer skips it. */
   Trivia_Tab              = (1 << 2),
   Trivia_Form_Feed        = (1 << 3),
   Trivia_Vertical_Tab     = (1 << 4),
@@ -133,6 +135,8 @@ enum
 typedef u8 Emit_Structures;
 enum
 {
+  Emit_None = 0,
+
   Emit_String_Literals    = (1 << 0), /* Emits a Token_String_Literal like "This is a string literal", instead of individual tokens like "\"", "This", "is" ... */
   Emit_Character_Literals = (1 << 1), /* Emits a Token_Character_Literal like 'c', instead of 3 tokens like "'", "c", "'" */
   Emit_Line_Comments      = (1 << 2), /* Emits a line comment made made with '//' as a single token like: Token_Line_Comment "// This is a whole line comment" */
@@ -173,7 +177,7 @@ function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
 function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
 function s16    lexer_peek_character(Lexer* lexer); /* Returns the next character without advancing the lexer */
 function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the nth character without advancing the lexer. 0 is current character, 1 is next character, etc... */
-function void   lexer_rewind_token(Lexer* lexer, u32 count); /*  */
+function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a call to lexer_eat_token */
 function void   lexer_eat_character(Lexer* lexer); /* Advances the lexer by 1 character */
 function void   lexer_eat_token(Lexer* lexer); /* Advances lexer by 1 token */
 function void   lexer_eat_spaces(Lexer* lexer); /* Advances over all spaces */
@@ -886,22 +890,22 @@ lexer_make_new_token(Lexer* lexer)
   }
 }
 
-  function void
-  lexer_rewind_token(Lexer* lexer, u32 count)
-  {
-    assert(count <= MAX_LOOKAHEAD_TOKENS); // Cannot rewind more tokens than the buffer can  hold
-    assert(count <= (u32)(MAX_LOOKAHEAD_TOKENS - lexer->incoming_tokens_count)); // Cannot rewind beyond what has already been eaten
+function void
+lexer_rewind_token(Lexer* lexer, u32 count)
+{
+  assert(count <= MAX_LOOKAHEAD_TOKENS); // Cannot rewind more tokens than the buffer can  hold
+  assert(count <= (u32)(MAX_LOOKAHEAD_TOKENS - lexer->incoming_tokens_count)); // Cannot rewind beyond what has already been eaten
 
-    for (u32 i = 0; i < count; ++i)
+  for (u32 i = 0; i < count; ++i)
+  {
+    lexer->incoming_tokens_head -= 1;
+    if (lexer->incoming_tokens_head < 0)
     {
-      lexer->incoming_tokens_head -= 1;
-      if (lexer->incoming_tokens_head < 0)
-      {
-        lexer->incoming_tokens_head = MAX_LOOKAHEAD_TOKENS - 1;
-      }
-      lexer->incoming_tokens_count += 1;
+      lexer->incoming_tokens_head = MAX_LOOKAHEAD_TOKENS - 1;
     }
+    lexer->incoming_tokens_count += 1;
   }
+}
 
 function b32
 token_is_space(Token* token)

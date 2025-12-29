@@ -16,6 +16,7 @@ struct Path
   u32     word_count;
 };
 
+// @Section: Path
 function b32    path_is_char8_separator_slash(u8 c);
 function Path   path_from_string(Arena* arena, String input);
 function String string_from_path(Arena* arena, Path path);
@@ -29,6 +30,7 @@ function u32    file_append(String path, u8* data, u64 data_size); /* Appends da
 function b32    file_wipe(String path); /* Clears file */
 function u32    file_size(String path); /* Returns the size of the file */
 function String file_load(Arena* arena, String path); /* Loads file into memory */
+function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
 
 #if OS_WINDOWS
 # include "Platform/Platform_Win32.c"
