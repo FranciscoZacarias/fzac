@@ -782,7 +782,7 @@ lexer_make_new_token(Lexer* lexer)
         {
           lexer_make_token_from_next_n_characters(lexer, token, Token_Slash_Equal, 2);
         }
-        else if (has_flags(lexer->emit_structures, Emit_Line_Comments))
+        else if (has_flags(lexer->emit_structures, Emit_Line_Comments) && (n == '/' || n == '*'))
         {
           if      (n == '/') { lexer_parse_line_comment(lexer, token); }
           else if (n == '*') { lexer_parse_block_comment(lexer, token); }

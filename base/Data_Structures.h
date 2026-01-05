@@ -62,7 +62,7 @@ string_buffer_push(String_Buffer* buffer, const char* fmt, ...)
       return;
     }
 
-    u64 new_capacity = buffer->capacity * 2;
+    u64 new_capacity = buffer->capacity > 0 ? buffer->capacity * 2 : 64;
     while (new_capacity < buffer->count + (u64)written) new_capacity *= 2;
 
     u8* new_data = (u8*)buffer->allocator->alloc_no_zero(new_capacity, buffer->allocator->context);
