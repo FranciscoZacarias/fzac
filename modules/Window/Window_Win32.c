@@ -5,26 +5,6 @@
 #define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP;
 #define SECONDARY_WINDOW_STYLE WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
 
-struct Window
-{
-  Window *next;
-
-  String title;
-
-  u32 width;
-  u32 height;
-
-  u32 x;
-  u32 y;
-
-  HWND hwnd;
-};
-
-global Window* WindowListHead = NULL;
-global b32 WindowClassInited = 0;
-
-function void _init_window_class(); /* Only needs to be called one time per process. */
-
 function Window*
 window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
 {
@@ -146,3 +126,28 @@ _init_window_class()
   WindowClassInited = 1;
 }
 
+function void
+update_window_events()
+{
+  for (;;)
+  {
+    MSG message;
+    BOOL result = PeekMessageW(&message, NULL, 0, 0, PM_REMOVE);
+    if (!result) break;
+    if (message.message == WM_QUIT) return 0;
+
+    switch (message.message)
+    {
+      case WM_KEYDOWN:
+      {
+        
+      }
+      break;
+    }
+
+    TranslateMessage(&message);
+    DispatchMessageW(&message);
+  }
+
+  return true;
+}

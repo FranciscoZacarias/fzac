@@ -15,13 +15,13 @@ struct Event
       b32 cmd_down   : 1; // MACOS
     };
     u32 packed;
-  }
-  modifiers;
+  } modifiers;
 };
 
-global Event* EventsThisFrame;
+global Event* EventsThisFrame[256];
+global u32    EventsThisFrameCount = 0;
 
-function b32 update_window_events(); /* Processes all window events this frame. Returns false if app should close */
+function void update_window_events(); /* Processes all window events this frame. Returns false if app should close */
 
 #if OS_WINDOWS
 

@@ -1,4 +1,4 @@
-function b32
+function void
 update_window_events()
 {
   for (;;)
