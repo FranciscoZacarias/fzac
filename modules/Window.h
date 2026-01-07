@@ -42,9 +42,27 @@ struct Event
   } modifiers;
 };
 
-// @TODO(fz): This has to be a dynamic buffer
-global Event* EventsThisFrame[256];
-global u32    EventsThisFrameCount = 0;
+typedef struct Event_Array Event_Array;
+struct Event_Array
+{
+  Arena* arena;
+  Event* data;
+  u32 count;
+  u32 capacity;
+};
+
+function Event* event_push(Event_Array* array);
+function u32    get_total_events_this_frame();
+function Event* get_event(u32 index);
+
+typedef struct Window_Context Window_Context;
+struct Window_Context
+{
+  Arena* arena;
+  Event_Array events_this_frame;
+};
+
+global Window_Context WindowContext;
 
 function void update_window_events(); /* Processes all window events this frame. Returns false if app should close */
 

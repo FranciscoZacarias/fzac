@@ -87,24 +87,48 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
 function LRESULT CALLBACK
 _window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+  Window_Context* ctx = &WindowContext;
+  Event_Array* events = &ctx->events_this_frame;
+
   switch (message)
   {
-    case WM_CLOSE:
-    {
-      DestroyWindow(hwnd);
-      return false;
-    }
+  case WM_CLOSE:
+  {
+    DestroyWindow(hwnd);
+    return 0;
+  }
 
-    case WM_DESTROY: 
-    {
-      ReleaseDC(hwnd, GetDC(hwnd));
-      PostQuitMessage(0);
-      return false;
-    }
+  case WM_DESTROY:
+  {
+    // Only post quit when last window closes (simplified here)
+    PostQuitMessage(0);
+    return 0;
+  }
+
+  case WM_KEYDOWN:
+  {
+    Event* e = event_push(events);
+    e->kind = Event_Keyboard;
+
+    e->modifiers.shift_down = (GetKeyState(VK_SHIFT)   & 0x8000) != 0;
+    e->modifiers.ctrl_down  = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+    e->modifiers.alt_down   = (GetKeyState(VK_MENU)    & 0x8000) != 0;
+
+    return 0;
+  }
+
+  case WM_CHAR:
+  {
+    Event* e = event_push(events);
+    e->kind = Event_Text_Input;
+    // store UTF-32 char from wparam
+    return 0;
+  }
   }
 
   return DefWindowProcW(hwnd, message, wparam, lparam);
 }
+
 
 function void
 _init_window_class()
@@ -126,28 +150,49 @@ _init_window_class()
   WindowClassInited = 1;
 }
 
-function void
+function b32
 update_window_events()
 {
+  Window_Context* ctx = &WindowContext;
+
+  arena_clear(ctx->frame_arena);
+  ctx->events_this_frame.count = 0;
+
   for (;;)
   {
-    MSG message;
-    BOOL result = PeekMessageW(&message, NULL, 0, 0, PM_REMOVE);
-    if (!result) break;
-    if (message.message == WM_QUIT) return 0;
+    MSG msg;
+    if (!PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) break;
 
-    switch (message.message)
+    if (msg.message == WM_QUIT)
     {
-      case WM_KEYDOWN:
-      {
-        
-      }
-      break;
+      Event* event = event_push(&ctx->events_this_frame);
+      event->kind = Event_Quit;
+      return false;
     }
 
-    TranslateMessage(&message);
-    DispatchMessageW(&message);
+    TranslateMessage(&msg);
+    DispatchMessageW(&msg);
   }
 
   return true;
+}
+
+function Event*
+event_push(Event_Array* array)
+{
+  assert(array->count < array->capacity);
+  return &array->data[array->count++];
+}
+
+function u32
+get_total_events_this_frame()
+{
+  return WindowContext.events_this_frame.count;
+}
+
+function Event*
+get_event(u32 index)
+{
+  assert(index < WindowContext.events_this_frame.count);
+  return &(WindowContext.events_this_frame.data[index]);
 }
