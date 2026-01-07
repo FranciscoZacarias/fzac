@@ -1,5 +1,5 @@
 function void
-use_console()
+console_attach()
 {
   if (!AllocConsole())
   {
