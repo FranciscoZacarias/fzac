@@ -18,7 +18,6 @@
 
 #include "base\Context_Cracking.h"
 #include "base\Core.h" 
-
 #include "base\Math.h"
 
 #include "base\Memory.h"
@@ -26,9 +25,7 @@
 #include "base\String.h"
 
 #include "base\Data_Structures.h"
-
 #include "base\Thread_Context.h"
-
 #include "base\Entry_Point.h"
 
 #endif // BASE_H
