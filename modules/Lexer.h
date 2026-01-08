@@ -2,8 +2,6 @@
 #define LEXER_H
 
 /*
-  Define LEXER_PARSE_SPACES to allow parsing space tokens
-
   Example usage:
 
   Lexer* lexer;
@@ -16,7 +14,6 @@
     printf("Token: (%d:%d) %s '"S_FMT"' \n", token->l0, token->c0, token_to_string(token->kind), S_ARG(value));
     lexer_eat_token(lexer);
   }
-
 */
 
 #define MAX_LEXER_SCRATCH_BUFFER_SIZE 512

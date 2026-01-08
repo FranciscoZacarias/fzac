@@ -10,6 +10,7 @@
 typedef struct Window Window;
 
 function Window* window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y);
+function void    window_swap_buffers(Window* window);
 function void    window_destroy(Window* window);
 
 // @Section: Input
@@ -273,25 +274,27 @@ thread_local global Window_Context WindowContext;
 
 function void update_window_events(); /* Processes all window events this frame. Returns false if app should close */
 
+struct Window
+{
+  Window *next;
+
+  String title;
+
+  u32 width;
+  u32 height;
+
+  u32 x;
+  u32 y;
+
+  b32 is_focused;
+  b32 should_close;
+
 #if OS_WINDOWS
 
-  struct Window
-  {
-    Window *next;
-
-    String title;
-
-    u32 width;
-    u32 height;
-
-    u32 x;
-    u32 y;
-
-    b32 is_focused;
-    b32 should_close;
-
-    HWND hwnd;
-  };
+  HWND  hwnd;
+  HGLRC rc;
+  HDC   dc;
+};
 
   global Window* WindowListHead = NULL;
   global b32 WindowClassInited = 0;

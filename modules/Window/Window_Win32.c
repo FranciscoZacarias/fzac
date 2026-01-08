@@ -137,6 +137,8 @@ global u32 _win32_key_table[Keyboard_Key_Count] =
   0xDE, // Keyboard_Key_QUOTE
 };
 
+// @TODO(Fz): Add resize callback
+
 function Window* 
 window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
 {
@@ -199,11 +201,25 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
     it->next = window;
   }
 
+  // Device context
+  window->dc = GetDC(window->hwnd);
+  if (!window->dc)
+  {
+    // TODO(fz): Handle error
+    assert(0);
+  }
+
   WindowContext.total_windows += 1;
   UpdateWindow(hwnd);
   ShowWindow(hwnd, SW_SHOW);
 
   return window;
+}
+
+function void
+window_swap_buffers(Window* window)
+{
+  SwapBuffers(window->dc);
 }
 
 function void
