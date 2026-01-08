@@ -45,20 +45,19 @@ struct Event
 typedef struct Event_Array Event_Array;
 struct Event_Array
 {
-  Arena* arena;
   Event* data;
   u32 count;
   u32 capacity;
 };
 
-function Event* event_push(Event_Array* array);
+function Event* _event_push(Event_Array* array);
 function u32    get_total_events_this_frame();
-function Event* get_event(u32 index);
+function Event* get_event_this_frame(u32 index);
 
 typedef struct Window_Context Window_Context;
 struct Window_Context
 {
-  Arena* arena;
+  Arena* frame_arena;
   Event_Array events_this_frame;
 };
 
@@ -67,8 +66,6 @@ global Window_Context WindowContext;
 function void update_window_events(); /* Processes all window events this frame. Returns false if app should close */
 
 #if OS_WINDOWS
-
-  #include "Window/Window_Win32.c"
 
   function void _init_window_class(); /* Only needs to be called one time per process. */
   struct Window
@@ -88,6 +85,8 @@ function void update_window_events(); /* Processes all window events this frame.
 
   global Window* WindowListHead = NULL;
   global b32 WindowClassInited = 0;
+
+  #include "Window/Window_Win32.c"
 
 #else
 # error Operating System not supported

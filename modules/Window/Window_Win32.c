@@ -92,38 +92,38 @@ _window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 
   switch (message)
   {
-  case WM_CLOSE:
-  {
-    DestroyWindow(hwnd);
-    return 0;
-  }
+    case WM_CLOSE:
+    {
+      DestroyWindow(hwnd);
+      return 0;
+    }
 
-  case WM_DESTROY:
-  {
-    // Only post quit when last window closes (simplified here)
-    PostQuitMessage(0);
-    return 0;
-  }
+    case WM_DESTROY:
+    {
+      // Only post quit when last window closes (simplified here)
+      PostQuitMessage(0);
+      return 0;
+    }
 
-  case WM_KEYDOWN:
-  {
-    Event* e = event_push(events);
-    e->kind = Event_Keyboard;
+    case WM_KEYDOWN:
+    {
+      Event* e = _event_push(events);
+      e->kind = Event_Keyboard;
 
-    e->modifiers.shift_down = (GetKeyState(VK_SHIFT)   & 0x8000) != 0;
-    e->modifiers.ctrl_down  = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-    e->modifiers.alt_down   = (GetKeyState(VK_MENU)    & 0x8000) != 0;
+      e->modifiers.shift_down = (GetKeyState(VK_SHIFT)   & 0x8000) != 0;
+      e->modifiers.ctrl_down  = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+      e->modifiers.alt_down   = (GetKeyState(VK_MENU)    & 0x8000) != 0;
 
-    return 0;
-  }
+      return 0;
+    }
 
-  case WM_CHAR:
-  {
-    Event* e = event_push(events);
-    e->kind = Event_Text_Input;
-    // store UTF-32 char from wparam
-    return 0;
-  }
+    case WM_CHAR:
+    {
+      Event* e = _event_push(events);
+      e->kind = Event_Text_Input;
+      // store UTF-32 char from wparam
+      return 0;
+    }
   }
 
   return DefWindowProcW(hwnd, message, wparam, lparam);
@@ -148,9 +148,14 @@ _init_window_class()
 
   RegisterClassExW(&wc);
   WindowClassInited = 1;
+
+  WindowContext.frame_arena = arena_alloc();
+  WindowContext.events_this_frame.count    = 0;
+  WindowContext.events_this_frame.capacity = 4096;
+  WindowContext.events_this_frame.data     = push_array(WindowContext.frame_arena, Event, WindowContext.events_this_frame.capacity);
 }
 
-function b32
+function void
 update_window_events()
 {
   Window_Context* ctx = &WindowContext;
@@ -165,20 +170,17 @@ update_window_events()
 
     if (msg.message == WM_QUIT)
     {
-      Event* event = event_push(&ctx->events_this_frame);
+      Event* event = _event_push(&ctx->events_this_frame);
       event->kind = Event_Quit;
-      return false;
     }
 
     TranslateMessage(&msg);
     DispatchMessageW(&msg);
   }
-
-  return true;
 }
 
 function Event*
-event_push(Event_Array* array)
+_event_push(Event_Array* array)
 {
   assert(array->count < array->capacity);
   return &array->data[array->count++];
@@ -191,7 +193,7 @@ get_total_events_this_frame()
 }
 
 function Event*
-get_event(u32 index)
+get_event_this_frame(u32 index)
 {
   assert(index < WindowContext.events_this_frame.count);
   return &(WindowContext.events_this_frame.data[index]);
