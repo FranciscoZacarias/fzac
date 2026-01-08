@@ -8,7 +8,7 @@
 #pragma warning(disable: 4094) // Untagged structs
 
 #if DEBUG
-#pragma warning(disable: 4702) // Unreachable code
+# pragma warning(disable: 4702) // Unreachable code
 #endif
 
 #include <stdlib.h>

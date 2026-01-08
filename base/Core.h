@@ -13,21 +13,22 @@
 #define global        static
 #define function      static
 
-/* === breakpoints === */
-#if COMPILER_MSVC
-# define breakpoint() DebugBreak();
-#elif COMPILER_CLANG || COMPILER_GCC
-# define breakpoint() __builtin_trap();
-#else
-# error "Unknown trap intrinsic for this compiler."
-#endif
-
 /* === Readonly === */
 #if OS_WINDOWS
 # pragma section(".roglob", read)
 # define read_only __declspec(allocate(".roglob"))
 #else
 # define read_only
+#endif
+
+/* === Thread local === */
+#if COMPILER_MSVC
+# define thread_local __declspec(thread)
+#elif COMPILER_CLANG || COMPILER_GCC
+# define thread_local __thread
+#else
+# define thread_local
+# warning "thread_local not supported on this compiler"
 #endif
 
 /* === asserts === */
@@ -37,12 +38,23 @@
 # define assert_no_reentry() statement(local_persist b32 __triggered__ = 0; assert(__triggered__ == 0); __triggered__ = 1;) 
 # define assert_unreachable() assert_break(0)
 # define static_assert(condition,label) typedef u8 glue(label,__LINE__) [(condition)?1:-1]
+
+/* === breakpoints === */
+# if COMPILER_MSVC
+#  define breakpoint() DebugBreak();
+# elif COMPILER_CLANG || COMPILER_GCC
+#  define breakpoint() __builtin_trap();
+# else
+#  warning "Unknown trap intrinsic (breakpoint) for this compiler."
+# endif
+
 #else
 # define assert_break(condition)
 # define assert(condition)
 # define assert_no_reentry()
 # define assert_unreachable()
 # define static_assert(condition,label)
+# define breakpoint()
 #endif
 
 /* === Code === */
