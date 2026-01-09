@@ -3,12 +3,13 @@
 
 #pragma warning(disable: 4201) // Nonstandard extension used: nameless struct/union
 #pragma warning(disable: 4700) // Uninitalized local variable used
-#pragma warning(disable: 4189) // Local variable is initialized but not referenced
-#pragma warning(disable: 4100) // Unreferenced parameters
 #pragma warning(disable: 4094) // Untagged structs
 
 #if DEBUG
 # pragma warning(disable: 4702) // Unreachable code
+# pragma warning(disable: 4100) // Unreferenced parameters
+# pragma warning(disable: 4101) // Unused variable
+# pragma warning(disable: 4189) // Local variable is initialized but not referenced
 #endif
 
 #include <stdlib.h>

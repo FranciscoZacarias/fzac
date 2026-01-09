@@ -1,10 +1,12 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "Platform.h"
+
 /*
   Example usage:
 
-  Lexer* lexer;
+  Lexer lexer;
   lexer_init_with_single_file_path(&lexer, PATH, Trivia_Line_Break|Trivia_Whitespace, Emit_String_Literals|Emit_Block_Comments);
 
   for (;;)
@@ -189,7 +191,7 @@ function void lexer_parse_character_literal(Lexer* lexer, Token* token); /* Pars
 function void lexer_parse_trivia(Lexer* lexer, Token* token);
 
 // @Section: Token_helpers
-function b32  token_is_space(Token* token);
+function b32  token_is_trivia(Token* token);
 
 // @Section: Implementation
 
@@ -905,7 +907,7 @@ lexer_rewind_token(Lexer* lexer, u32 count)
 }
 
 function b32
-token_is_space(Token* token)
+token_is_trivia(Token* token)
 {
   b32 result = false;
   switch (token->kind)

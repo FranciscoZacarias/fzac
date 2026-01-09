@@ -25,6 +25,13 @@ struct String
 #define S_FMT "%.*s"
 #define S_ARG(s) (s32)s.count, s.cstring
 
+typedef struct String_View String_View; /* This exists so that we explicitly know when a string is a view into another string's memory, and the caller is explicitly aware that the lifetime of this string depends on another */
+struct String_View
+{
+  u64 count;
+  u8* string;
+};
+
 typedef struct String_Node String_Node; /* 8 bit string node */
 struct String_Node
 {
@@ -53,7 +60,7 @@ function b32    string_find_first(String str, String substring, u64* index); /* 
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
 function b32    string_match(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
-function u64    string_hash(String str); /*  */
+function u64    string_hash(String str); /* Hashes a string into a u64 */
 
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
 function String_List string_list_new(); /* Create new list with single string element. */
@@ -344,7 +351,6 @@ string_hash(String str)
   hash ^= str.count;
   return hash;
 }
-
 
 function String_List
 string_split(Arena* arena, String str, String delimiter)

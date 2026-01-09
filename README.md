@@ -67,8 +67,8 @@ bare minimum modules for the library which are to be included in each project.
 
 
 # Comments
-## Function signatures comment
-- Comment in front of it with /**/. 
+## Function signatures comment.
+- Comment in front of it with /**/. Must be a block comment. 
 - function void my_function() /* My function that does something */
 
 ## Struct comments

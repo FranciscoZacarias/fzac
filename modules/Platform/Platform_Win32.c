@@ -142,6 +142,51 @@ string_from_path(Arena* arena, Path path)
   return string_list_join(arena, &out);
 }
 
+function String
+fullpath_from_relative_path(Arena* arena, String relative_path)
+{
+  String result = {0};
+
+  if(relative_path.count == 0 || relative_path.cstring == 0)
+  {
+    return result;
+  }
+
+  // Get required buffer size (includes null terminator)
+  DWORD required_size = GetFullPathNameA(
+    (char*)relative_path.cstring,
+    0,
+    0,
+    0
+  );
+
+  if(required_size == 0)
+  {
+    return result;
+  }
+
+  u8* buffer = push_array(arena, u8, required_size);
+
+  DWORD written = GetFullPathNameA(
+    (char*)relative_path.cstring,
+    required_size,
+    (char*)buffer,
+    0
+  );
+
+  if(written == 0)
+  {
+    return result;
+  }
+
+  // written does NOT include the null terminator
+  result.count = (u64)written;
+  result.cstring = buffer;
+
+  return result;
+}
+
+
 function b32
 file_create(String path)
 {
@@ -387,5 +432,66 @@ file_get_files_in_path(Arena* arena, String path, b32 recursive)
     win32_collect_non_recursive(arena, &result, path);
   }
 
+  return result;
+}
+
+function String_View
+file_get_extension(String path)
+{
+  String_View result = {0};
+
+  if(path.count == 0 || path.cstring == 0) return result;
+
+  s64 last_dot = -1;
+  s64 last_sep = -1;
+
+  for(s64 i = 0; i < (s64)path.count; ++i)
+  {
+    u8 c = path.cstring[i];
+
+    if(c == '/' || c == '\\')
+    {
+      last_sep = i;
+      last_dot = -1; // dots before a separator don't count
+    }
+    else if(c == '.')
+    {
+      last_dot = i;
+    }
+  }
+
+  if(last_dot < 0 || last_dot + 1 >= (s64)path.count) return result;
+
+  result.string = path.cstring + last_dot + 1;
+  result.count   = path.count - (last_dot + 1);
+
+  return result;
+}
+
+function b32
+is_directory(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  char buffer[MAX_PATH];
+  if (path.count >= MAX_PATH) return false;
+  memory_copy(buffer, path.cstring, path.count);
+  buffer[path.count] = 0;
+  DWORD attributes = GetFileAttributesA(buffer);
+  if (attributes == INVALID_FILE_ATTRIBUTES) return false;
+  b32 result = (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+  return result;
+}
+
+function b32
+is_file(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  char buffer[MAX_PATH];
+  if (path.count >= MAX_PATH) return false;
+  memory_copy(buffer, path.cstring, path.count);
+  buffer[path.count] = 0;
+  DWORD attributes = GetFileAttributesA(buffer);
+  if (attributes == INVALID_FILE_ATTRIBUTES) return false;
+  b32 result = (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
   return result;
 }
