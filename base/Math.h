@@ -59,8 +59,7 @@ typedef struct Quaternion Quaternion; /* */
 
 // @Section: Vector2
 struct Vector2 { f32 x, y; };
-function Vector2 vector2_make(f32 x, f32 y); /* Creates a Vector 2 */
-function Vector2 vector2_make_zero(f32 x, f32 y); /* Creates a zero initialized Vector 2 */
+#define vector2(x,y) (Vector2){(x),(y)}
 function Vector2 vector2_add(Vector2 v1, Vector2 v2); /* Adds two 2D vectors component-wise */
 function Vector2 vector2_sub(Vector2 v1, Vector2 v2); /* Subtracts the second 2D vector from the first component-wise */
 function f32     vector2_length(Vector2 v); /* Returns the Euclidean length (magnitude) of a 2D vector */
@@ -86,8 +85,7 @@ function Vector2 vector2_refract(Vector2 v, Vector2 n, f32 r); /* Computes the d
 
 // @Section: Vector3
 struct Vector3 { f32 x, y, z; };
-function Vector3 vector3_make(f32 x, f32 y, f32 z); /* Creates a Vector 3 */
-function Vector3 vector3_make_zero(f32 x, f32 y, f32 z); /* Creates a zero initialized Vector 3 */
+#define vector3(x,y,z) (Vector3){(x),(y),(z)}
 function Vector3 vector3_add(Vector3 v1, Vector3 v2); /* Adds two 3D vectors component-wise */
 function Vector3 vector3_sub(Vector3 v1, Vector3 v2); /* Subtracts the second 3D vector from the first component-wise */
 function Vector3 vector3_scale(Vector3 v, f32 scalar); /* Multiplies a 3D vector by a scalar */
@@ -120,8 +118,7 @@ function Vector3 vector3_refract(Vector3 v, Vector3 n, f32 r); /* Computes the d
 
 // @Section: Vector4
 struct Vector4 { f32 x, y, z, w; };
-function Vector4 vector4_make(f32 x, f32 y, f32 z, f32 w); /* Creates a Vector 4 */
-function Vector4 vector4_make_zero(f32 x, f32 y, f32 z, f32 w); /* Creates a zero initialized Vector 4 */
+#define vector4(x,y,z,w) ((x),(y),(z),(w))
 function Vector4 vector4_add(Vector4 v1, Vector4 v2); /* Adds two 4D vectors component-wise */
 function Vector4 vector4_sub(Vector4 v1, Vector4 v2); /* Subtracts the second 4D vector from the first component-wise */
 function f32     vector4_length(Vector4 v); /* Returns the Euclidean length (magnitude) of a 4D vector */

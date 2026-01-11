@@ -16,8 +16,8 @@ function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 typedef struct String String; /* 8 bit string. */
 struct String
 {
-  u64 count;
-  u8* cstring;
+  u64 count;    /* Length of string (excluding null terminator) */
+  u8* cstring;  /* Null-terminated string */
 };
 #define S(s) (String){sizeof(s)-1,(u8*)(s)}
 #define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
@@ -48,18 +48,19 @@ struct String_List
   u64 total_size;
 };
 
-function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */
-function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena. */
-function String string_range(u8* first, u8* range); /* Create String from first pointer to range pointer (exclusive). */
-function String string_concat(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena. */
-function String string_slice(String str, u64 start, u64 end); /* Extract substring from start to end (exclusive). */
-function String string_trim(String str); /* Remove leading and trailing whitespace. */
-function String string_substring(String str, u64 start, u64 end); /* Returns a substring view into the string provided */
+function String string_zero(); /* Initilizese a string with memory zero'd out */
+function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer (allocates and null-terminates). */
+function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
+function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
+function String string_concat(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
+function String string_slice(Arena* arena, String str, u64 start, u64 end); /* @TODO(fz): Maybe we should return String_View? Extract substring from start to end (exclusive, null-terminated). */
+function String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
+function String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
 function b32    string_contains(String str, String substring); /* Check if str contains substring. */
 function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
 function b32    string_match(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
-function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
+function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
 function u64    string_hash(String str); /* Hashes a string into a u64 */
 
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
@@ -67,7 +68,7 @@ function String_List string_list_new(); /* Create new list with single string el
 function void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
 function String      string_list_remove_first(String_List* list); /* Remove and return first element from list. */
 function String      string_list_remove_last(String_List* list); /* Remove and return last element from list. */
-function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string. */
+function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string (null-terminated). */
 
 function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
 function u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
@@ -158,6 +159,14 @@ char8_to_lower(u8 c)
 // @Section: 8 Bit string implementation
 
 function String
+string_zero()
+{
+  String result;
+  memory_zero_struct(&result);
+  return result;
+}
+
+function String
 string_new(u64 size, u8* str)
 {
   String result = { size, str };
@@ -169,15 +178,21 @@ string_copy(Arena* arena, String source)
 {
   String result;
   result.count = source.count;
-  result.cstring  = push_array(arena, u8, result.count);
+  result.cstring  = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, source.cstring, result.count);
+  result.cstring[result.count] = '\0';
   return result;
 }
 
 function String
-string_range(u8* first, u8* range)
+string_range(Arena* arena, u8* first, u8* range)
 {
-  String result = (String){(u64)(range - first), first};
+  u64 count = (u64)(range - first);
+  String result;
+  result.count = count;
+  result.cstring = push_array(arena, u8, count + 1);
+  memory_copy(result.cstring, first, count);
+  result.cstring[count] = '\0';
   return result;
 }
 
@@ -186,24 +201,31 @@ string_concat(Arena* arena, String a, String b)
 {
   String result = { 0 };
   result.count = a.count + b.count;
-  result.cstring = push_array(arena, u8, result.count);
+  result.cstring = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, a.cstring, a.count);
   memory_copy(result.cstring + a.count, b.cstring, b.count);
+  result.cstring[result.count] = '\0';
   return result;
 }
 
 function String
-string_slice(String str, u64 start, u64 end)
+string_slice(Arena* arena, String str, u64 start, u64 end)
 {
   if (start > str.count) start = str.count;
   if (end > str.count)   end   = str.count;
   if (start > end)      start = end;
-  String result = (String){ .count = end - start, .cstring  = str.cstring + start };
+  
+  u64 count = end - start;
+  String result;
+  result.count = count;
+  result.cstring = push_array(arena, u8, count + 1);
+  memory_copy(result.cstring, str.cstring + start, count);
+  result.cstring[count] = '\0';
   return result;
 }
 
 function String
-string_trim(String str)
+string_trim(Arena* arena, String str)
 {
   u64 start = 0;
   while (start < str.count)
@@ -218,7 +240,11 @@ string_trim(String str)
 
   if (start == str.count)
   {
-    return (String){0, str.cstring + str.count};
+    String result;
+    result.count = 0;
+    result.cstring = push_array(arena, u8, 1);
+    result.cstring[0] = '\0';
+    return result;
   }
 
   u64 end = str.count;
@@ -232,19 +258,33 @@ string_trim(String str)
     end -= 1;
   }
 
-  return (String){end - start, str.cstring + start};
+  u64 count = end - start;
+  String result;
+  result.count = count;
+  result.cstring = push_array(arena, u8, count + 1);
+  memory_copy(result.cstring, str.cstring + start, count);
+  result.cstring[count] = '\0';
+  return result;
 }
 
 function String
-string_substring(String str, u64 start, u64 end)
+string_substring(Arena* arena, String str, u64 start, u64 end)
 {
-  String r = {0};
+  String result = {0};
   if (end > start)
   {
-    r.count    = end - start;
-    r.cstring = str.cstring + start;
+    u64 count = end - start;
+    result.count = count;
+    result.cstring = push_array(arena, u8, count + 1);
+    memory_copy(result.cstring, str.cstring + start, count);
+    result.cstring[count] = '\0';
   }
-  return r;
+  else
+  {
+    result.cstring = push_array(arena, u8, 1);
+    result.cstring[0] = '\0';
+  }
+  return result;
 }
 
 function b32
@@ -330,12 +370,15 @@ string_from_format(Arena* arena, char const* fmt, ...)
 
   if (len <= 0)
   {
+    result.cstring = push_array(arena, u8, 1);
+    result.cstring[0] = '\0';
     return result;
   }
 
   result.count = (u64)len;
-  result.cstring = push_array(arena, u8, result.count);
+  result.cstring = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, (u8*)temp, result.count);
+  result.cstring[result.count] = '\0';
 
   return result;
 }
@@ -380,12 +423,12 @@ string_split(Arena* arena, String str, String delimiter)
 
     if (match)
     {
-      string_list_push(arena, &result, string_range(cursor, match));
+      string_list_push(arena, &result, string_range(arena, cursor, match));
       cursor = match + delimiter.count;
     }
     else
     {
-      string_list_push(arena, &result, string_range(cursor, end));
+      string_list_push(arena, &result, string_range(arena, cursor, end));
       break;
     }
   }
@@ -482,13 +525,14 @@ string_list_remove_last(String_List* list)
 function String
 string_list_join(Arena* arena, String_List* list)
 {
-  u8* dst = push_array(arena, u8, list->total_size);
+  u8* dst = push_array(arena, u8, list->total_size + 1);
   u8* ptr = dst;
   for (String_Node* node = list->first; node; node = node->next)
   {
     memory_copy(ptr, node->value.cstring, node->value.count);
     ptr += node->value.count;
   }
+  *ptr = '\0';
   return string_new(list->total_size, dst);
 }
 

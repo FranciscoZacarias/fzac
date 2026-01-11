@@ -16,15 +16,21 @@ struct Allocator
 };
 
 // @Section: Malloc Allocator
-function void* _stdlib_alloc(u64 bytes, void* context)
+function void* _stdlib_alloc(u64 bytes, void* context); /* Allocates memory with the stdlib calloc function */
+function void*
+_stdlib_alloc(u64 bytes, void* context)
 {
   return calloc(1, (size_t)bytes);
 }
-function void* _stdlib_alloc_no_zero(u64 bytes, void* context)
+function void* _stdlib_alloc_no_zero(u64 bytes, void* context); /* Allocates memory with the stdlib malloc function */
+function void*
+_stdlib_alloc_no_zero(u64 bytes, void* context)
 {
   return malloc((size_t)bytes);
 }
-function void* _stdlib_free(u64 bytes, void* ptr, void* context)
+function void* _stdlib_free(u64 bytes, void* ptr, void* context); /* Calls free on memory allocated with stdlib allocator */
+function void*
+_stdlib_free(u64 bytes, void* ptr, void* context)
 {
   free(ptr); return NULL;
 }
@@ -54,7 +60,7 @@ struct Arena
   u64 position;    /* Current position of the arena */
   u64 align;       /* Arena's memory alignment */
 };
-#define ARENA_HEADER_SIZE align_power_of_two(sizeof(Arena), os_memory_get_page_size())
+#define ARENA_HEADER_SIZE align_power_of_two(sizeof(Arena), memory_get_page_size())
 
 function Arena* arena_alloc(); /* Allocates an arena with the default reserve and commit size */
 function Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
@@ -93,17 +99,17 @@ arena_alloc_sized(u64 reserve, u64 commit)
 {
   void* memory = NULL;
   
-  u64 page_size = os_memory_get_page_size();
+  u64 page_size = memory_get_page_size();
   reserve = align_power_of_two(reserve, page_size);
   commit  = align_power_of_two(commit,  page_size);
   
   assert(ARENA_HEADER_SIZE < commit && commit <= reserve);
   
-  memory = os_memory_reserve(reserve);
-  if(!os_memory_commit(memory, commit))
+  memory = memory_reserve(reserve);
+  if(!memory_commit(memory, commit))
   {
     memory = NULL;
-    os_memory_free(memory, reserve);
+    memory_free(memory, reserve);
   }
   
   Arena* arena = (Arena*) memory;
@@ -150,7 +156,7 @@ arena_push_no_zero(Arena* arena, u64 size)
         u64 commit_aligned = align_power_of_two(new_position, arena->commit_size);
         u64 commit_clamped = clamp_top(commit_aligned, arena->reserved);
         u64 commit_size    = commit_clamped - arena->commited;
-        if (os_memory_commit((u8*)arena + arena->commited, commit_size))
+        if (memory_commit((u8*)arena + arena->commited, commit_size))
         {
           arena->commited = commit_clamped;
         }
@@ -220,7 +226,7 @@ arena_clear(Arena* arena)
 function void
 arena_free(Arena* arena)
 {
-  os_memory_free((u8*)arena, arena->reserved);
+  memory_free((u8*)arena, arena->reserved);
 }
 
 function Scratch
