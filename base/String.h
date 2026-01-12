@@ -58,8 +58,13 @@ function String string_substring(String str, u64 start, u64 end); /* Returns a s
 function b32    string_contains(String str, String substring); /* Check if str contains substring. */
 function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
+<<<<<<< HEAD
 function b32    string_match(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
+=======
+function b32    string_equals(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
+function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
+>>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
 function u64    string_hash(String str); /* Hashes a string into a u64 */
 
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
@@ -71,6 +76,7 @@ function String      string_list_join(Arena* arena, String_List* list); /* Conca
 
 function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
 function u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
+function b32     s64_from_string(String str, s64* out); /* Converts a String to an s64 */
 
 #if OS_WINDOWS
 // @Section: 16 bit character
@@ -291,7 +297,7 @@ string_find_last(String str, String substring, u64* index)
 }
 
 function b32
-string_match(String a, String b, b32 case_sensitive)
+string_equals(String a, String b, b32 case_sensitive)
 {
   if(a.count != b.count)
   {
@@ -506,5 +512,40 @@ cstring_length(u8* cstring)
   while (cstring[result] != '\0') { result += 1; }
   return result;
 }
+
+function b32
+s64_from_string(String str, s64* out)
+{
+  if(str.count == 0) return false;
+
+  u8* cstring = str.cstring;
+  u8* end = cstring + str.count;
+
+  b32 negative = 0;
+  if(*cstring == '-')
+  {
+    negative = 1;
+    cstring += 1;
+  }
+  else if(*cstring == '+')
+  {
+    cstring += 1;
+  }
+
+  if(cstring == end) return false;
+
+  s64 value = 0;
+  for(; cstring < end; cstring += 1)
+  {
+    if(*cstring < '0' || *cstring > '9') return false;
+    value = value * 10 + (*cstring - '0');
+  }
+
+  if(negative) value = -value;
+
+  *out = value;
+  return true;
+}
+
 
 #endif // STRING_H

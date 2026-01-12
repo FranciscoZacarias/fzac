@@ -15,7 +15,7 @@ function void    window_destroy(Window* window);
 
 // @Section: Input
 typedef u32 Keyboard_Key;
-enum
+enum META_ENUM_LINK(Keyboard_Key)
 {
   Keyboard_Key_BACKSPACE,
   Keyboard_Key_ENTER,
@@ -153,7 +153,7 @@ function u32          _native_key_from_os_key(Keyboard_Key key); /* Converts os 
 function Keyboard_Key _os_key_from_native_key(u32 native_key); /* Converts native key to os key */
 
 typedef u32 Mouse_Button;
-enum
+enum META_ENUM_LINK(Mouse_Button)
 {
   Mouse_Button_Left,
   Mouse_Button_Right,
@@ -210,7 +210,7 @@ function void _input_process_mouse_button(Mouse_Button button, b32 is_pressed); 
 // @Section: Events
 
 typedef u32 Event_Kind;
-enum
+enum META_ENUM_LINK(Event_Kind)
 {
   Event_Error = 0,
   Event_Keyboard,
@@ -220,6 +220,7 @@ enum
   Event_Quit,
   Event_Drag_And_Drop,
 };
+META_ENUM_TO_STRING(Event_Kind);
 
 typedef struct Window_Event Window_Event;
 struct Window_Event

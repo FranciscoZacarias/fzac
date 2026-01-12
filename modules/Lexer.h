@@ -117,7 +117,7 @@ struct Token
 };
 
 typedef u8 Trivia_Flags;
-enum
+enum META_ENUM_LINK(Trivia_Flags)
 {
   Trivia_None = 0,
 
@@ -132,7 +132,7 @@ enum
 };
 
 typedef u8 Emit_Structures;
-enum
+enum META_ENUM_LINK(Emit_Structures)
 {
   Emit_None = 0,
 
