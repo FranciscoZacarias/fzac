@@ -1,31 +1,6 @@
 #ifndef INTROSPECTION_H
 #define INTROSPECTION_H
 
-// @NOTE(fz): These macros don't do anything at runtime. They are Introspection commands that can be used in user code and only have meaning during the introspection process
-
-
-/* META_ENUM_LINK is used to link an enum to a forward declaration of an enum. 
-  Usage Example:
-  typedef u32 Event_Kind;
-  enum META_ENUM_LINK(Event_Kind)
-  {
-    Event_Error = 0,
-    Event_Keyboard,
-  };
-*/
-#define META_ENUM_LINK(enum_name)
-/* META_ENUM_TO_STRING() is used in front of the enum keyword. It generates a to_string function for the enum, given a value of that enum.
-  Usage Example:
-  typedef u32 Event_Kind;
-  enum META_ENUM_LINK(Event_Kind)
-  {
-    Event_Error = 0,
-    Event_Keyboard,
-  };
-  META_ENUM_TO_STRING(Event_Kind);
-*/
-#define META_ENUM_TO_STRING(enum_name)
-
 #include "../Base.h"
 #include "Lexer.h"
 
@@ -104,6 +79,9 @@ struct Struct_Object
   Source_Location definition;
 };
 
+enum Dummy_Enum { DUMMY };
+#define DEFAULT_ENUM_BITS ((u32)(sizeof(enum Dummy_Enum) * 8))
+
 typedef struct Enum_Member Enum_Member;
 struct Enum_Member
 {
@@ -119,6 +97,7 @@ struct Enum_Object
 {
   String identifier;
   s64 value;
+  u32 size_bits; /* Can either be DEFAULT_ENUM_BITS (which is implementation specific) or the type casted value from something like: typedef u32 My_Enum; */
 
   Enum_Member* members;
   u32 members_count;
@@ -140,7 +119,6 @@ struct Introspection
   u32 enums_capacity;
   u32 enums_count;
 };
-
 
 function u32              parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
 function void             parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses an anonymous enum  */
@@ -456,6 +434,8 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 
   Enum_Object* enum_object = &(introspection->enums[introspection->enums_count++]);
   memory_zero_struct(enum_object);
+
+  enum_object->size_bits = DEFAULT_ENUM_BITS;
 
   lexer_eat_token(lexer);
   eat_trivia(lexer);
