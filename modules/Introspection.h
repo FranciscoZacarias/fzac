@@ -79,7 +79,7 @@ struct Struct_Object
   Source_Location definition;
 };
 
-enum Dummy_Enum { DUMMY };
+enum Dummy_Enum { Dummy };
 #define DEFAULT_ENUM_BITS ((u32)(sizeof(enum Dummy_Enum) * 8))
 
 typedef struct Enum_Member Enum_Member;
@@ -125,7 +125,6 @@ function void             parse_enum(Lexer* lexer, Introspection* introspection,
 function void             parse_function(Lexer* lexer, Introspection* introspection, String file_path);
 function Function_Object* find_function(Introspection* introspection, String function_name);
 function void             eat_trivia(Lexer* lexer);
-function void             eat_trivia_and_comment(Lexer* lexer);
 
 function Introspection
 get_introspection(String source_directory, b32 introspect_base_library)
@@ -218,10 +217,11 @@ get_introspection(String source_directory, b32 introspect_base_library)
           {
             lexer_eat_token(&lexer);
             eat_trivia(&lexer);
+            token = lexer_peek_token(&lexer);
 
             if (string_equals(token->value, S("enum"), true))
             {
-              lexer_eat_token(&lexer);
+              parse_enum(&lexer, &result, it);
               continue;
             }
             else if (string_equals(token->value, S("struct"), true))
@@ -296,7 +296,6 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
 
     token = lexer_peek_token(lexer);
 
-    // --- parse the enum value if any ---
     if(token->kind == Token_Equal)
     {
       lexer_eat_token(lexer);
@@ -390,7 +389,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
     }
     else
     {
-      // No explicit assignment → implicit value
+      // No explicit assignment
       member->value = next_enum_value++;
     }
 
@@ -402,7 +401,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
       eat_trivia(lexer);
     }
 
-    // --- parse trailing comment/documentation if any ---
+    // Trailing comment/documentation 
     token = lexer_peek_token(lexer);
     if(token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
     {
@@ -416,7 +415,6 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
       eat_trivia(lexer);
     }
 
-    // Next token must be either next identifier or Close_Brace
     token = lexer_peek_token(lexer);
     assert(token->kind == Token_Identifier || token->kind == Token_Close_Brace);
   }
@@ -467,8 +465,13 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
     }
     else
     {
-      // @TODO(fz): Unknown metaprogramming tag
-      return;
+      // This is not how we should set enums in the codebase, but anyway.
+      // An identifier after enum that is not a metaprogram tag, it's probably the name of the enum.
+      // E.g. enum Dummy_Enum { Dummy };
+      enum_object->identifier = string_copy(introspection->enums_arena, token->value);
+      lexer_eat_token(lexer);
+      eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
     }
   }
 
@@ -477,9 +480,19 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 
   token = lexer_peek_token(lexer);
   assert(token->kind == Token_Close_Brace);
-  lexer_eat_token(lexer);
 
+  lexer_eat_token(lexer);
+  eat_trivia(lexer);
   token = lexer_peek_token(lexer);
+  
+  if (token->kind == Token_Identifier)
+  {
+    enum_object->identifier = string_copy(introspection->enums_arena, token->value);
+    lexer_eat_token(lexer);
+    eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+  }
+
   assert(token->kind == Token_Semicolon);
   lexer_eat_token(lexer);
 

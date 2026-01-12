@@ -24,86 +24,79 @@
 // @TODO(fz): Fix static asserts
 // static_assert(is_power_of_two(MAX_CONCURRENT_TOKENS), "MAX_CONCURRENT_TOKENS Must be a power of two");
 
-#define TOKEN_KIND                     \
-  X(Token_End_Of_File)                 \
-                                       \
-  X(Token_Identifier)                  \
-  X(Token_Number)                      \
-                                       \
-  X(Token_String_Literal)              \
-  X(Token_Character_Literal)           \
-                                       \
-  X(Token_Open_Parentheses)            /* ( */ \
-  X(Token_Close_Parentheses)           /* ) */ \
-  X(Token_Open_Bracket)                /* [ */ \
-  X(Token_Close_Bracket)               /* ] */ \
-  X(Token_Open_Brace)                  /* { */ \
-  X(Token_Close_Brace)                 /* } */ \
-  X(Token_Semicolon)                   /* ; */ \
-  X(Token_Comma)                       /* , */ \
-  X(Token_Dot)                         /* . */ \
-  X(Token_Colon)                       /* : */ \
-  X(Token_Plus)                        /* + */ \
-  X(Token_Minus)                       /* - */ \
-  X(Token_Asterisk)                    /* * */ \
-  X(Token_Slash)                       /* / */ \
-  X(Token_Backslash)                   /* \ */ \
-  X(Token_Percent)                     /* % */ \
-  X(Token_Equal)                       /* = */ \
-  X(Token_Less)                        /* < */ \
-  X(Token_Greater)                     /* > */ \
-  X(Token_Bang)                        /* ! */ \
-  X(Token_And)                         /* & */ \
-  X(Token_Or)                          /* | */ \
-  X(Token_Caret)                       /* ^ */ \
-  X(Token_Tilde)                       /* ~ */ \
-  X(Token_Question)                    /* ? */ \
-  X(Token_Hash)                        /* # */ \
-  X(Token_Double_Quote)                /* " @NOTE(fz): Not used in Mimir. We parse string and char literals immediately. */ \
-  X(Token_Single_Quote)                /* ' @NOTE(fz): Not used in Mimir. We parse string and char literals immediately. */ \
-                                               \
-  X(Token_Plus_Plus)                   /* ++ */  \
-  X(Token_Plus_Equal)                  /* += */  \
-  X(Token_Minus_Minus)                 /* -- */  \
-  X(Token_Minus_Equal)                 /* -= */  \
-  X(Token_Asterisk_Equal)              /* *= */  \
-  X(Token_Slash_Equal)                 /* /= */  \
-  X(Token_Percent_Equal)               /* %= */  \
-  X(Token_Equal_Equal)                 /* == */  \
-  X(Token_Bang_Equal)                  /* != */  \
-  X(Token_Less_Less)                   /* << */  \
-  X(Token_Less_Less_Equal)             /* <<= */ \
-  X(Token_Greater_Greater)             /* >> */  \
-  X(Token_Greater_Greater_Equal)       /* >>= */ \
-  X(Token_And_And)                     /* && */  \
-  X(Token_And_Equal)                   /* &= */  \
-  X(Token_Or_Or)                       /* || */  \
-  X(Token_Or_Equal)                    /* |= */  \
-  X(Token_Caret_Equal)                 /* ^= */  \
-                                       \
-  X(Token_Comment_Line)                \
-  X(Token_Comment_Block)               \
-                                       \
-  X(Token_Whitespace)                  \
-  X(Token_Tab)                         \
-  X(Token_Vertical_Tab)                \
-  X(Token_Line_Break)                  \
-  X(Token_Carriage_Return)             /* This is here for the sake of completion. By design, this lexer skips all \r found in the text. */ \
-  X(Token_Form_Feed)
-
 typedef enum
 {
   Token_Error = 0,
 
-#define X(name) name,
-  TOKEN_KIND
-#undef X
-  
-  Token_Count
+  Token_End_Of_File,
+
+  Token_Identifier,
+  Token_Number,
+
+  Token_String_Literal,
+  Token_Character_Literal,
+
+  Token_Open_Parentheses,            /* ( */
+  Token_Close_Parentheses,           /* ) */
+  Token_Open_Bracket,                /* [ */
+  Token_Close_Bracket,               /* ] */
+  Token_Open_Brace,                  /* { */
+  Token_Close_Brace,                 /* } */
+  Token_Semicolon,                   /* ; */
+  Token_Comma,                       /* , */
+  Token_Dot,                         /* . */
+  Token_Colon,                       /* : */
+  Token_Plus,                        /* + */
+  Token_Minus,                       /* - */
+  Token_Asterisk,                    /* * */
+  Token_Slash,                       /* / */
+  Token_Backslash,                   /* \ */
+  Token_Percent,                     /* % */
+  Token_Equal,                       /* = */
+  Token_Less,                        /* < */
+  Token_Greater,                     /* > */
+  Token_Bang,                        /* ! */
+  Token_And,                         /* & */
+  Token_Or,                          /* | */
+  Token_Caret,                       /* ^ */
+  Token_Tilde,                       /* ~ */
+  Token_Question,                    /* ? */
+  Token_Hash,                        /* # */
+  Token_Double_Quote,                /* " */
+  Token_Single_Quote,                /* ' */
+
+  Token_Plus_Plus,                   /* ++ */
+  Token_Plus_Equal,                  /* += */
+  Token_Minus_Minus,                 /* -- */
+  Token_Minus_Equal,                 /* -= */
+  Token_Asterisk_Equal,              /* *= */
+  Token_Slash_Equal,                 /* /= */
+  Token_Percent_Equal,               /* %= */
+  Token_Equal_Equal,                 /* == */
+  Token_Bang_Equal,                  /* != */
+  Token_Less_Less,                   /* << */
+  Token_Less_Less_Equal,             /* <<= */
+  Token_Greater_Greater,             /* >> */
+  Token_Greater_Greater_Equal,       /* >>= */
+  Token_And_And,                     /* && */
+  Token_And_Equal,                   /* &= */
+  Token_Or_Or,                       /* || */
+  Token_Or_Equal,                    /* |= */
+  Token_Caret_Equal,                 /* ^= */
+
+  Token_Comment_Line,
+  Token_Comment_Block,
+
+  Token_Whitespace,
+  Token_Tab,
+  Token_Vertical_Tab,
+  Token_Line_Break,
+  Token_Carriage_Return,             /* This is here for the sake of completion. By design, this lexer skips all \r found in the text. */
+  Token_Form_Feed,
+
+  Token_Count,
 
 } Token_Kind;
-
-function const char* token_to_string(Token_Kind kind); /* For debug purposes, converts enum to a string */
 
 typedef struct Token Token;
 struct Token
@@ -195,18 +188,6 @@ function b32  token_is_trivia(Token* token);
 
 // @Section: Implementation
 
-function const char*
-token_to_string(Token_Kind kind)
-{
-  switch (kind)
-  {
-    #define X(name) case name: return #name;
-    TOKEN_KIND
-    #undef X
-    default: return "Unknown Token_Kind";
-  }
-}
-
 function s32
 lexer_token_index(Lexer* lexer, s32 lookahead)
 {
@@ -285,7 +266,8 @@ lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_St
       case Token_Line_Break:      value = S("\\n"); break;
    }
 
-    printf("Token: (%d:%d) %s '"S_FMT"' \n", token->l0, token->c0, token_to_string(token->kind), S_ARG(value));
+    // @TODO(fz): replace token_to_string
+    //printf("Token: (%d:%d) %s '"S_FMT"' \n", token->l0, token->c0, token_to_string(token->kind), S_ARG(value));
     lexer_eat_token(lexer);
   }
 }
@@ -723,7 +705,7 @@ lexer_make_new_token(Lexer* lexer)
       case '?': { lexer_parse_single_character_token(lexer, token, Token_Question); }          break;
 
       case '\'':
-      { 
+      {
         if (has_flags(lexer->emit_structures, Emit_Character_Literals))
         {
           lexer_parse_character_literal(lexer, token);
@@ -826,7 +808,7 @@ lexer_make_new_token(Lexer* lexer)
           if (n2 == '=') { lexer_make_token_from_next_n_characters(lexer, token, Token_Less_Less_Equal, 3); }
           else           { lexer_make_token_from_next_n_characters(lexer, token, Token_Less_Less, 2); }
         }
-        else 
+        else
         {
           lexer_parse_single_character_token(lexer, token, Token_Less);
         }
@@ -842,7 +824,7 @@ lexer_make_new_token(Lexer* lexer)
           if (n2 == '=') { lexer_make_token_from_next_n_characters(lexer, token, Token_Greater_Greater_Equal, 3); }
           else           { lexer_make_token_from_next_n_characters(lexer, token, Token_Greater_Greater, 2); }
         }
-        else 
+        else
         {
           lexer_parse_single_character_token(lexer, token, Token_Greater);
         }
@@ -854,7 +836,7 @@ lexer_make_new_token(Lexer* lexer)
         s16 n = lexer_peek_nth_character(lexer, 1);
         if (n == '&')      { lexer_make_token_from_next_n_characters(lexer, token, Token_And_And, 2); }
         else if (n == '=') { lexer_make_token_from_next_n_characters(lexer, token, Token_And_Equal, 2); }
-        else               { lexer_parse_single_character_token(lexer, token, Token_And); } 
+        else               { lexer_parse_single_character_token(lexer, token, Token_And); }
       }
       break;
 
@@ -863,7 +845,7 @@ lexer_make_new_token(Lexer* lexer)
         s16 n = lexer_peek_nth_character(lexer, 1);
         if (n == '|')      { lexer_make_token_from_next_n_characters(lexer, token, Token_Or_Or, 2); }
         else if (n == '=') { lexer_make_token_from_next_n_characters(lexer, token, Token_Or_Equal, 2); }
-        else               { lexer_parse_single_character_token(lexer, token, Token_Or); } 
+        else               { lexer_parse_single_character_token(lexer, token, Token_Or); }
       }
       break;
 
