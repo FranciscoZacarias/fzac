@@ -5,21 +5,7 @@
 function void console_attach(); /* Opens application terminal */
 
 // @Section: Path
-typedef struct Path Path;
-struct Path
-{
-  String header_string; /* e.g. "C:", "" */
-  u32    number_of_leading_slashes;
-  b32    trailing_slash;
-
-  String* words; /* Array of parsed components */
-  u32     word_count;
-};
-
-// @Section: Path
 function b32    path_is_char8_separator_slash(u8 c);
-function Path   path_from_string(Arena* arena, String input);
-function String string_from_path(Arena* arena, Path path);
 function String fullpath_from_relative_path(Arena* arena, String relative_path);
 
 // @Section: File

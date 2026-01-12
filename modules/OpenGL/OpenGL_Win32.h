@@ -207,7 +207,7 @@ opengl_init(Window* window)
       assert(false);
     }
 
-    if (!_os_opengl_load_functions())
+    if (!_opengl_load_functions())
     {
       // emit_fatal(S("Opengl failed to load functions"));
       // @TODO(Fz): Handle error
@@ -216,7 +216,7 @@ opengl_init(Window* window)
 
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(&_os_opengl_debug_callback, NULL);
+    glDebugMessageCallback(&_opengl_debug_callback, NULL);
   }
 
   // Set viewport

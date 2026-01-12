@@ -1,18 +1,40 @@
 #ifndef INTROSPECTION_H
 #define INTROSPECTION_H
 
+// @NOTE(fz): These macros don't do anything at runtime. They are Introspection commands that can be used in user code and only have meaning during the introspection process
+
+
+/* META_ENUM_LINK is used to link an enum to a forward declaration of an enum. 
+  Usage Example:
+  typedef u32 Event_Kind;
+  enum META_ENUM_LINK(Event_Kind)
+  {
+    Event_Error = 0,
+    Event_Keyboard,
+  };
+*/
+#define META_ENUM_LINK(enum_name)
+/* META_ENUM_TO_STRING() is used in front of the enum keyword. It generates a to_string function for the enum, given a value of that enum.
+  Usage Example:
+  typedef u32 Event_Kind;
+  enum META_ENUM_LINK(Event_Kind)
+  {
+    Event_Error = 0,
+    Event_Keyboard,
+  };
+  META_ENUM_TO_STRING(Event_Kind);
+*/
+#define META_ENUM_TO_STRING(enum_name)
+
 #include "../Base.h"
 #include "Lexer.h"
 
-<<<<<<< HEAD
-=======
 #define MAX_FUNCTION_KEYWORDS 4 
 #define MAX_FUNCTION_ARGUMENTS 16
 #define MAX_FUNCTIONS 2048
 
 #define MAX_ENUMS 256
 
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
 typedef struct Source_Location Source_Location;
 struct Source_Location 
 {
@@ -20,22 +42,43 @@ struct Source_Location
   u32 line;
 };
 
+typedef struct Data_Type Data_Type;
+struct Data_Type
+{
+  b32 is_const;
+  b32 is_pointer;
+  u32 indirection_level; 
+  b32 is_array;
+  String name;
+};
+
+typedef struct Function_Argument Function_Argument;
+struct Function_Argument
+{
+  b32 is_var_args; /* If true, overrides data_type and identifier, since they lose meaning. */
+  Data_Type data_type;
+  String identifier;
+};
+
 typedef struct Function_Object Function_Object;
 struct Function_Object
 {
-  Function_Object* next;
+  String* keywords; /* Things like 'function', 'inline', 'CALLBACK', 'WINAPI' etc... */
+  u32 keywords_count;
+  u32 keywords_capacity;
 
-  String return_type;
+  Data_Type return_type;
   String name;
 
-  String* arguments;
+  Function_Argument* arguments;
   u32 arguments_count;
+  u32 arguments_capacity;
 
   String body;
   String documentation;
 
   Source_Location declaration;
-  Source_Location definition;
+  Source_Location implementation;
 };
 
 typedef struct Struct_Member Struct_Member;
@@ -87,14 +130,6 @@ struct Enum_Object
 typedef struct Introspection Introspection;
 struct Introspection
 {
-<<<<<<< HEAD
-  Arena* arena;
-
-  Function_Object* function_list;
-};
-
-function void parse_function(Lexer* lexer, Introspection* introspection, String file_path);
-=======
   Arena* functions_arena;
   Function_Object* functions;
   u32 functions_capacity;
@@ -113,7 +148,6 @@ function void             parse_function(Lexer* lexer, Introspection* introspect
 function Function_Object* find_function(Introspection* introspection, String function_name);
 function void             eat_trivia(Lexer* lexer);
 function void             eat_trivia_and_comment(Lexer* lexer);
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
 
 function Introspection
 get_introspection(String source_directory, b32 introspect_base_library)
@@ -122,10 +156,6 @@ get_introspection(String source_directory, b32 introspect_base_library)
 
   Introspection result;
   memory_zero_struct(&result);
-<<<<<<< HEAD
-  result.arena = arena_alloc();
-=======
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
 
   result.functions_arena    = arena_alloc();
   result.functions_capacity = MAX_FUNCTIONS;
@@ -143,11 +173,12 @@ get_introspection(String source_directory, b32 introspect_base_library)
     if (!is_file(it)) continue; // Skip anything that is not a file
 
     // Directories we don't care about.
-    if(string_contains(it, S("\\.git\\"))  ||
-       string_contains(it, S("\\.svn\\"))   ||
-       string_contains(it, S("\\.idea\\"))  ||
-       string_contains(it, S("\\.vs\\"))    ||
-       string_contains(it, S("\\.vscode\\"))||
+    if(string_contains(it, S("\\Extern\\"))  ||
+       string_contains(it, S("\\.git\\"))    ||
+       string_contains(it, S("\\.svn\\"))    ||
+       string_contains(it, S("\\.idea\\"))   ||
+       string_contains(it, S("\\.vs\\"))     ||
+       string_contains(it, S("\\.vscode\\")) ||
        string_contains(it, S("\\.code\\")))
     {
       continue;
@@ -177,7 +208,18 @@ get_introspection(String source_directory, b32 introspect_base_library)
       {
         if (token->kind == Token_End_Of_File)
         {
+          eof:
           break;
+        }
+
+        if (token->kind == Token_Hash)
+        {
+          while (token->kind != Token_Line_Break)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+            if (token->kind == Token_End_Of_File) goto eof;
+          }
         }
 
         if (token->kind == Token_Identifier)
@@ -225,8 +267,6 @@ get_introspection(String source_directory, b32 introspect_base_library)
   return result;
 }
 
-<<<<<<< HEAD
-=======
 function Function_Object*
 find_function(Introspection* introspection, String function_name)
 {
@@ -384,7 +424,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
       eat_trivia(lexer);
     }
 
-    // Trailing comment/documentation
+    // --- parse trailing comment/documentation if any ---
     token = lexer_peek_token(lexer);
     if(token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
     {
@@ -398,7 +438,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
       eat_trivia(lexer);
     }
 
-    // Next token must be either next Token_Identifier or Token_Close_Brace
+    // Next token must be either next identifier or Close_Brace
     token = lexer_peek_token(lexer);
     assert(token->kind == Token_Identifier || token->kind == Token_Close_Brace);
   }
@@ -473,7 +513,6 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
   }
 }
 
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
 function void
 parse_function(Lexer* lexer, Introspection* introspection, String file_path)
 {
@@ -483,13 +522,20 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
   u32 tokens_count = 0;
   Token* tokens    = push_array(scratch.arena, Token, tokens_max);
 
-  b32 is_declaration = false;
   s64 line = -1;
+
+  b32 is_declaration = false;
 
   for (;;)
   {
     Token* token = lexer_peek_token(lexer);
     if (line == -1) line = token->l0;
+
+    if (token->kind == Token_End_Of_File)
+    {
+      // @TODO(fz): Something is wrong.
+      break;
+    }
 
     if (token_is_trivia(token))
     {
@@ -502,7 +548,6 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       lexer_eat_token(lexer);
       continue;
     }
-
     if (token->kind == Token_Semicolon)
     {
       is_declaration = true;
@@ -529,13 +574,16 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
     lexer_eat_token(lexer);
   }
 
-  // Get next function on the linked list
-  Function_Object* function_object = push_array(introspection->arena, Function_Object, 1);
-  if(introspection->function_list == NULL)
+  Data_Type return_type = {0};
+  memory_zero_struct(&return_type);
+
+  String function_name = string_zero();
+  Function_Object* function_object = NULL;
+
+  // Find function name;
+  u32 name_index = U32_MAX;
+  for (u32 i = 0; i < tokens_count; i++)
   {
-<<<<<<< HEAD
-    introspection->function_list = function_object;
-=======
     if (tokens[i].kind != Token_Identifier) continue;
 
     u32 j = i + 1;
@@ -547,15 +595,14 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       name_index = i;
       break;
     }
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
   }
-  else
+
+  assert(name_index != U32_MAX);
+
+  function_object = find_function(introspection, function_name);
+
+  if (function_object == NULL)
   {
-<<<<<<< HEAD
-    Function_Object* it = introspection->function_list;
-    while(it->next) it = it->next;
-    it->next = function_object;
-=======
     function_object = &(introspection->functions[introspection->functions_count++]);
     function_object->name = string_copy(introspection->functions_arena, function_name);
 
@@ -753,24 +800,18 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
       assert(token->kind == Token_Comma);
     }
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
   }
 
   if (is_declaration)
   {
     // Look for documentation
+    eat_trivia(lexer);
     Token* token = lexer_peek_token(lexer);
     if (token->kind == Token_Comment_Block)
     {
-<<<<<<< HEAD
-      String comment = string_slice(token->value, 2, token->value.count - 2);
-      comment = string_trim(comment);
-      function_object->documentation = string_copy(introspection->arena, comment);
-=======
       String comment = string_slice(introspection->functions_arena, token->value, 2, token->value.count - 2);
       comment = string_trim(introspection->functions_arena, comment);
       function_object->documentation = string_copy(introspection->functions_arena, comment);
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
     }
 
     function_object->declaration.file = string_copy(introspection->functions_arena, file_path);
@@ -819,18 +860,23 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
     }
 
-<<<<<<< HEAD
-    function_object->body = string_copy(introspection->arena, body);
-    function_object->definition.file = string_copy(introspection->arena, file_path);
-    function_object->definition.line = (u32)line;
-=======
     function_object->body = string_copy(introspection->functions_arena, body);
     function_object->implementation.file = string_copy(introspection->functions_arena, file_path);
     function_object->implementation.line = (u32)line;
->>>>>>> 1213c20 (Added anonymous enums to Introspection.h. Addded introspection macros to Base.h. Added convert string to s64)
   }
 
   scratch_end(&scratch);
+}
+
+function void
+eat_trivia(Lexer* lexer)
+{
+  for (;;)
+  {
+    Token* token = lexer_peek_token(lexer);
+    if (!token_is_trivia(token)) break;
+    lexer_eat_token(lexer);
+  }
 }
 
 #endif // INTROSPECTION_H

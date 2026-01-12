@@ -23,14 +23,14 @@ function void opengl_end(Window* window);  /* Deletes opengl context */
 function void window_set_vsync(b32 state); /* Enables vsync */
 
 // @Section: Opengl helpers
-function void  APIENTRY _os_opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
+function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
 function void*          _load_gl_function(const char *name);                                                                                                        /* Helper to load a single opengl function */
-function b32            _os_opengl_load_functions();   
+function b32            _opengl_load_functions();   
 
 // @Section: Implementation
 
 function void APIENTRY
-_os_opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
+_opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
 {
   Scratch scratch = scratch_begin(0,0);
 
@@ -124,7 +124,7 @@ _load_gl_function(const char *name)
 }
 
 function b32
-_os_opengl_load_functions()
+_opengl_load_functions()
 {
    #define GL_FUNC(ret, name, params) \
      name = (PFN##name##PROC)_load_gl_function(#name); \
