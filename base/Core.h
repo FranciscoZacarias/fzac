@@ -3,8 +3,8 @@
 
 /* === Macro Helpers === */
 #define statement(m) do{ m }while(0)
-#define stringigy_(S) #S
-#define stringigy(S) stringigy_(S)
+#define stringify_(S) #S
+#define stringify(S) stringify_(S)
 #define glue_(A,B) A##B
 #define glue(A,B) glue_(A,B)
 

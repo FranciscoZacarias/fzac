@@ -1,29 +1,25 @@
 # TODO(fz):
 
-- [ ] Update Hephaestus:
-  - [ ] Remove logging
-  - [ ] Use dynamic allocations instead of static
-  - [ ] Remove fz_std (make it standalone)
-  - [ ] Remove +1 and -1 variable splicing
-  - [ ] BUG: If comments (//) are not the first thing in a template, it thinks its a hph file comment
-  - [ ] Put generated files inside a 'generated' directory
-- [ ] Error
-- [ ] Logging
-- [ ] Custom entry point
-- [ ] Console
-- [ ] String
-- [ ] File handling
-- [ ] Command line handling
-- [ ] Thread context
-- [ ] Memory: Arena
-- [ ] Data structure: Stack SLL 
-- [ ] Data structure: Queue SLL 
-- [ ] Data structure: Stack DLL
-- [ ] Data structure: Queue DLL
-- [ ] Data structure: Array
-- [ ] Launch window
-  - [ ] Allow multiple windows
-  - [ ] Graphics context
+```
+x - done
+w - work in progress
+```
+
+- [ ] Code_Gen Module
+- [w] Introspection
+- [ ] Error (Base.h)
+- [ ] Logging (Base.h)
+- [x] Custom entry point
+- [x] Math
+- [x] Console
+- [x] String
+- [x] File handling
+- [x] Command line handling
+- [x] Thread context
+- [x] Memory: Arena
+- [x] Launch window
+  - [x] Allow multiple windows
+  - [x] Opengl context
 
 # How to
 `fzac.h` Includes the all the `base\` headers in the project. These are the 

@@ -6,7 +6,7 @@
 
 
 // @Section: Allocator
-typedef struct Allocator Allocator;
+typedef struct Allocator Allocator; /* Allocator slot structure that holds function pointers to an actual allocator */
 struct Allocator
 {
   void* (*alloc)(u64 bytes, void* context);            /* Allocates memory zeroed out */
