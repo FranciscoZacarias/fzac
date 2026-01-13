@@ -9,6 +9,7 @@
 #define MAX_FUNCTIONS 2048
 
 #define MAX_ENUMS 256
+#define MAX_TYPEDEFS 256
 
 typedef struct Source_Location Source_Location;
 struct Source_Location 
@@ -24,7 +25,15 @@ struct Data_Type
   b32 is_pointer;
   u32 indirection_level; 
   b32 is_array;
+  String array_length; /* If data_type.is_array == true, we set here the size of the array, which can be a macro, so we just store a string. */
   String name;
+};
+
+typedef struct Typedef_Object Typedef_Object; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
+struct Typedef_Object
+{
+  Data_Type type;
+  String identifier;
 };
 
 typedef struct Function_Argument Function_Argument;
@@ -62,13 +71,24 @@ struct Struct_Member
   Data_Type data_type;
   String identifier;
   String documentation;
-  String array_length; /* If data_type.is_array == true, we set here the size of the array, which can be a macro, so we just store a string. */
 };
 
-typedef struct Struct_Object Struct_Object; /* Any custom type defined in code: Typedefs, Enums, Structs ... */
+/*
+@TODO(fz): In order to parse structs
+  fields
+  anonymous structs/unions
+  named nested structs/unions
+  bitfields
+  flexible array members
+  alignment attributes
+  packing pragmas
+  typedef indirection
+  unions (same syntax, different semantics)
+*/
+typedef struct Struct_Object Struct_Object;
 struct Struct_Object
 {
-  Struct_Member members;
+  Struct_Member* members;
   u32 members_count;
   u32 members_capacity;
 
@@ -103,7 +123,8 @@ struct Enum_Object
   u32 members_count;
   u32 members_capacity;
 
-  String macro; /* In this enum has a macro inside (like an X macro), this just stores the macro from E.g. "#define X..."up to "#undef X" */
+  Source_Location type_casted_at;
+  Source_Location definition;
 };
 
 typedef struct Introspection Introspection;
@@ -118,13 +139,19 @@ struct Introspection
   Enum_Object* enums;
   u32 enums_capacity;
   u32 enums_count;
+
+  Arena* typedefs_arena;
+  Typedef_Object* typedefs;
+  u32 typedefs_capacity;
+  u32 typedefs_count;
 };
 
-function u32              parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
-function void             parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses an anonymous enum  */
-function void             parse_function(Lexer* lexer, Introspection* introspection, String file_path);
-function Function_Object* find_function(Introspection* introspection, String function_name);
+function u32  parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
+function void parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
+function void parse_typedef(Lexer* lexer, Introspection* introspection, String file_path); /* Parses typedefs that are not structs nor enums */
+function void parse_function(Lexer* lexer, Introspection* introspection, String file_path);
 function void             eat_trivia(Lexer* lexer);
+function Function_Object* find_function(Introspection* introspection, String function_name);
 
 function Introspection
 get_introspection(String source_directory, b32 introspect_base_library)
@@ -141,6 +168,10 @@ get_introspection(String source_directory, b32 introspect_base_library)
   result.enums_arena    = arena_alloc();
   result.enums_capacity = MAX_ENUMS;
   result.enums          = push_array(result.enums_arena, Enum_Object, result.enums_capacity);
+
+  result.typedefs_arena    = arena_alloc();
+  result.typedefs_capacity = MAX_TYPEDEFS;
+  result.typedefs          = push_array(result.typedefs_arena, Typedef_Object, result.enums_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
@@ -195,13 +226,13 @@ get_introspection(String source_directory, b32 introspect_base_library)
           {
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
-            if (token->kind == Token_End_Of_File) goto eof;
+            if (token->kind == Token_End_Of_File) goto eof; // @Hack until we get preprocessor stuff
           }
         }
 
         if (token->kind == Token_Identifier)
         {
-          // Parse function
+          // Code 
           if (string_equals(token->value, S("function"), true))
           {
             parse_function(&lexer, &result, it);
@@ -212,7 +243,16 @@ get_introspection(String source_directory, b32 introspect_base_library)
             parse_enum(&lexer, &result, it);
             continue;
           }
-
+          else if (string_equals(token->value, S("struct"), true))
+          {
+            lexer_eat_token(&lexer); // @TODO(Fz):
+            continue;
+          }
+          else if (string_equals(token->value, S("global"), true))
+          {
+            lexer_eat_token(&lexer);
+            continue;
+          }
           else if (string_equals(token->value, S("typedef"), true))
           {
             lexer_eat_token(&lexer);
@@ -226,12 +266,12 @@ get_introspection(String source_directory, b32 introspect_base_library)
             }
             else if (string_equals(token->value, S("struct"), true))
             {
-              lexer_eat_token(&lexer);
+              lexer_eat_token(&lexer);  // @TODO(Fz):
               continue;
             }
             else
             {
-              lexer_eat_token(&lexer);
+              parse_typedef(&lexer, &result, it);
               continue;
             }
           }
@@ -423,6 +463,44 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
 }
 
 function void
+parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
+{
+  Scratch scratch = scratch_begin(0,0);
+
+  Typedef_Object* typedef_datatype = &(introspection->typedefs[introspection->typedefs_count++]);
+  memory_zero_struct(typedef_datatype);
+
+  Token* token = lexer_peek_token(lexer);
+  assert(token->kind == Token_Identifier);
+
+  u32 tokens_capacity = 16;
+  u32 tokens_count = 0;
+  Token** tokens = push_array(scratch.arena, Token*, tokens_capacity);
+
+  for (;;)
+  {
+    token = lexer_peek_token(lexer);
+    lexer_eat_token(lexer);
+    eat_trivia(lexer);
+    if (token->kind == Token_Semicolon)
+    {
+      // We don't increment tokens count since we don't need it. But we've already consumed it, so it's fine.
+      break;
+    }
+    if (tokens_count + 1 >= tokens_capacity)
+    {
+      // @TODO(fz): Error here
+      assert(0);
+    }
+    tokens[tokens_count++] = token;
+  }
+
+  typedef_datatype->identifier = string_copy(introspection->typedefs_arena, tokens[tokens_count-1]->value);
+
+  scratch_end(&scratch);
+}
+
+function void
 parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 {
   // These are anonymous enums. They don't have an identifier because they are likely type-casted elsewhere.
@@ -433,7 +511,9 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
   Enum_Object* enum_object = &(introspection->enums[introspection->enums_count++]);
   memory_zero_struct(enum_object);
 
-  enum_object->size_bits = DEFAULT_ENUM_BITS;
+  enum_object->definition.file = string_copy(introspection->enums_arena, file_path);
+  enum_object->definition.line = token->l0;
+  enum_object->size_bits  = DEFAULT_ENUM_BITS; // @TODO(fz): We need to find if the enum was typecasted before
 
   lexer_eat_token(lexer);
   eat_trivia(lexer);
@@ -567,7 +647,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
     lexer_eat_token(lexer);
   }
 
-  Data_Type return_type = {0};
+  Data_Type return_type;
   memory_zero_struct(&return_type);
 
   String function_name = string_zero();

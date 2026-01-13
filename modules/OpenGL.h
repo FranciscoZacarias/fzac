@@ -98,7 +98,7 @@ _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 function void*
 _load_gl_function(const char *name)
 {
-  void *proc = (void *)wglGetProcAddress(name);
+  void* proc = (void*)wglGetProcAddress(name);
 
   // Check for invalid pointer values
   if (!proc || proc == (void *)0x1 || proc == (void *)0x2 || proc == (void *)0x3 || proc == (void *)-1)
