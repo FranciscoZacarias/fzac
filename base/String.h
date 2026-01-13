@@ -52,11 +52,12 @@ function String string_zero(); /* Initilizese a string with memory zero'd out */
 function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer (allocates and null-terminates). */
 function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
 function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
-function String string_concat(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
+function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
 function String string_slice(Arena* arena, String str, u64 start, u64 end); /* @TODO(fz): Maybe we should return String_View? Extract substring from start to end (exclusive, null-terminated). */
 function String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
 function String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
 function b32    string_contains(String str, String substring); /* Check if str contains substring. */
+function String string_to_lower(Arena* arena, String str); /* Returns the same string but in lowercase. */
 function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
@@ -67,6 +68,7 @@ function u64    string_hash(String str); /* Hashes a string into a u64 */
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
 function String_List string_list_new(); /* Create new list with single string element. */
 function void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
+function void        string_list_push_after(String_List* list, String_Node* prev, String_Node* node); /* Adds a <node> to a string list after the node <prev> */
 function String      string_list_remove_first(String_List* list); /* Remove and return first element from list. */
 function String      string_list_remove_last(String_List* list); /* Remove and return last element from list. */
 function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string (null-terminated). */
@@ -149,13 +151,15 @@ char8_is_space(u8 c)
 function u8
 char8_to_upper(u8 c)
 {
-  return (c >= 'a' && c <= 'z') ? ('A' + (c - 'a')) : c;
+  u8 is_lower = (c >= 'a') & (c <= 'z');
+  return c - is_lower * ('a' - 'A');
 }
 
 function u8
 char8_to_lower(u8 c)
 {
-  return (c >= 'A' && c <= 'Z') ? ('a' + (c - 'A')) : c;
+  u8 is_upper = (c >= 'A') & (c <= 'Z');
+  return c + is_upper * ('a' - 'A');
 }
 
 // @Section: 8 Bit string implementation
@@ -199,7 +203,7 @@ string_range(Arena* arena, u8* first, u8* range)
 }
 
 function String
-string_concat(Arena* arena, String a, String b)
+string_join(Arena* arena, String a, String b)
 {
   String result = { 0 };
   result.count = a.count + b.count;
@@ -294,6 +298,17 @@ string_contains(String str, String substring)
 {
   u64 index;
   return string_find_first(str, substring, &index);
+}
+
+function String
+string_to_lower(Arena* arena, String str)
+{
+  String result = string_copy(arena, str);
+  for (u32 i = 0; i < str.count; i += 1)
+  {
+    result.cstring[i] = char8_to_lower(result.cstring[i]);
+  }
+  return result;
 }
 
 function b32
@@ -464,6 +479,24 @@ string_list_push(Arena* arena, String_List* list, String str)
     list->last->next = node;
     list->last       = node;
   }
+  list->node_count += 1;
+  list->total_size += node->value.count;
+}
+
+function void
+string_list_push_after(String_List* list, String_Node* prev, String_Node* node)
+{
+  assert(prev);
+  assert(node);
+
+  node->next = prev->next;
+  prev->next = node;
+
+  if (list->last == prev)
+  {
+    list->last = node;
+  }
+
   list->node_count += 1;
   list->total_size += node->value.count;
 }

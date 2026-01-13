@@ -12,6 +12,7 @@
 #define MAX_TYPEDEFS 256
 #define MAX_STRUCTS 512
 
+#define MAX_META_COMMANDS 128
 
 typedef struct Source_Location Source_Location;
 struct Source_Location 
@@ -126,7 +127,7 @@ typedef struct Enum_Object Enum_Object;
 struct Enum_Object 
 {
   String identifier;
-  s64 value;
+  String type;
 
   Enum_Member* members;
   u32 members_count;
@@ -142,6 +143,25 @@ struct Global_Variable
   Data_Type data_type;
   String identifier;
   String initialization; // If it's initialized, this string will contain the value;
+};
+
+typedef enum
+{
+  Meta_Command_Error = 0,
+  Meta_Command_Enum_To_String,
+  Meta_Command_Forward_Declare_Enum, /* It's not really typedefing an enum, since that's not really possible, but typedefs a integer to the enum. */
+} Meta_Command_Kind;
+
+typedef struct Meta_Command Meta_Command;
+struct Meta_Command
+{
+  Meta_Command_Kind kind;
+  String file; /* File that called this command */
+
+  union
+  {
+    Enum_Object* enum_object;
+  } payload;
 };
 
 typedef struct Introspection Introspection;
@@ -166,7 +186,14 @@ struct Introspection
   Typedef_Object* typedefs;
   u32 typedefs_capacity;
   u32 typedefs_count;
+
+  Arena* commands_arena;
+  Meta_Command* commands;
+  u32 commands_capacity;
+  u32 commands_count;
 };
+
+function Introspection get_introspection(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
 
 function u32  parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
 function void parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
@@ -174,10 +201,12 @@ function void parse_typedef(Lexer* lexer, Introspection* introspection, String f
 function void parse_function(Lexer* lexer, Introspection* introspection, String file_path);
 function void parse_structs(Lexer* lexer, Introspection* introspection, String file_path);
 function void eat_trivia(Lexer* lexer);
+function Data_Type        parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
 function Function_Object* find_function(Introspection* introspection, String function_name);
+function Enum_Object*     find_enum(Introspection* introspection, String enum_name);
 function Struct_Object*   find_struct(Introspection* introspection, String struct_name);
 function Typedef_Object*  find_typedef(Introspection* introspection, String typedef_name);
-function Enum_Object*     find_enum(Introspection* introspection, String enum_name);
+
 
 function Introspection
 get_introspection(String source_directory, b32 introspect_base_library)
@@ -202,30 +231,34 @@ get_introspection(String source_directory, b32 introspect_base_library)
   result.structs_arena    = arena_alloc();
   result.structs_capacity = MAX_STRUCTS;
   result.structs          = push_array(result.structs_arena, Struct_Object, result.structs_capacity);
+  
+  result.commands_arena    = arena_alloc();
+  result.commands_capacity = MAX_META_COMMANDS;
+  result.commands          = push_array(result.commands_arena, Meta_Command, result.commands_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
   {
-    String it = next->value;
+    String file_being_lexed = next->value;
 
-    if (!is_file(it)) continue; // Skip anything that is not a file
+    if (!is_file(file_being_lexed)) continue; // Skip anything that is not a file
 
     // Directories we don't care about.
-    if(string_contains(it, S("\\Extern\\"))  ||
-       string_contains(it, S("\\.git\\"))    ||
-       string_contains(it, S("\\.svn\\"))    ||
-       string_contains(it, S("\\.idea\\"))   ||
-       string_contains(it, S("\\.vs\\"))     ||
-       string_contains(it, S("\\.vscode\\")) ||
-       string_contains(it, S("\\.code\\")))
+    if(string_contains(file_being_lexed, S("\\Extern\\"))  ||
+       string_contains(file_being_lexed, S("\\.git\\"))    ||
+       string_contains(file_being_lexed, S("\\.svn\\"))    ||
+       string_contains(file_being_lexed, S("\\.idea\\"))   ||
+       string_contains(file_being_lexed, S("\\.vs\\"))     ||
+       string_contains(file_being_lexed, S("\\.vscode\\")) ||
+       string_contains(file_being_lexed, S("\\.code\\")))
     {
       continue;
     }
 
-    if (!introspect_base_library && string_contains(it, S("fzac"))) continue; // Skip anything from fzac library if we're introspecting it
-    if (string_contains(it, S("metaprogram.c"))) continue; // Skip the metaprogram itself
+    if (!introspect_base_library && string_contains(file_being_lexed, S("fzac"))) continue; // Skip anything from fzac library if we're introspecting it
+    if (string_contains(file_being_lexed, S("metaprogram.c"))) continue; // Skip the metaprogram itself
 
-    String_View extension = file_get_extension(it);
+    String_View extension = file_get_extension(file_being_lexed);
     String ext = string_new(extension.count, extension.string);
 
     // Make sure we introspect files we care about
@@ -237,81 +270,151 @@ get_introspection(String source_directory, b32 introspect_base_library)
     }
 
     Lexer lexer;
-    lexer_init_with_single_file_path(&lexer, it, Trivia_Line_Break|Trivia_Whitespace|Trivia_Tab, Emit_Character_Literals|Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
+    lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Line_Break|Trivia_Whitespace|Trivia_Tab, Emit_Character_Literals|Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
+
+    b32 at_line_start = true;
 
     for (;;)
     {
       Token* token = lexer_peek_token(&lexer);
-      if (!token_is_trivia(token))
+
+      if (token->kind == Token_End_Of_File) break;
+
+      if (token->kind == Token_Line_Break)
       {
-        if (token->kind == Token_End_Of_File)
-        {
-          eof:
-          break;
-        }
+        lexer_eat_token(&lexer);
+        at_line_start = true;
+        continue;
+      }
 
-        if (token->kind == Token_Hash)
+      if (token_is_trivia(token))
+      {
+        lexer_eat_token(&lexer);
+        continue;
+      }
+
+      if (!at_line_start)
+      {
+        lexer_eat_token(&lexer);
+        continue;
+      }
+
+      if (token->kind == Token_Hash)
+      {
+        // @TODO(fz): This is not implemented, it's just to make sure it works.
+        while (token->kind != Token_Line_Break && token->kind != Token_End_Of_File)
         {
-          while (token->kind != Token_Line_Break)
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+        }
+        at_line_start = true;
+        continue;
+      }
+
+      if (token->kind == Token_Identifier)
+      {
+        if (string_equals(token->value, S("function"), true))
+        {
+          parse_function(&lexer, &result, file_being_lexed);
+          at_line_start = true;
+          continue;
+        }
+        else if (string_equals(token->value, S("enum"), true))
+        {
+          parse_enum(&lexer, &result, file_being_lexed);
+          at_line_start = true;
+          continue;
+        }
+        else if (string_equals(token->value, S("struct"), true))
+        {
+          lexer_eat_token(&lexer); // TODO: real struct parsing
+          at_line_start = false;
+          continue;
+        }
+        else if (string_equals(token->value, S("global"), true))
+        {
+          lexer_eat_token(&lexer);
+          at_line_start = false;
+          continue;
+        }
+        else if (string_equals(token->value, S("typedef"), true))
+        {
+          lexer_eat_token(&lexer);
+          eat_trivia(&lexer);
+          token = lexer_peek_token(&lexer);
+
+          if (string_equals(token->value, S("enum"), true))
           {
+            // @TODO(fz): Better logging system
+            printf("In our codebase, please don't do typedef enum. Instead do:\n"
+            "enum META_ENUM_LINK(Name_Of_Enum, type)\n"
+            "{\n"
+            "  ...\n"
+            "};\n");
             lexer_eat_token(&lexer);
-            token = lexer_peek_token(&lexer);
-            if (token->kind == Token_End_Of_File) goto eof; // @Hack until we get preprocessor stuff
-          }
-        }
-
-        if (token->kind == Token_Identifier)
-        {
-          // Code 
-          if (string_equals(token->value, S("function"), true))
-          {
-            parse_function(&lexer, &result, it);
-            continue;
-          }
-          else if (string_equals(token->value, S("enum"), true))
-          {
-            parse_enum(&lexer, &result, it);
-            continue;
           }
           else if (string_equals(token->value, S("struct"), true))
           {
-            lexer_eat_token(&lexer); // @TODO(Fz):
-            continue;
+            parse_structs(&lexer, &result, file_being_lexed);
           }
-          else if (string_equals(token->value, S("global"), true))
+          else
           {
-            lexer_eat_token(&lexer);
-            continue;
+            parse_typedef(&lexer, &result, file_being_lexed);
           }
-          else if (string_equals(token->value, S("typedef"), true))
-          {
-            lexer_eat_token(&lexer);
-            eat_trivia(&lexer);
-            token = lexer_peek_token(&lexer);
 
-            if (string_equals(token->value, S("enum"), true))
-            {
-              parse_enum(&lexer, &result, it);
-              continue;
-            }
-            else if (string_equals(token->value, S("struct"), true))
-            {
-              parse_structs(&lexer, &result, it);
-              continue;
-            }
-            else
-            {
-              parse_typedef(&lexer, &result, it);
-              continue;
-            }
-          }
+          at_line_start = true;
+          continue;
+        }
+
+        // @NOTE(fz): Global scope meta commands
+        else if (string_equals(token->value, S("META_ENUM_TO_STRING"), true))
+        {
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+          assert(token->kind == Token_Open_Parentheses);
+
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+          assert(token->kind == Token_Identifier);
+
+          Enum_Object* enum_object = find_enum(&result, token->value);
+          Meta_Command* command = &result.commands[result.commands_count++];
+          command->kind = Meta_Command_Enum_To_String;
+          command->payload.enum_object = enum_object; 
+          command->file = string_copy(result.commands_arena, file_being_lexed);
+
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+          assert(token->kind == Token_Close_Parentheses);
+
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+          assert(token->kind == Token_Semicolon);
         }
       }
+
       lexer_eat_token(&lexer);
+      at_line_start = false;
     }
   }
 
   scratch_end(&scratch);
+  return result;
+}
+
+function Enum_Object*
+find_enum(Introspection* introspection, String enum_name)
+{
+  Enum_Object* result = NULL;
+  for (u32 i = 0; i < introspection->enums_count; i += 1)
+  {
+    Enum_Object* enum_object = &(introspection->enums[i]);
+    if (string_equals(enum_name, enum_object->identifier, true))
+    {
+      result = enum_object;
+      break;
+    }
+  }
   return result;
 }
 
@@ -683,7 +786,7 @@ parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
     String declaration_string = string_zero();
     for (u32 i = base_type_end; i < tokens_count; i++)
     {
-      declaration_string = string_concat(scratch.arena, declaration_string, tokens[i].value);
+      declaration_string = string_join(scratch.arena, declaration_string, tokens[i].value);
     }
 
     typedef_datatype->identifier = string_copy(introspection->typedefs_arena, declaration_string);
@@ -785,12 +888,26 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
       assert(token->kind == Token_Open_Parentheses);
 
       lexer_eat_token(lexer);
+      eat_trivia(lexer);
       token = lexer_peek_token(lexer);
       assert(token->kind == Token_Identifier);
 
       enum_object->identifier = string_copy(introspection->enums_arena, token->value);
 
       lexer_eat_token(lexer);
+      eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+      assert(token->kind == Token_Comma);
+
+      lexer_eat_token(lexer);
+      eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+      assert(token->kind == Token_Identifier);
+
+      enum_object->type = string_copy(introspection->enums_arena, token->value);
+
+      lexer_eat_token(lexer);
+      eat_trivia(lexer);
       token = lexer_peek_token(lexer);
       assert(token->kind == Token_Close_Parentheses);
 
@@ -839,6 +956,14 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
   {
     enum_object->members[i] = temp_members[i];
   }
+
+  assert(enum_object->type.count != 0);
+
+  // Add command to typedef the enum into an number-type
+  Meta_Command* command = &introspection->commands[introspection->commands_count++];
+  command->kind = Meta_Command_Forward_Declare_Enum;
+  command->payload.enum_object = enum_object; 
+  command->file = string_copy(introspection->commands_arena, file_path);
 }
 
 function void
@@ -943,14 +1068,10 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
     function_object->arguments_capacity = MAX_FUNCTION_ARGUMENTS;
     function_object->arguments = push_array(introspection->functions_arena, Function_Argument, function_object->arguments_capacity);
 
-    // -----------------------------------------
     // Parse keywords + return type
-    // -----------------------------------------
-
     s32 return_type_start = (s32)name_index - 1;
 
-    while (return_type_start >= 0 &&
-      tokens[return_type_start].kind == Token_Asterisk)
+    while (return_type_start >= 0 && tokens[return_type_start].kind == Token_Asterisk)
     {
       return_type_start -= 1;
     }
@@ -973,14 +1094,8 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
     }
 
-    // return type
-    function_object->return_type =
-      parse_data_type(introspection->functions_arena,
-        tokens,
-        (u32)return_type_start,
-        name_index);
+    function_object->return_type = parse_data_type(introspection->functions_arena, tokens, (u32)return_type_start, name_index);
 
-    // Parse arguments
     assert(tokens[name_index + 1].kind == Token_Open_Parentheses);
     assert(tokens[tokens_count - 1].kind == Token_Close_Parentheses);
 
@@ -1107,7 +1222,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
       else
       {
-        body = string_concat(scratch.arena, body, token->value);
+        body = string_join(scratch.arena, body, token->value);
       }
     }
 

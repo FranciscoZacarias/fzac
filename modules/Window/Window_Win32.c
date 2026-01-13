@@ -137,6 +137,8 @@ global u32 _win32_key_table[Keyboard_Key_Count] =
   0xDE, // Keyboard_Key_QUOTE
 };
 
+function LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+
 // @TODO(Fz): Add resize callback
 
 function Window* 

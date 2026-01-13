@@ -110,7 +110,7 @@ struct Token
 };
 
 typedef u8 Trivia_Flags;
-enum META_ENUM_LINK(Trivia_Flags)
+enum META_ENUM_LINK(Trivia_Flags, u8)
 {
   Trivia_None = 0,
 
@@ -125,7 +125,7 @@ enum META_ENUM_LINK(Trivia_Flags)
 };
 
 typedef u8 Emit_Structures;
-enum META_ENUM_LINK(Emit_Structures)
+enum META_ENUM_LINK(Emit_Structures, u8)
 {
   Emit_None = 0,
 
@@ -164,8 +164,8 @@ function Token* lexer_reserve_token_slot(Lexer* lexer); /* Add a new incoming to
 function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures);
 
 function b32    lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Attaches a file to the lexer for it to parse */
-function void   lexer_set_emit_structures(Lexer* lexer, b32 string_literals, b32 character_literals, b32 line_comments, b32 block_comments); /* Configs lexer to emit some pre defined commonly used tokens */
 function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
+function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
 function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
 function s16    lexer_peek_character(Lexer* lexer); /* Returns the next character without advancing the lexer */
 function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the nth character without advancing the lexer. 0 is current character, 1 is next character, etc... */
@@ -178,10 +178,13 @@ function void   lexer_eat_spaces(Lexer* lexer); /* Advances over all spaces */
 function void lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind); /* Parses a token that is a single character long */
 function void lexer_parse_identifier(Lexer* lexer, Token* token); /* Parses the next token as an identifier */
 function void lexer_parse_number(Lexer* lexer, Token* token); /* Parses the next token as a number */
-function void lexer_parse_preprocessor_directive(Lexer* lexer, Token* token); /* Parses the next token as a preprocessor directive */
 function void lexer_parse_string_literal(Lexer* lexer, Token* token); /* Parses a string literal that is in between double quotes */
 function void lexer_parse_character_literal(Lexer* lexer, Token* token); /* Parses a character literal that is in between single ticks */
-function void lexer_parse_trivia(Lexer* lexer, Token* token);
+function void lexer_parse_trivia(Lexer* lexer, Token* token); 
+function void lexer_parse_line_comment(Lexer* lexer, Token* token); /* Parses a line comment defined by double slash */
+function void lexer_parse_block_comment(Lexer* lexer, Token* token); /* Parses a block comment defined by slash asterisk up to asterisk slash */
+function Token_Kind lexer_classify_trivia(u8 c);
+function b32        lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind);
 
 // @Section: Token_helpers
 function b32  token_is_trivia(Token* token);

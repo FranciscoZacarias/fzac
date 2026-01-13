@@ -1,6 +1,8 @@
 #ifndef WINDOW_CREATION
 #define WINDOW_CREATION
 
+#include "generated\Window.generated.h"
+
 /*
   @Module: Handles window related functionality, such as window creation and input.
 */
@@ -15,7 +17,7 @@ function void    window_destroy(Window* window);
 
 // @Section: Input
 typedef u32 Keyboard_Key;
-enum META_ENUM_LINK(Keyboard_Key)
+enum META_ENUM_LINK(Keyboard_Key, u32)
 {
   Keyboard_Key_BACKSPACE,
   Keyboard_Key_ENTER,
@@ -153,7 +155,7 @@ function u32          _native_key_from_os_key(Keyboard_Key key); /* Converts os 
 function Keyboard_Key _os_key_from_native_key(u32 native_key); /* Converts native key to os key */
 
 typedef u32 Mouse_Button;
-enum META_ENUM_LINK(Mouse_Button)
+enum META_ENUM_LINK(Mouse_Button, u32)
 {
   Mouse_Button_Left,
   Mouse_Button_Right,
@@ -210,7 +212,7 @@ function void _input_process_mouse_button(Mouse_Button button, b32 is_pressed); 
 // @Section: Events
 
 typedef u32 Event_Kind;
-enum META_ENUM_LINK(Event_Kind)
+enum META_ENUM_LINK(Event_Kind, u32)
 {
   Event_Error = 0,
   Event_Keyboard,

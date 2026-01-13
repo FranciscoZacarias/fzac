@@ -1,3 +1,10 @@
+function wchar_t* utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size);
+function void     win32_log_error(const char* msg, String path);
+function b32      win32_is_dot_dir(const char* name);
+function b32      win32_collect_recursive(Arena* arena, String_List* out, String dir_path);
+function void     win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path);
+
+
 function void
 console_attach()
 {
@@ -118,17 +125,6 @@ file_delete(String path)
   return result;
 }
 
-function b32
-file_exists(String path)
-{
-  Scratch scratch = scratch_begin(0,0);
-  wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
-  DWORD attr = GetFileAttributesW(wpath);
-  scratch_end(&scratch);
-  b32 result = (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
-  return result;
-}
-
 function u32
 file_write(String path, u8* data, u64 data_size)
 {
@@ -237,7 +233,7 @@ win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
 {
   b32 found_file = 0;
 
-  String search = string_concat(arena, dir_path, S("\\*"));
+  String search = string_join(arena, dir_path, S("\\*"));
 
   WIN32_FIND_DATAA find_data = {0};
   HANDLE handle = FindFirstFileA((char*)search.cstring, &find_data);
@@ -253,7 +249,7 @@ win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
 
     String name = string_new((u64)strlen(find_data.cFileName), (u8*)find_data.cFileName);
 
-    String full_path = string_concat(arena, string_concat(arena, dir_path, S("\\")), name);
+    String full_path = string_join(arena, string_join(arena, dir_path, S("\\")), name);
 
     if(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     {
@@ -281,7 +277,7 @@ win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
 function void
 win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
 {
-  String search = string_concat(arena, dir_path, S("\\*"));
+  String search = string_join(arena, dir_path, S("\\*"));
 
   WIN32_FIND_DATAA find_data = {0};
   HANDLE handle = FindFirstFileA((char*)search.cstring, &find_data);
@@ -299,7 +295,7 @@ win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
       continue;
     }
     String name = string_new((u64)strlen(find_data.cFileName), (u8*)find_data.cFileName);
-    String full_path = string_concat(arena, string_concat(arena, dir_path, S("\\")), name);
+    String full_path = string_join(arena, string_join(arena, dir_path, S("\\")), name);
     string_list_push(arena, out, full_path);
   } while(FindNextFileA(handle, &find_data));
 
@@ -395,4 +391,61 @@ is_file(String path)
   if (attributes == INVALID_FILE_ATTRIBUTES) return false;
   b32 result = (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
   return result;
+}
+
+function b32
+directory_exists(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  if (path.count >= MAX_PATH) return false;
+  char buffer[MAX_PATH];
+  memory_copy(buffer, path.cstring, path.count);
+  buffer[path.count] = 0;
+  DWORD attributes = GetFileAttributesA(buffer);
+  if (attributes == INVALID_FILE_ATTRIBUTES) return false;
+  return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+function b32
+file_exists(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  if (path.count >= MAX_PATH) return false;
+  char buffer[MAX_PATH];
+  memory_copy(buffer, path.cstring, path.count);
+  buffer[path.count] = 0;
+  DWORD attributes = GetFileAttributesA(buffer);
+  if (attributes == INVALID_FILE_ATTRIBUTES) return false;
+  return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
+function b32
+directory_create(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  if (path.count >= MAX_PATH) return false;
+
+  char buffer[MAX_PATH];
+  memory_copy(buffer, path.cstring, path.count);
+  buffer[path.count] = 0;
+
+  // CreateDirectory succeeds only if the full parent path already exists
+  if (CreateDirectoryA(buffer, 0))
+  {
+    return true;
+  }
+
+  // If it already exists and is a directory, treat as success
+  DWORD error = GetLastError();
+  if (error == ERROR_ALREADY_EXISTS)
+  {
+    DWORD attributes = GetFileAttributesA(buffer);
+    if (attributes != INVALID_FILE_ATTRIBUTES &&
+      (attributes & FILE_ATTRIBUTE_DIRECTORY))
+    {
+      return true;
+    }
+  }
+
+  return false;
 }

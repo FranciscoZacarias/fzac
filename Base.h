@@ -26,14 +26,14 @@
 Usage Example:
 
   typedef u32 Event_Kind;
-  enum META_ENUM_LINK(Event_Kind)
+  enum META_ENUM_LINK(Event_Kind, u32)
   {
     Event_Error = 0,
     Event_Keyboard,
   };
 
 */
-#define META_ENUM_LINK(enum_name)
+#define META_ENUM_LINK(enum_name, type)
 
 /* META_ENUM_TO_STRING() is used in front of the enum keyword. It generates a to_string function for the enum, given a value of that enum.
 
