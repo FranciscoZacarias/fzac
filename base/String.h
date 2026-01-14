@@ -14,6 +14,7 @@ function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
 
 // @Section: 8 Bit strings
 typedef struct String String; /* 8 bit string. */
+raddbg_type_view(String, cstring);
 struct String
 {
   u64 count;    /* Length of string (excluding null terminator) */

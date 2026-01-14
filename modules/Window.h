@@ -1,8 +1,6 @@
 #ifndef WINDOW_CREATION
 #define WINDOW_CREATION
 
-#include "generated\Window.generated.h"
-
 /*
   @Module: Handles window related functionality, such as window creation and input.
 */

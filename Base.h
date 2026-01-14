@@ -10,6 +10,9 @@
 # pragma warning(disable: 4100) // Unreferenced parameters
 # pragma warning(disable: 4101) // Unused variable
 # pragma warning(disable: 4189) // Local variable is initialized but not referenced
+
+#define RADDBG_MARKUP_IMPLEMENTATION
+# include "Extern\raddbg_markup.h"
 #endif
 
 #include <stdlib.h>
