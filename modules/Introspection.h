@@ -387,16 +387,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
           if (string_equals(token->value, S("enum"), true))
           {
-            _intsp_report(&result, Intsp_Log_Severity_Warning, file_being_lexed, token->l0, token->c0,
-              S("In our codebase, please don't do typedef enum { ... } Enum_Name.\n"
-                "Instead do:\n"
-                "typedef <number type like u32> <Name_Of_Enum>\n"
-                "enum META_ENUM_LINK(<Name_Of_Enum>)\n"
-                "{\n"
-                "  ...\n"
-                "};"));
-
-            lexer_eat_token(&lexer);
+            _intsp_parse_enum(&lexer, &result, file_being_lexed);
+            at_line_start = true;
+            continue;
           }
           else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
           {
@@ -1314,21 +1307,6 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
     lexer_eat_token(lexer);
     _intsp_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
-  }
-  else
-  {
-    _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, enum_keyword_line, enum_keyword_col,
-      S("Missing META_ENUM_LINK()\n"
-        "Please follow the enum standard:\n"
-        "typedef u32 <Name_Of_Enum>;\n"
-        "enum META_ENUM_LINK(<Name_Of_Enum>)\n"
-        "{\n"
-        "  ...\n"
-        "};"));
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-    token = lexer_peek_token(lexer);
-    return;
   }
 
   Intsp_Enum_Member temp_members[INTSP_MAX_ENUMS];
