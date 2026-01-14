@@ -18,6 +18,7 @@ struct String_Buffer
 function void string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity); /* Initializes the buffer */
 function void string_buffer_push(String_Buffer* buffer, const char* fmt, ...); /* Adds data to the buffer */
 function void string_buffer_free(String_Buffer* buffer); /* Frees the buffer */
+function String string_buffer_to_string(Arena* arena, String_Buffer* buffer); /* Copies the contents of buffer into a string */
 
 function void
 string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity)
@@ -89,5 +90,23 @@ string_buffer_free(String_Buffer* buffer)
   buffer->count    = 0;
   buffer->capacity = 0;
 }
+
+function String
+string_buffer_to_string(Arena* arena, String_Buffer* buffer)
+{
+  String result = {0};
+
+  if (buffer == 0 || buffer->count == 0) return result;
+
+  u8* data = push_array(arena, u8, buffer->count + 1);
+  memory_copy(data, buffer->data, buffer->count);
+  data[buffer->count] = 0;
+
+  result.count   = buffer->count;
+  result.cstring = data;
+
+  return result;
+}
+
 
 #endif // DATA_STRUCTURES_H

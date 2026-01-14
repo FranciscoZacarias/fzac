@@ -4,25 +4,28 @@
 #include "../Base.h"
 #include "Lexer.h"
 
-#define MAX_FUNCTION_KEYWORDS 4 
-#define MAX_FUNCTION_ARGUMENTS 16
-#define MAX_FUNCTIONS 1024
+#define INTSP_MAX_FUNCTION_KEYWORDS 4
+#define INTSP_MAX_FUNCTION_ARGUMENTS 16
+#define INTSP_MAX_FUNCTIONS 1024
 
-#define MAX_ENUMS 256
-#define MAX_TYPEDEFS 256
-#define MAX_STRUCTS 512
+#define INTSP_MAX_ENUMS 256
+#define INTSP_MAX_TYPEDEFS 256
+#define INTSP_MAX_STRUCTS 512
 
-#define MAX_META_COMMANDS 128
+#define INTSP_MAX_META_COMMANDS 128
 
-typedef struct Source_Location Source_Location;
-struct Source_Location 
+#define INTSP_MAX_LOGS 512
+
+typedef struct Intsp_Source_Location Intsp_Source_Location;
+struct Intsp_Source_Location
 {
   String file;
   u32 line;
+  u32 column;
 };
 
-typedef struct Data_Type Data_Type;
-struct Data_Type
+typedef struct Intsp_Data_Type Intsp_Data_Type;
+struct Intsp_Data_Type
 {
   b32 is_const; /*const */
   b32 is_pointer; /* at least one level of indirection */
@@ -36,51 +39,52 @@ struct Data_Type
 
   b32 is_array; /* [] */
 
-  u32 indirection_level; 
+  u32 indirection_level;
   String array_length; /* If data_type.is_array == true, we set here the size of the array, which can be a macro, so we just store a string. */
   String name;
 };
 
-typedef struct Typedef_Object Typedef_Object; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
-struct Typedef_Object
+typedef struct Intsp_Typedef_Object Intsp_Typedef_Object; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
+struct Intsp_Typedef_Object
 {
-  Data_Type data_type;
+  Intsp_Data_Type data_type;
   String identifier;
+  Intsp_Source_Location location;
 };
 
-typedef struct Function_Argument Function_Argument;
-struct Function_Argument
+typedef struct Intsp_Function_Argument Intsp_Function_Argument;
+struct Intsp_Function_Argument
 {
   b32 is_var_args; /* If true, overrides data_type and identifier, since they lose meaning. */
-  Data_Type data_type;
+  Intsp_Data_Type data_type;
   String identifier;
 };
 
-typedef struct Function_Object Function_Object;
-struct Function_Object
+typedef struct Intsp_Function_Object Intsp_Function_Object;
+struct Intsp_Function_Object
 {
   String* keywords; /* Things like 'function', 'inline', 'CALLBACK', 'WINAPI' etc... */
   u32 keywords_count;
   u32 keywords_capacity;
 
-  Data_Type return_type;
+  Intsp_Data_Type return_type;
   String identifier;
 
-  Function_Argument* arguments;
+  Intsp_Function_Argument* arguments;
   u32 arguments_count;
   u32 arguments_capacity;
 
   String body;
   String documentation;
 
-  Source_Location declaration;
-  Source_Location implementation;
+  Intsp_Source_Location declaration;
+  Intsp_Source_Location implementation;
 };
 
-typedef struct Struct_Member Struct_Member;
-struct Struct_Member
+typedef struct Intsp_Struct_Member Intsp_Struct_Member;
+struct Intsp_Struct_Member
 {
-  Data_Type data_type;
+  Intsp_Data_Type data_type;
   String identifier;
   String documentation;
 };
@@ -97,24 +101,24 @@ struct Struct_Member
   typedef indirection
   unions (same syntax, different semantics)
 */
-typedef struct Struct_Object Struct_Object;
-struct Struct_Object
+typedef struct Intsp_Struct_Object Intsp_Struct_Object;
+struct Intsp_Struct_Object
 {
   String identifier;
 
-  Struct_Member* members;
+  Intsp_Struct_Member* members;
   u32 members_count;
   u32 members_capacity;
 
   String body;
   String documentation;
 
-  Source_Location forward_declaration;
-  Source_Location definition;
+  Intsp_Source_Location forward_declaration;
+  Intsp_Source_Location definition;
 };
 
-typedef struct Enum_Member Enum_Member;
-struct Enum_Member
+typedef struct Intsp_Enum_Member Intsp_Enum_Member;
+struct Intsp_Enum_Member
 {
   String identifier;
   String documentation;
@@ -123,67 +127,95 @@ struct Enum_Member
   s64 value;
 };
 
-typedef struct Enum_Object Enum_Object;
-struct Enum_Object 
+typedef struct Intsp_Enum_Object Intsp_Enum_Object;
+struct Intsp_Enum_Object
 {
   String identifier;
   String type;
 
-  Enum_Member* members;
+  Intsp_Enum_Member* members;
   u32 members_count;
   u32 members_capacity;
 
-  Source_Location type_casted_at;
-  Source_Location definition;
+  Intsp_Typedef_Object* type_casted_at;
+  Intsp_Source_Location definition;
 };
 
 typedef struct Global_Variable Global_Variable;
 struct Global_Variable
 {
-  Data_Type data_type;
+  Intsp_Data_Type data_type;
   String identifier;
   String initialization; // If it's initialized, this string will contain the value;
 };
 
-typedef enum
+typedef u32 Intsp_Meta_Command_Kind;
+enum META_ENUM_LINK(Intsp_Meta_Command_Kind)
 {
-  Meta_Command_Error = 0,
-  Meta_Command_Enum_To_String,
-  Meta_Command_Forward_Declare_Enum, /* It's not really typedefing an enum, since that's not really possible, but typedefs a integer to the enum. */
-} Meta_Command_Kind;
+  Intsp_Meta_Command_Error = 0,
+  Intsp_Meta_Command_Enum_To_String,
+};
 
 typedef struct Meta_Command Meta_Command;
 struct Meta_Command
 {
-  Meta_Command_Kind kind;
+  Intsp_Meta_Command_Kind kind;
   String file; /* File that called this command */
 
   union
   {
-    Enum_Object* enum_object;
+    Intsp_Enum_Object* enum_object;
   } payload;
 };
 
-typedef struct Introspection Introspection;
+typedef u32 Intsp_Log_Severity;
+enum META_ENUM_LINK(Intsp_Log_Severity)
+{
+  Intsp_Log_Severity_None = 0,
+  Intsp_Log_Severity_Log,
+  Intsp_Log_Severity_Warning,
+  Intsp_Log_Severity_Error, /* Error just acts as a fatal error. */
+};
+
+typedef struct Intsp_Log Intsp_Log;
+struct Intsp_Log
+{
+  Intsp_Log_Severity severity;
+  String text;
+};
+
+typedef struct Intsp_Report Intsp_Report;
+struct Intsp_Report
+{
+  Intsp_Log* logs;
+  u32 logs_capacity;
+  u32 logs_count;
+};
+
+typedef struct Introspection Introspection; /* Contains an introspection of a C program in my codebase. Note that reports are not exhaustive, they are only the ones caught on the lexing level. */
 struct Introspection
 {
+  Arena* arena;
+  Intsp_Report report;
+  b32 fatal_error;
+
   Arena* functions_arena;
-  Function_Object* functions;
+  Intsp_Function_Object* functions;
   u32 functions_capacity;
   u32 functions_count;
 
   Arena* structs_arena;
-  Struct_Object* structs;
+  Intsp_Struct_Object* structs;
   u32 structs_capacity;
   u32 structs_count;
 
   Arena* enums_arena;
-  Enum_Object* enums;
+  Intsp_Enum_Object* enums;
   u32 enums_capacity;
   u32 enums_count;
 
   Arena* typedefs_arena;
-  Typedef_Object* typedefs;
+  Intsp_Typedef_Object* typedefs;
   u32 typedefs_capacity;
   u32 typedefs_count;
 
@@ -193,47 +225,56 @@ struct Introspection
   u32 commands_count;
 };
 
-function Introspection get_introspection(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
+function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
+function b32           intsp_report_introspection(Introspection* introspection, b32 verbose, String* out); /* Produces a report of the introspection. Reports true if no fatal errors were found. If there are fatal errors, the introspection will be incomplete but the report still has an ERROR log. */
+function void          intsp_report_functions(Introspection* introspection, b32 report_documentation, String* out);
+function void          intsp_report_enums(Introspection* introspection, String* out);
+function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
+function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f); /* Convers a Intsp_Function_Object to a string */
 
-function u32  parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
-function void parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
-function void parse_typedef(Lexer* lexer, Introspection* introspection, String file_path); /* Parses typedefs that are not structs nor enums */
-function void parse_function(Lexer* lexer, Introspection* introspection, String file_path);
-function void parse_structs(Lexer* lexer, Introspection* introspection, String file_path);
-function void eat_trivia(Lexer* lexer);
-function Data_Type        parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
-function Function_Object* find_function(Introspection* introspection, String function_name);
-function Enum_Object*     find_enum(Introspection* introspection, String enum_name);
-function Struct_Object*   find_struct(Introspection* introspection, String struct_name);
-function Typedef_Object*  find_typedef(Introspection* introspection, String typedef_name);
-
+function u32  _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
+function void _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
+function void _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_path); /* Parses typedefs that are not structs nor enums */
+function void _intsp_parse_function(Lexer* lexer, Introspection* introspection, String file_path);
+function void _intsp_parse_structs(Lexer* lexer, Introspection* introspection, String file_path);
+function void _intsp_eat_trivia(Lexer* lexer);
+function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
+function Intsp_Data_Type        _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
+function Intsp_Function_Object* _intsp_find_function(Introspection* introspection, String function_name);
+function Intsp_Enum_Object*     _intsp_find_enum(Introspection* introspection, String enum_name);
+function Intsp_Struct_Object*   _intsp_find_struct(Introspection* introspection, String struct_name);
+function Intsp_Typedef_Object*  _intsp_find_typedef(Introspection* introspection, String typedef_name);
 
 function Introspection
-get_introspection(String source_directory, b32 introspect_base_library)
+intsp_run(String source_directory, b32 introspect_base_library)
 {
   Scratch scratch = scratch_begin(0,0);
 
   Introspection result;
   memory_zero_struct(&result);
 
+  result.arena = arena_alloc();
+  result.report.logs_capacity = INTSP_MAX_LOGS;
+  result.report.logs          = push_array(result.arena, Intsp_Log, result.report.logs_capacity);
+
   result.functions_arena    = arena_alloc();
-  result.functions_capacity = MAX_FUNCTIONS;
-  result.functions          = push_array(result.functions_arena, Function_Object, result.functions_capacity);
+  result.functions_capacity = INTSP_MAX_FUNCTIONS;
+  result.functions          = push_array(result.functions_arena, Intsp_Function_Object, result.functions_capacity);
 
   result.enums_arena    = arena_alloc();
-  result.enums_capacity = MAX_ENUMS;
-  result.enums          = push_array(result.enums_arena, Enum_Object, result.enums_capacity);
+  result.enums_capacity = INTSP_MAX_ENUMS;
+  result.enums          = push_array(result.enums_arena, Intsp_Enum_Object, result.enums_capacity);
 
   result.typedefs_arena    = arena_alloc();
-  result.typedefs_capacity = MAX_TYPEDEFS;
-  result.typedefs          = push_array(result.typedefs_arena, Typedef_Object, result.enums_capacity);
+  result.typedefs_capacity = INTSP_MAX_TYPEDEFS;
+  result.typedefs          = push_array(result.typedefs_arena, Intsp_Typedef_Object, result.enums_capacity);
 
   result.structs_arena    = arena_alloc();
-  result.structs_capacity = MAX_STRUCTS;
-  result.structs          = push_array(result.structs_arena, Struct_Object, result.structs_capacity);
-  
+  result.structs_capacity = INTSP_MAX_STRUCTS;
+  result.structs          = push_array(result.structs_arena, Intsp_Struct_Object, result.structs_capacity);
+
   result.commands_arena    = arena_alloc();
-  result.commands_capacity = MAX_META_COMMANDS;
+  result.commands_capacity = INTSP_MAX_META_COMMANDS;
   result.commands          = push_array(result.commands_arena, Meta_Command, result.commands_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
@@ -276,6 +317,11 @@ get_introspection(String source_directory, b32 introspect_base_library)
 
     for (;;)
     {
+      if (result.fatal_error)
+      {
+        break;
+      }
+
       Token* token = lexer_peek_token(&lexer);
 
       if (token->kind == Token_End_Of_File) break;
@@ -315,13 +361,13 @@ get_introspection(String source_directory, b32 introspect_base_library)
       {
         if (string_equals(token->value, S("function"), true))
         {
-          parse_function(&lexer, &result, file_being_lexed);
+          _intsp_parse_function(&lexer, &result, file_being_lexed);
           at_line_start = true;
           continue;
         }
         else if (string_equals(token->value, S("enum"), true))
         {
-          parse_enum(&lexer, &result, file_being_lexed);
+          _intsp_parse_enum(&lexer, &result, file_being_lexed);
           at_line_start = true;
           continue;
         }
@@ -340,26 +386,29 @@ get_introspection(String source_directory, b32 introspect_base_library)
         else if (string_equals(token->value, S("typedef"), true))
         {
           lexer_eat_token(&lexer);
-          eat_trivia(&lexer);
+          _intsp_eat_trivia(&lexer);
           token = lexer_peek_token(&lexer);
 
           if (string_equals(token->value, S("enum"), true))
           {
-            // @TODO(fz): Better logging system
-            printf("In our codebase, please don't do typedef enum. Instead do:\n"
-            "enum META_ENUM_LINK(Name_Of_Enum, type)\n"
-            "{\n"
-            "  ...\n"
-            "};\n");
+            _intsp_report(&result, Intsp_Log_Severity_Warning, file_being_lexed, token->l0, token->c0,
+              S("In our codebase, please don't do typedef enum { ... } Enum_Name.\n"
+                "Instead do:\n"
+                "typedef <number type like u32> <Name_Of_Enum>\n"
+                "enum META_ENUM_LINK(<Name_Of_Enum>)\n"
+                "{\n"
+                "  ...\n"
+                "};"));
+
             lexer_eat_token(&lexer);
           }
           else if (string_equals(token->value, S("struct"), true))
           {
-            parse_structs(&lexer, &result, file_being_lexed);
+            _intsp_parse_structs(&lexer, &result, file_being_lexed);
           }
           else
           {
-            parse_typedef(&lexer, &result, file_being_lexed);
+            _intsp_parse_typedef(&lexer, &result, file_being_lexed);
           }
 
           at_line_start = true;
@@ -369,6 +418,7 @@ get_introspection(String source_directory, b32 introspect_base_library)
         // @NOTE(fz): Global scope meta commands
         else if (string_equals(token->value, S("META_ENUM_TO_STRING"), true))
         {
+#if 0
           lexer_eat_token(&lexer);
           token = lexer_peek_token(&lexer);
           assert(token->kind == Token_Open_Parentheses);
@@ -377,10 +427,10 @@ get_introspection(String source_directory, b32 introspect_base_library)
           token = lexer_peek_token(&lexer);
           assert(token->kind == Token_Identifier);
 
-          Enum_Object* enum_object = find_enum(&result, token->value);
+          Intsp_Enum_Object* enum_object = _intsp_find_enum(&result, token->value);
           Meta_Command* command = &result.commands[result.commands_count++];
-          command->kind = Meta_Command_Enum_To_String;
-          command->payload.enum_object = enum_object; 
+          command->kind = Intsp_Meta_Command_Enum_To_String;
+          command->payload.enum_object = enum_object;
           command->file = string_copy(result.commands_arena, file_being_lexed);
 
           lexer_eat_token(&lexer);
@@ -390,6 +440,7 @@ get_introspection(String source_directory, b32 introspect_base_library)
           lexer_eat_token(&lexer);
           token = lexer_peek_token(&lexer);
           assert(token->kind == Token_Semicolon);
+#endif
         }
       }
 
@@ -402,13 +453,174 @@ get_introspection(String source_directory, b32 introspect_base_library)
   return result;
 }
 
-function Enum_Object*
-find_enum(Introspection* introspection, String enum_name)
+function b32
+intsp_report_introspection(Introspection* introspection, b32 verbose, String* out)
 {
-  Enum_Object* result = NULL;
+  String_Buffer buffer = {0};
+  string_buffer_init(&buffer, &MallocAllocator, kilobytes(8));
+
+  Intsp_Report* report = &introspection->report;
+  u32 warnings_and_errors = 0;
+
+  string_buffer_push(&buffer,
+    "[Introspection report]:\n");
+
+  for (u32 i = 0; i < report->logs_count; i += 1)
+  {
+    Intsp_Log ilog = report->logs[i];
+
+    if ((ilog.severity == Intsp_Log_Severity_Log || ilog.severity == Intsp_Log_Severity_None) && !verbose)
+    {
+      continue;
+    }
+
+    warnings_and_errors += 1;
+    string_buffer_push(&buffer, S_FMT, S_ARG(ilog.text));
+  }
+
+  string_buffer_push(&buffer, "Total Reports: %u\nWarnings and Errors: %u\n\n", report->logs_count, warnings_and_errors);
+
+  if (introspection->fatal_error) string_buffer_push(&buffer, "[Introspection is incomplete due to ERROR!]\n" "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+  *out = string_buffer_to_string(introspection->arena, &buffer);
+  string_buffer_free(&buffer);
+
+  return !introspection->fatal_error;
+}
+
+
+function void
+intsp_report_functions(Introspection* introspection, b32 report_documentation, String* out)
+{
+  String_Buffer buffer = {0};
+  string_buffer_init(&buffer, &MallocAllocator, 1024);
+
+  u32 num_mismatches = 0;
+  u32 num_no_documentation = 0;
+
+  for (u32 i = 0; i < introspection->functions_count; i += 1)
+  {
+    Intsp_Function_Object* func_object = &introspection->functions[i];
+
+    if (func_object->implementation.file.count == 0 || func_object->declaration.file.count == 0)
+    {
+      string_buffer_push(&buffer,
+        "Function "S_FMT" has a mismatch:\n"
+        " Decl: "S_FMT":%u\n"
+        " Impl: "S_FMT":%u\n\n",
+        S_ARG(func_object->identifier),
+        S_ARG(func_object->declaration.file), func_object->declaration.line,
+        S_ARG(func_object->implementation.file), func_object->implementation.line);
+      num_mismatches += 1;
+    }
+
+    if (func_object->documentation.count == 0)
+    {
+      if (report_documentation)
+      {
+        string_buffer_push(&buffer, "Function "S_FMT" doesn't have documentation.\n\n", S_ARG(func_object->identifier));
+      }
+      num_no_documentation += 1;
+    }
+  }
+
+  string_buffer_push(&buffer, "[Function Report]:\n");
+
+  if (num_mismatches == 0) string_buffer_push(&buffer, " No Function mismatches.\n");
+  else                     string_buffer_push(&buffer, " Mismatches: %u/%u\n", num_mismatches, introspection->functions_count);
+
+  if (num_no_documentation == 0) string_buffer_push(&buffer, " No function without documentation.\n");
+  else                           string_buffer_push(&buffer, " No documentation: %u/%u\n", num_no_documentation, introspection->functions_count);
+
+  *out = string_buffer_to_string(introspection->arena, &buffer);
+  string_buffer_free(&buffer);
+}
+
+function void
+intsp_report_enums(Introspection* introspection, String* out)
+{
+  String_Buffer buffer = {0};
+  string_buffer_init(&buffer, &MallocAllocator, 512);
+
+  u32 num_missing_identifier = 0;
+
   for (u32 i = 0; i < introspection->enums_count; i += 1)
   {
-    Enum_Object* enum_object = &(introspection->enums[i]);
+    Intsp_Enum_Object* e = &introspection->enums[i];
+    if (e->identifier.count == 0)
+    {
+      num_missing_identifier += 1;
+      string_buffer_push(&buffer, "Enum missing identifier. First enum value: "S_FMT"\n", S_ARG(e->members[0].identifier));
+    }
+  }
+
+  string_buffer_push(&buffer, "\n[Enum Report]:\n");
+
+  if (num_missing_identifier == 0) string_buffer_push(&buffer, " Enums are ok.\n\n");
+  else                             string_buffer_push(&buffer, " Enums missing identifiers: %u/%u\n\n", num_missing_identifier, introspection->enums_count);
+
+  *out = string_buffer_to_string(introspection->arena, &buffer);
+  string_buffer_free(&buffer);
+}
+
+function String
+intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type)
+{
+  String_Buffer buffer;
+  string_buffer_init(&buffer, &MallocAllocator, 64);
+
+  if (type.is_const) string_buffer_push(&buffer, "const ");
+  string_buffer_push(&buffer, S_FMT, S_ARG(type.name));
+  if (type.is_pointer) for (u32 i = 0; i < type.indirection_level; i += 1) string_buffer_push(&buffer, "*");
+  if (type.is_array) string_buffer_push(&buffer, "[]");
+
+  String result = string_buffer_to_string(arena, &buffer);
+  string_buffer_free(&buffer);
+  return result;
+}
+
+function String
+intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f)
+{
+  Scratch scratch = scratch_begin(0, 0);
+
+  String_Buffer buffer;
+  string_buffer_init(&buffer, &MallocAllocator, 128);
+
+  for (u32 i = 0; i < f->keywords_count; i += 1) string_buffer_push(&buffer, S_FMT " ", S_ARG(f->keywords[i]));
+  String return_type = intsp_data_type_to_string(scratch.arena, f->return_type);
+  string_buffer_push(&buffer, S_FMT " ", S_ARG(return_type));
+  string_buffer_push(&buffer, S_FMT "(", S_ARG(f->identifier));
+
+  for (u32 i = 0; i < f->arguments_count; i += 1)
+  {
+    Intsp_Function_Argument* arg = &f->arguments[i];
+    if (arg->is_var_args)
+    {
+      string_buffer_push(&buffer, "...");
+    }
+    else
+    {
+      String arg_type = intsp_data_type_to_string(scratch.arena, arg->data_type);
+      string_buffer_push(&buffer, S_FMT " " S_FMT, S_ARG(arg_type), S_ARG(arg->identifier) );
+    }
+    if (i + 1 < f->arguments_count) string_buffer_push(&buffer, ", ");
+  }
+
+  string_buffer_push(&buffer, ")");
+  String result = string_buffer_to_string(arena, &buffer);
+  string_buffer_free(&buffer);
+
+  scratch_end(&scratch);
+  return result;
+}
+
+function Intsp_Enum_Object*
+_intsp_find_enum(Introspection* introspection, String enum_name)
+{
+  Intsp_Enum_Object* result = NULL;
+  for (u32 i = 0; i < introspection->enums_count; i += 1)
+  {
+    Intsp_Enum_Object* enum_object = &(introspection->enums[i]);
     if (string_equals(enum_name, enum_object->identifier, true))
     {
       result = enum_object;
@@ -418,13 +630,13 @@ find_enum(Introspection* introspection, String enum_name)
   return result;
 }
 
-function Function_Object*
-find_function(Introspection* introspection, String function_name)
+function Intsp_Function_Object*
+_intsp_find_function(Introspection* introspection, String function_name)
 {
-  Function_Object* result = NULL;
+  Intsp_Function_Object* result = NULL;
   for (u32 i = 0; i < introspection->functions_count; i += 1)
   {
-    Function_Object* function_object = &(introspection->functions[i]);
+    Intsp_Function_Object* function_object = &(introspection->functions[i]);
     if (string_equals(function_name, function_object->identifier, true))
     {
       result = function_object;
@@ -434,13 +646,13 @@ find_function(Introspection* introspection, String function_name)
   return result;
 }
 
-function Struct_Object*
-find_struct(Introspection* introspection, String struct_name)
+function Intsp_Struct_Object*
+_intsp_find_struct(Introspection* introspection, String struct_name)
 {
-  Struct_Object* result = NULL;
+  Intsp_Struct_Object* result = NULL;
   for (u32 i = 0; i < introspection->structs_count; i += 1)
   {
-    Struct_Object* struct_object = &(introspection->structs[i]);
+    Intsp_Struct_Object* struct_object = &(introspection->structs[i]);
     if (string_equals(struct_name, struct_object->identifier, true))
     {
       result = struct_object;
@@ -450,13 +662,13 @@ find_struct(Introspection* introspection, String struct_name)
   return result;
 }
 
-function Typedef_Object*
-find_typedef(Introspection* introspection, String typedef_name)
+function Intsp_Typedef_Object*
+_intsp_find_typedef(Introspection* introspection, String typedef_name)
 {
-  Typedef_Object* result = NULL;
+  Intsp_Typedef_Object* result = NULL;
   for (u32 i = 0; i < introspection->typedefs_count; i += 1)
   {
-    Typedef_Object* typedef_object = &(introspection->typedefs[i]);
+    Intsp_Typedef_Object* typedef_object = &(introspection->typedefs[i]);
     if (string_equals(typedef_name, typedef_object->identifier, true))
     {
       result = typedef_object;
@@ -466,10 +678,10 @@ find_typedef(Introspection* introspection, String typedef_name)
   return result;
 }
 
-function Data_Type
-parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end)
+function Intsp_Data_Type
+_intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end)
 {
-  Data_Type type;
+  Intsp_Data_Type type;
   memory_zero_struct(&type);
 
   u32 i = start;
@@ -515,7 +727,7 @@ parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end)
     }
   }
 
-  // @NOTE(fz): This assert is commented here as documentation. Before, I was asserting this so that something 
+  // @NOTE(fz): This assert is commented here as documentation. Before, I was asserting this so that something
   // like unsigned char would be parsed as: is_unsigned = true, identifier = "char". However we can have
   // types just like unsigned short, or long long, which are just flags.
   // assert(type.name.cstring != 0);
@@ -553,13 +765,13 @@ parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end)
 }
 
 function u32
-parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 max_members)
+_intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members)
 {
   Token* token = lexer_peek_token(lexer);
   assert(token->kind == Token_Open_Brace);
 
   lexer_eat_token(lexer);
-  eat_trivia(lexer);
+  _intsp_eat_trivia(lexer);
 
   u32 members_count = 0;
   s64 next_enum_value = 0;
@@ -577,20 +789,20 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
     assert(token->kind == Token_Identifier);
     assert(members_count < max_members);
 
-    Enum_Member* member = &temp_members[members_count++];
+    Intsp_Enum_Member* member = &temp_members[members_count++];
     memory_zero_struct(member);
 
     member->identifier = string_copy(arena, token->value);
 
     lexer_eat_token(lexer);
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
 
     token = lexer_peek_token(lexer);
 
     if(token->kind == Token_Equal)
     {
       lexer_eat_token(lexer);
-      eat_trivia(lexer);
+      _intsp_eat_trivia(lexer);
 
       token = lexer_peek_token(lexer);
 
@@ -600,17 +812,17 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
         member->is_explicit_bit_flag = true;
 
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Number && token->value.cstring[0] == '1');
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Less_Less);
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Number);
@@ -622,13 +834,13 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
         member->value = ((s64)1 << shift);
 
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Close_Parentheses);
 
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
       }
       // Symbol OR expression: A | B | C
       else if(token->kind == Token_Identifier)
@@ -653,13 +865,13 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
           assert(found);
 
           lexer_eat_token(lexer);
-          eat_trivia(lexer);
+          _intsp_eat_trivia(lexer);
 
           token = lexer_peek_token(lexer);
           if(token->kind != Token_Or) break;
 
           lexer_eat_token(lexer);
-          eat_trivia(lexer);
+          _intsp_eat_trivia(lexer);
 
           token = lexer_peek_token(lexer);
         }
@@ -673,7 +885,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
         assert(ok);
 
         lexer_eat_token(lexer);
-        eat_trivia(lexer);
+        _intsp_eat_trivia(lexer);
       }
 
       next_enum_value = member->value + 1;
@@ -689,10 +901,10 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
     if(token->kind == Token_Comma)
     {
       lexer_eat_token(lexer);
-      eat_trivia(lexer);
+      _intsp_eat_trivia(lexer);
     }
 
-    // Trailing comment/documentation 
+    // Trailing comment/documentation
     token = lexer_peek_token(lexer);
     if(token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
     {
@@ -703,7 +915,7 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
       member->documentation = string_trim(arena, comment);
 
       lexer_eat_token(lexer);
-      eat_trivia(lexer);
+      _intsp_eat_trivia(lexer);
     }
 
     token = lexer_peek_token(lexer);
@@ -714,12 +926,16 @@ parse_enum_members(Arena* arena, Lexer* lexer, Enum_Member* temp_members, u32 ma
 }
 
 function void
-parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
+_intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
 {
   Scratch scratch = scratch_begin(0,0);
+  Token* token = lexer_peek_token(lexer);
 
-  Typedef_Object* typedef_datatype = &(introspection->typedefs[introspection->typedefs_count++]);
+  Intsp_Typedef_Object* typedef_datatype = &(introspection->typedefs[introspection->typedefs_count++]);
   memory_zero_struct(typedef_datatype);
+  typedef_datatype->location.file = string_copy(introspection->typedefs_arena, file_path);
+  typedef_datatype->location.line = token->l0;
+  typedef_datatype->location.column = token->c0;
 
   u32 tokens_capacity = 32;
   u32 tokens_count = 0;
@@ -728,9 +944,9 @@ parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
   // Collect tokens until semicolon
   for (;;)
   {
-    Token* token = lexer_peek_token(lexer);
+    token = lexer_peek_token(lexer);
     lexer_eat_token(lexer);
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
 
     if (token->kind == Token_Semicolon) break;
     if (tokens_count >= tokens_capacity)
@@ -763,7 +979,7 @@ parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
     // normal typedef: last identifier is the typedef name
     u32 name_index = tokens_count - 1;
     typedef_datatype->identifier = string_copy(introspection->typedefs_arena, tokens[name_index].value);
-    typedef_datatype->data_type  = parse_data_type(introspection->typedefs_arena, tokens, 0, name_index);
+    typedef_datatype->data_type  = _intsp_parse_data_type(introspection->typedefs_arena, tokens, 0, name_index);
   }
   else
   {
@@ -781,7 +997,7 @@ parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
       }
     }
 
-    typedef_datatype->data_type = parse_data_type(introspection->typedefs_arena, tokens, 0, base_type_end);
+    typedef_datatype->data_type = _intsp_parse_data_type(introspection->typedefs_arena, tokens, 0, base_type_end);
 
     String declaration_string = string_zero();
     for (u32 i = base_type_end; i < tokens_count; i++)
@@ -796,18 +1012,18 @@ parse_typedef(Lexer* lexer, Introspection* introspection, String file_path)
 }
 
 function void
-parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
+_intsp_parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
 {
   Token* token = lexer_peek_token(lexer);
   assert(string_equals(token->value, S("struct"), true));
 
   lexer_eat_token(lexer);
-  eat_trivia(lexer);
+  _intsp_eat_trivia(lexer);
 
   Token* identifier = lexer_peek_token(lexer);
 
-  Struct_Object* struct_object = NULL;
-  struct_object = find_struct(introspection, identifier->value);
+  Intsp_Struct_Object* struct_object = NULL;
+  struct_object = _intsp_find_struct(introspection, identifier->value);
 
   if (struct_object == NULL)
   {
@@ -818,7 +1034,7 @@ parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
   }
 
   lexer_eat_token(lexer);
-  eat_trivia(lexer);
+  _intsp_eat_trivia(lexer);
   Token* next = lexer_peek_token(lexer);
 
   if (next->kind == Token_Identifier)
@@ -826,18 +1042,20 @@ parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
     // Forwawrd declaration
     if (!string_equals(identifier->value, next->value, true))
     {
-      // @TODO(fz): Error. In a struct fwd declaration, both names have to be the same.
-      assert(0);
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_path, identifier->l0, identifier->c0, 
+        Sf(introspection->arena, "When forward declaring a struct, the struct tag and the typedef name must be the same.\n"
+          "Please fix this: typedef struct "S_FMT" "S_FMT";", S_ARG(identifier->value), S_ARG(next->value)));
+      return;
     }
 
     lexer_eat_token(lexer);
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
     next = lexer_peek_token(lexer);
 
     assert(next->kind == Token_Semicolon);
 
     lexer_eat_token(lexer);
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
     next = lexer_peek_token(lexer);
 
     if (next->kind == Token_Comment_Block || next->kind == Token_Comment_Line)
@@ -861,87 +1079,95 @@ parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
 }
 
 function void
-parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
+_intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 {
   // These are anonymous enums. They don't have an identifier because they are likely type-casted elsewhere.
   Token* token = lexer_peek_token(lexer);
   assert(string_equals(token->value, S("enum"), true));
 
-  Enum_Object* enum_object = &(introspection->enums[introspection->enums_count++]);
+  u32 enum_keyword_line = token->l0;
+  u32 enum_keyword_col = token->c0;
+
+  Intsp_Enum_Object* enum_object = &(introspection->enums[introspection->enums_count++]);
   memory_zero_struct(enum_object);
 
   enum_object->definition.file = string_copy(introspection->enums_arena, file_path);
   enum_object->definition.line = token->l0;
+  enum_object->definition.column = token->c0;
 
   lexer_eat_token(lexer);
-  eat_trivia(lexer);
+  _intsp_eat_trivia(lexer);
 
   token = lexer_peek_token(lexer);
 
   // Look for Metaprogramming tags
-  if(token->kind == Token_Identifier)
+  if(token->kind == Token_Identifier && string_equals(token->value, S("META_ENUM_LINK"), true))
   {
-    if(string_equals(token->value, S("META_ENUM_LINK"), true))
+    lexer_eat_token(lexer);
+    token = lexer_peek_token(lexer);
+    assert(token->kind == Token_Open_Parentheses);
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+    assert(token->kind == Token_Identifier);
+
+    enum_object->identifier = string_copy(introspection->enums_arena, token->value);
+
+    // Try to link enum to typedef
+    Intsp_Typedef_Object* typedef_object = _intsp_find_typedef(introspection, enum_object->identifier);
+    if (typedef_object != NULL)
     {
-      lexer_eat_token(lexer);
-      token = lexer_peek_token(lexer);
-      assert(token->kind == Token_Open_Parentheses);
-
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
-      assert(token->kind == Token_Identifier);
-
-      enum_object->identifier = string_copy(introspection->enums_arena, token->value);
-
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
-      assert(token->kind == Token_Comma);
-
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
-      assert(token->kind == Token_Identifier);
-
-      enum_object->type = string_copy(introspection->enums_arena, token->value);
-
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
-      assert(token->kind == Token_Close_Parentheses);
-
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
+      enum_object->type_casted_at = typedef_object;
     }
     else
     {
-      // This is not how we should set enums in the codebase, but anyway.
-      // An identifier after enum that is not a metaprogram tag, it's probably the name of the enum.
-      // E.g. enum Dummy_Enum { Dummy };
-      enum_object->identifier = string_copy(introspection->enums_arena, token->value);
-      lexer_eat_token(lexer);
-      eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
+      _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, enum_object->definition.line, enum_object->definition.column,
+        Sf(introspection->arena,
+          "Enum was declared without previously being typedefed.\n"
+          "Consider adding: typedef u32 "S_FMT"; in: "S_FMT"::%u,1", S_ARG(enum_object->identifier), S_ARG(file_path), enum_object->definition.line-1));
     }
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+    assert(token->kind == Token_Close_Parentheses);
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+  }
+  else
+  {
+    _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, enum_keyword_line, enum_keyword_col,
+      S("Missing META_ENUM_LINK()\n"
+        "Please follow the enum standard:\n"
+        "typedef u32 <Name_Of_Enum>;\n"
+        "enum META_ENUM_LINK(<Name_Of_Enum>)\n"
+        "{\n"
+        "  ...\n"
+        "};"));
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+    return;
   }
 
-  Enum_Member temp_members[MAX_ENUMS];
-  u32 members_count = parse_enum_members(introspection->enums_arena, lexer, temp_members, MAX_ENUMS);
+  Intsp_Enum_Member temp_members[INTSP_MAX_ENUMS];
+  u32 members_count = _intsp_parse_enum_members(introspection->enums_arena, lexer, temp_members, INTSP_MAX_ENUMS);
 
   token = lexer_peek_token(lexer);
   assert(token->kind == Token_Close_Brace);
 
   lexer_eat_token(lexer);
-  eat_trivia(lexer);
+  _intsp_eat_trivia(lexer);
   token = lexer_peek_token(lexer);
-  
+
   if (token->kind == Token_Identifier)
   {
     enum_object->identifier = string_copy(introspection->enums_arena, token->value);
     lexer_eat_token(lexer);
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
   }
 
@@ -950,39 +1176,36 @@ parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 
   enum_object->members_count = members_count;
   enum_object->members_capacity = members_count;
-  enum_object->members = push_array(introspection->enums_arena, Enum_Member, members_count);
+  enum_object->members = push_array(introspection->enums_arena, Intsp_Enum_Member, members_count);
 
   for(u32 i = 0; i < members_count; ++i)
   {
     enum_object->members[i] = temp_members[i];
   }
-
-  assert(enum_object->type.count != 0);
-
-  // Add command to typedef the enum into an number-type
-  Meta_Command* command = &introspection->commands[introspection->commands_count++];
-  command->kind = Meta_Command_Forward_Declare_Enum;
-  command->payload.enum_object = enum_object; 
-  command->file = string_copy(introspection->commands_arena, file_path);
 }
 
 function void
-parse_function(Lexer* lexer, Introspection* introspection, String file_path)
+_intsp_parse_function(Lexer* lexer, Introspection* introspection, String file_path)
 {
   Scratch scratch = scratch_begin(0,0);
-  
+
   u32 tokens_max   = 32;
   u32 tokens_count = 0;
   Token* tokens    = push_array(scratch.arena, Token, tokens_max);
 
   s64 line = -1;
+  s64 column = -1;
 
   b32 is_declaration = false;
 
   for (;;)
   {
     Token* token = lexer_peek_token(lexer);
-    if (line == -1) line = token->l0;
+    if (line == -1)
+    {
+      line = token->l0;
+      column = token->c0;
+    }
 
     if (token->kind == Token_End_Of_File)
     {
@@ -1027,11 +1250,11 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
     lexer_eat_token(lexer);
   }
 
-  Data_Type return_type;
+  Intsp_Data_Type return_type;
   memory_zero_struct(&return_type);
 
   String function_name = string_zero();
-  Function_Object* function_object = NULL;
+  Intsp_Function_Object* function_object = NULL;
 
   // Find function name;
   u32 name_index = U32_MAX;
@@ -1052,7 +1275,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
 
   assert(name_index != U32_MAX);
 
-  function_object = find_function(introspection, function_name);
+  function_object = _intsp_find_function(introspection, function_name);
 
   if (function_object == NULL)
   {
@@ -1061,12 +1284,12 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
     function_object->identifier = string_copy(introspection->functions_arena, function_name);
 
     function_object->keywords_count = 0;
-    function_object->keywords_capacity = MAX_FUNCTION_KEYWORDS;
+    function_object->keywords_capacity = INTSP_MAX_FUNCTION_KEYWORDS;
     function_object->keywords = push_array(introspection->functions_arena, String, function_object->keywords_capacity);
 
     function_object->arguments_count = 0;
-    function_object->arguments_capacity = MAX_FUNCTION_ARGUMENTS;
-    function_object->arguments = push_array(introspection->functions_arena, Function_Argument, function_object->arguments_capacity);
+    function_object->arguments_capacity = INTSP_MAX_FUNCTION_ARGUMENTS;
+    function_object->arguments = push_array(introspection->functions_arena, Intsp_Function_Argument, function_object->arguments_capacity);
 
     // Parse keywords + return type
     s32 return_type_start = (s32)name_index - 1;
@@ -1094,14 +1317,14 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
     }
 
-    function_object->return_type = parse_data_type(introspection->functions_arena, tokens, (u32)return_type_start, name_index);
+    function_object->return_type = _intsp_parse_data_type(introspection->functions_arena, tokens, (u32)return_type_start, name_index);
 
     assert(tokens[name_index + 1].kind == Token_Open_Parentheses);
     assert(tokens[tokens_count - 1].kind == Token_Close_Parentheses);
 
     for (u32 i = name_index + 2; i < tokens_count - 1; )
     {
-      Function_Argument* argument = &function_object->arguments[function_object->arguments_count++];
+      Intsp_Function_Argument* argument = &function_object->arguments[function_object->arguments_count++];
       memory_zero_struct(argument);
 
       // Varargs
@@ -1137,13 +1360,13 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
       }
 
       assert(name_index_arg != U32_MAX);
-      argument->data_type = parse_data_type(introspection->functions_arena, tokens, type_start, name_index_arg);
+      argument->data_type = _intsp_parse_data_type(introspection->functions_arena, tokens, type_start, name_index_arg);
       argument->identifier = string_copy(introspection->functions_arena, tokens[name_index_arg].value);
 
       // Advance index past identifier
       i = name_index_arg + 1;
 
-      // Optional array suffix (already reflected in Data_Type)
+      // Optional array suffix (already reflected in Intsp_Data_Type)
       if (tokens[i].kind == Token_Open_Bracket)
       {
         while (tokens[i].kind != Token_Close_Bracket)
@@ -1171,7 +1394,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
   if (is_declaration)
   {
     // Look for documentation
-    eat_trivia(lexer);
+    _intsp_eat_trivia(lexer);
     Token* token = lexer_peek_token(lexer);
     if (token->kind == Token_Comment_Block)
     {
@@ -1182,6 +1405,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
 
     function_object->declaration.file = string_copy(introspection->functions_arena, file_path);
     function_object->declaration.line = (u32)line;
+    function_object->declaration.column = (u32)column;
   }
   else
   {
@@ -1235,7 +1459,7 @@ parse_function(Lexer* lexer, Introspection* introspection, String file_path)
 }
 
 function void
-eat_trivia(Lexer* lexer)
+_intsp_eat_trivia(Lexer* lexer)
 {
   for (;;)
   {
@@ -1243,6 +1467,38 @@ eat_trivia(Lexer* lexer)
     if (!token_is_trivia(token)) break;
     lexer_eat_token(lexer);
   }
+}
+
+function void
+_intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String file, u32 line, u32 col, String text)
+{
+  Intsp_Report* report = &introspection->report;
+  if (report->logs_count >= report->logs_capacity)
+  {
+    return;
+  }
+  Intsp_Log* ilog = &report->logs[report->logs_count++];
+  ilog->severity = severity;
+
+  String text_to_log = string_join(introspection->arena, text, S("\n"));
+  switch (severity)
+  {
+    case Intsp_Log_Severity_None:
+    case Intsp_Log_Severity_Log:
+    {
+      ilog->text = Sf(introspection->arena, "[Introspection] LOG: "S_FMT"::(%u,%u)\n", S_ARG(file), line, col);
+    } break;
+    case Intsp_Log_Severity_Warning:
+    { 
+      ilog->text = Sf(introspection->arena, "[Introspection] WARNING: "S_FMT"::(%u,%u)\n", S_ARG(file), line, col);
+    } break;
+    case Intsp_Log_Severity_Error:
+    {
+      ilog->text = Sf(introspection->arena, "[Introspection] ERROR: "S_FMT"::(%u,%u)\n", S_ARG(file), line, col);
+      introspection->fatal_error = true;
+    } break;
+  };
+  ilog->text = string_join(introspection->arena, ilog->text, text_to_log);
 }
 
 #endif // INTROSPECTION_H

@@ -64,6 +64,7 @@ function String string_from_format(Arena* arena, char const* fmt, ...); /* Print
 function b32    string_equals(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
 function u64    string_hash(String str); /* Hashes a string into a u64 */
+function void   string_print(String str); /* Prints a string */
 
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
 function String_List string_list_new(); /* Create new list with single string element. */
@@ -410,6 +411,12 @@ string_hash(String str)
   }
   hash ^= str.count;
   return hash;
+}
+
+function void
+string_print(String str)
+{
+  printf(S_FMT, S_ARG(str));
 }
 
 function String_List

@@ -24,7 +24,8 @@
 // @TODO(fz): Fix static asserts
 // static_assert(is_power_of_two(MAX_CONCURRENT_TOKENS), "MAX_CONCURRENT_TOKENS Must be a power of two");
 
-typedef enum
+typedef u32 Token_Kind;
+enum META_ENUM_LINK(Token_Kind)
 {
   Token_Error = 0,
 
@@ -95,8 +96,7 @@ typedef enum
   Token_Form_Feed,
 
   Token_Count,
-
-} Token_Kind;
+};
 
 typedef struct Token Token;
 struct Token
@@ -110,7 +110,7 @@ struct Token
 };
 
 typedef u8 Trivia_Flags;
-enum META_ENUM_LINK(Trivia_Flags, u8)
+enum META_ENUM_LINK(Trivia_Flags)
 {
   Trivia_None = 0,
 
@@ -125,7 +125,7 @@ enum META_ENUM_LINK(Trivia_Flags, u8)
 };
 
 typedef u8 Emit_Structures;
-enum META_ENUM_LINK(Emit_Structures, u8)
+enum META_ENUM_LINK(Emit_Structures)
 {
   Emit_None = 0,
 

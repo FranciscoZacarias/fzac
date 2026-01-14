@@ -33,7 +33,7 @@ Usage Example:
   };
 
 */
-#define META_ENUM_LINK(enum_name, type)
+#define META_ENUM_LINK(enum_name)
 
 /* META_ENUM_TO_STRING() is used in front of the enum keyword. It generates a to_string function for the enum, given a value of that enum.
 
