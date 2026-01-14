@@ -35,21 +35,6 @@ Usage Example:
 */
 #define META_ENUM_LINK(enum_name)
 
-/* META_ENUM_TO_STRING() is used in front of the enum keyword. It generates a to_string function for the enum, given a value of that enum.
-
-Usage Example:
-
-  typedef u32 Event_Kind;
-  enum META_ENUM_LINK(Event_Kind)
-  {
-    Event_Error = 0,
-    Event_Keyboard,
-  };
-  META_ENUM_TO_STRING(Event_Kind);
-
-*/
-#define META_ENUM_TO_STRING(enum_name)
-
 // @Section: Base includes
 
 #include "base\Context_Cracking.h"

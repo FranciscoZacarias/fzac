@@ -9,8 +9,11 @@
 #define INTSP_MAX_FUNCTIONS 1024
 
 #define INTSP_MAX_ENUMS 256
+
 #define INTSP_MAX_TYPEDEFS 256
+
 #define INTSP_MAX_STRUCTS 512
+#define INTSP_MAX_STRUCTS_MEMBERS 128
 
 #define INTSP_MAX_META_COMMANDS 128
 
@@ -21,7 +24,6 @@ struct Intsp_Source_Location
 {
   String file;
   u32 line;
-  u32 column;
 };
 
 typedef struct Intsp_Data_Type Intsp_Data_Type;
@@ -81,12 +83,11 @@ struct Intsp_Function_Object
   Intsp_Source_Location implementation;
 };
 
-typedef struct Intsp_Struct_Member Intsp_Struct_Member;
-struct Intsp_Struct_Member
+typedef u32 Intsp_Aggregate_Kind;
+enum META_ENUM_LINK(Intsp_Aggregate_Kind)
 {
-  Intsp_Data_Type data_type;
-  String identifier;
-  String documentation;
+  Intsp_Aggregate_Kind_Struct,
+  Intsp_Aggregate_Kind_Union,
 };
 
 /*
@@ -101,20 +102,42 @@ struct Intsp_Struct_Member
   typedef indirection
   unions (same syntax, different semantics)
 */
-typedef struct Intsp_Struct_Object Intsp_Struct_Object;
-struct Intsp_Struct_Object
+typedef struct Intsp_Agreggate_Object Intsp_Agreggate_Object;
+typedef struct Intsp_Aggregate_Member Intsp_Aggregate_Member;
+
+struct Intsp_Agreggate_Object // @TODO(fz): fix typo -> Aggregate
 {
+  u64 hash;
+
+  Intsp_Aggregate_Kind kind;
+
+  b32 is_nested; /* If this is nested inside another Intsp_Agreggate_Object, we don't enforce it to be named. */
+  Intsp_Agreggate_Object* parent; /* if is_nested=false then this is NULL. Pointer to struct where this object is nested at. */
+
   String identifier;
 
-  Intsp_Struct_Member* members;
+  Intsp_Aggregate_Member* members; /* @NOTE(fz): Order matters, since struct order influences padding. We want to preserve this. */
   u32 members_count;
   u32 members_capacity;
 
-  String body;
   String documentation;
 
   Intsp_Source_Location forward_declaration;
   Intsp_Source_Location definition;
+};
+
+struct Intsp_Aggregate_Member
+{
+  String documentation;
+
+  b32 is_aggregate; /* If true, only aggregate_data is relavant, if it's false, only data_type is relevant*/
+  union
+  {
+    Intsp_Data_Type data_type; /* if is_aggregate=false */
+    Intsp_Agreggate_Object aggregate_data; /* if is_aggregate=true */
+  };
+
+  String identifier;
 };
 
 typedef struct Intsp_Enum_Member Intsp_Enum_Member;
@@ -141,31 +164,12 @@ struct Intsp_Enum_Object
   Intsp_Source_Location definition;
 };
 
-typedef struct Global_Variable Global_Variable;
-struct Global_Variable
+typedef struct Intsp_Global_Variable Intsp_Global_Variable;
+struct Intsp_Global_Variable
 {
   Intsp_Data_Type data_type;
   String identifier;
   String initialization; // If it's initialized, this string will contain the value;
-};
-
-typedef u32 Intsp_Meta_Command_Kind;
-enum META_ENUM_LINK(Intsp_Meta_Command_Kind)
-{
-  Intsp_Meta_Command_Error = 0,
-  Intsp_Meta_Command_Enum_To_String,
-};
-
-typedef struct Meta_Command Meta_Command;
-struct Meta_Command
-{
-  Intsp_Meta_Command_Kind kind;
-  String file; /* File that called this command */
-
-  union
-  {
-    Intsp_Enum_Object* enum_object;
-  } payload;
 };
 
 typedef u32 Intsp_Log_Severity;
@@ -204,10 +208,10 @@ struct Introspection
   u32 functions_capacity;
   u32 functions_count;
 
-  Arena* structs_arena;
-  Intsp_Struct_Object* structs;
-  u32 structs_capacity;
-  u32 structs_count;
+  Arena* aggregates_arena;
+  Intsp_Agreggate_Object* aggregates;
+  u32 aggregates_capacity;
+  u32 aggregates_count;
 
   Arena* enums_arena;
   Intsp_Enum_Object* enums;
@@ -218,11 +222,6 @@ struct Introspection
   Intsp_Typedef_Object* typedefs;
   u32 typedefs_capacity;
   u32 typedefs_count;
-
-  Arena* commands_arena;
-  Meta_Command* commands;
-  u32 commands_capacity;
-  u32 commands_count;
 };
 
 function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
@@ -231,19 +230,20 @@ function void          intsp_report_functions(Introspection* introspection, b32 
 function void          intsp_report_enums(Introspection* introspection, String* out);
 function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
 function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f); /* Convers a Intsp_Function_Object to a string */
+function u64           intsp_aggregate_hash(Intsp_Agreggate_Object* obj);
 
 function u32  _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
 function void _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
 function void _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_path); /* Parses typedefs that are not structs nor enums */
 function void _intsp_parse_function(Lexer* lexer, Introspection* introspection, String file_path);
-function void _intsp_parse_structs(Lexer* lexer, Introspection* introspection, String file_path);
+function Intsp_Agreggate_Object* _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_path, Intsp_Agreggate_Object* parent);
 function void _intsp_eat_trivia(Lexer* lexer);
 function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
-function Intsp_Data_Type        _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
-function Intsp_Function_Object* _intsp_find_function(Introspection* introspection, String function_name);
-function Intsp_Enum_Object*     _intsp_find_enum(Introspection* introspection, String enum_name);
-function Intsp_Struct_Object*   _intsp_find_struct(Introspection* introspection, String struct_name);
-function Intsp_Typedef_Object*  _intsp_find_typedef(Introspection* introspection, String typedef_name);
+function Intsp_Data_Type         _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
+function Intsp_Function_Object*  _intsp_find_function(Introspection* introspection, String function_name);
+function Intsp_Enum_Object*      _intsp_find_enum(Introspection* introspection, String enum_name);
+function Intsp_Agreggate_Object* _intsp_find_struct(Introspection* introspection, u64 hash);
+function Intsp_Typedef_Object*   _intsp_find_typedef(Introspection* introspection, String typedef_name);
 
 function Introspection
 intsp_run(String source_directory, b32 introspect_base_library)
@@ -269,13 +269,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
   result.typedefs_capacity = INTSP_MAX_TYPEDEFS;
   result.typedefs          = push_array(result.typedefs_arena, Intsp_Typedef_Object, result.enums_capacity);
 
-  result.structs_arena    = arena_alloc();
-  result.structs_capacity = INTSP_MAX_STRUCTS;
-  result.structs          = push_array(result.structs_arena, Intsp_Struct_Object, result.structs_capacity);
-
-  result.commands_arena    = arena_alloc();
-  result.commands_capacity = INTSP_MAX_META_COMMANDS;
-  result.commands          = push_array(result.commands_arena, Meta_Command, result.commands_capacity);
+  result.aggregates_arena    = arena_alloc();
+  result.aggregates_capacity = INTSP_MAX_STRUCTS;
+  result.aggregates          = push_array(result.aggregates_arena, Intsp_Agreggate_Object, result.aggregates_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
@@ -371,9 +367,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
           at_line_start = true;
           continue;
         }
-        else if (string_equals(token->value, S("struct"), true))
+        else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
         {
-          lexer_eat_token(&lexer); // TODO: real struct parsing
+          _intsp_parse_aggregate(&lexer, &result, file_being_lexed, NULL);
           at_line_start = false;
           continue;
         }
@@ -402,9 +398,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
             lexer_eat_token(&lexer);
           }
-          else if (string_equals(token->value, S("struct"), true))
+          else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
           {
-            _intsp_parse_structs(&lexer, &result, file_being_lexed);
+            _intsp_parse_aggregate(&lexer, &result, file_being_lexed, NULL);
           }
           else
           {
@@ -413,34 +409,6 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
           at_line_start = true;
           continue;
-        }
-
-        // @NOTE(fz): Global scope meta commands
-        else if (string_equals(token->value, S("META_ENUM_TO_STRING"), true))
-        {
-#if 0
-          lexer_eat_token(&lexer);
-          token = lexer_peek_token(&lexer);
-          assert(token->kind == Token_Open_Parentheses);
-
-          lexer_eat_token(&lexer);
-          token = lexer_peek_token(&lexer);
-          assert(token->kind == Token_Identifier);
-
-          Intsp_Enum_Object* enum_object = _intsp_find_enum(&result, token->value);
-          Meta_Command* command = &result.commands[result.commands_count++];
-          command->kind = Intsp_Meta_Command_Enum_To_String;
-          command->payload.enum_object = enum_object;
-          command->file = string_copy(result.commands_arena, file_being_lexed);
-
-          lexer_eat_token(&lexer);
-          token = lexer_peek_token(&lexer);
-          assert(token->kind == Token_Close_Parentheses);
-
-          lexer_eat_token(&lexer);
-          token = lexer_peek_token(&lexer);
-          assert(token->kind == Token_Semicolon);
-#endif
         }
       }
 
@@ -646,14 +614,14 @@ _intsp_find_function(Introspection* introspection, String function_name)
   return result;
 }
 
-function Intsp_Struct_Object*
-_intsp_find_struct(Introspection* introspection, String struct_name)
+function Intsp_Agreggate_Object*
+_intsp_find_struct(Introspection* introspection, u64 hash)
 {
-  Intsp_Struct_Object* result = NULL;
-  for (u32 i = 0; i < introspection->structs_count; i += 1)
+  Intsp_Agreggate_Object* result = NULL;
+  for (u32 i = 0; i < introspection->aggregates_count; i += 1)
   {
-    Intsp_Struct_Object* struct_object = &(introspection->structs[i]);
-    if (string_equals(struct_name, struct_object->identifier, true))
+    Intsp_Agreggate_Object* struct_object = &(introspection->aggregates[i]);
+    if (struct_object->hash == hash)
     {
       result = struct_object;
       break;
@@ -935,7 +903,6 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_pat
   memory_zero_struct(typedef_datatype);
   typedef_datatype->location.file = string_copy(introspection->typedefs_arena, file_path);
   typedef_datatype->location.line = token->l0;
-  typedef_datatype->location.column = token->c0;
 
   u32 tokens_capacity = 32;
   u32 tokens_count = 0;
@@ -1011,71 +978,283 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_pat
   scratch_end(&scratch);
 }
 
-function void
-_intsp_parse_structs(Lexer* lexer, Introspection* introspection, String file_path)
+function Intsp_Agreggate_Object*
+_intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_path, Intsp_Agreggate_Object* parent)
 {
+  Intsp_Agreggate_Object* struct_object = NULL;
+
   Token* token = lexer_peek_token(lexer);
-  assert(string_equals(token->value, S("struct"), true));
+
+  Intsp_Aggregate_Kind aggregate_kind = Intsp_Aggregate_Kind_Struct;
+  if (string_equals(token->value, S("struct"), true))     aggregate_kind = Intsp_Aggregate_Kind_Struct;
+  else if (string_equals(token->value, S("union"), true)) aggregate_kind = Intsp_Aggregate_Kind_Union;
+  else
+  {
+    assert(0);
+  }
+
+  u32 aggregate_line = token->l0;
 
   lexer_eat_token(lexer);
   _intsp_eat_trivia(lexer);
 
-  Token* identifier = lexer_peek_token(lexer);
-
-  Intsp_Struct_Object* struct_object = NULL;
-  struct_object = _intsp_find_struct(introspection, identifier->value);
-
-  if (struct_object == NULL)
+  token = lexer_peek_token(lexer);
+  if (token->kind != Token_Identifier && parent == NULL)
   {
-    struct_object = &(introspection->structs[introspection->structs_count++]);
-    memory_zero_struct(struct_object);
-
-    struct_object->identifier = string_copy(introspection->structs_arena, identifier->value);
+    // @TODO(fz): Change this report to Intsp_Log_Severity_Error, right now it's warning just for debug purposes.
+    _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, token->l0, token->c0, S("Expected struct/union identifier after 'struct'/'union'."));
+    return NULL;
   }
 
-  lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
-  Token* next = lexer_peek_token(lexer);
+  String struct_name = S("");
 
-  if (next->kind == Token_Identifier)
+  if (parent == NULL)
   {
-    // Forwawrd declaration
-    if (!string_equals(identifier->value, next->value, true))
-    {
-      _intsp_report(introspection, Intsp_Log_Severity_Error, file_path, identifier->l0, identifier->c0, 
-        Sf(introspection->arena, "When forward declaring a struct, the struct tag and the typedef name must be the same.\n"
-          "Please fix this: typedef struct "S_FMT" "S_FMT";", S_ARG(identifier->value), S_ARG(next->value)));
-      return;
-    }
-
+    struct_name = token->value;
     lexer_eat_token(lexer);
     _intsp_eat_trivia(lexer);
-    next = lexer_peek_token(lexer);
-
-    assert(next->kind == Token_Semicolon);
-
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-    next = lexer_peek_token(lexer);
-
-    if (next->kind == Token_Comment_Block || next->kind == Token_Comment_Line)
-    {
-      String comment = string_slice(introspection->structs_arena, next->value, 2, next->value.count - 2);
-      comment = string_trim(introspection->structs_arena, comment);
-      struct_object->documentation = string_copy(introspection->structs_arena, comment);
-      lexer_eat_token(lexer);
-    }
-  }
-  else if (next->kind == Token_Open_Brace)
-  {
-    // Definition
-    lexer_eat_token(lexer); // @TODO(fz): Just to skip
   }
   else
   {
-    // @TODO(fz): Error not handled
-    assert(0);
+    assert(token->kind == Token_Open_Brace);
   }
+
+  token = lexer_peek_token(lexer);
+
+  if (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
+  {
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+  }
+  
+  // Forward declaration
+  if (token->kind == Token_Identifier && parent == NULL)
+  {
+    Token* typedef_name = token;
+
+    if (!string_equals(struct_name, typedef_name->value, true))
+    {
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_path, token->l0, token->c0, Sf(introspection->arena, "When forward declaring a struct, the struct tag and the typedef name must be the same.\nPlease fix this: typedef struct "S_FMT" "S_FMT";", S_ARG(struct_name), S_ARG(typedef_name->value)));
+      return NULL;
+    }
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+    if (token->kind != Token_Semicolon)
+    {
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_path, token->l0, token->c0, S("Expected ';' after struct forward declaration."));
+      return NULL;
+    }
+
+    lexer_eat_token(lexer);
+
+    struct_object = _intsp_find_struct(introspection, string_hash(struct_name));
+    assert(struct_object == NULL); // In a forward declaration, we should never have collisions
+
+    struct_object = &introspection->aggregates[introspection->aggregates_count++];
+    memory_zero_struct(struct_object);
+    struct_object->kind = aggregate_kind;
+    struct_object->identifier = string_copy(introspection->aggregates_arena, struct_name);
+    struct_object->members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
+    struct_object->members = push_array(introspection->aggregates_arena, Intsp_Aggregate_Member, struct_object->members_capacity);
+
+    assert(parent == NULL); // forward declarations should never have parents, since they're global scope.
+    assert(string_hash(struct_object->identifier) == intsp_aggregate_hash(struct_object)); // Sanity check
+    struct_object->hash = intsp_aggregate_hash(struct_object);
+
+    struct_object->forward_declaration.file = file_path;
+    struct_object->forward_declaration.line = token->l0;
+
+    return struct_object;
+  }
+  // Definition
+  else if (token->kind == Token_Open_Brace)
+  {
+    if (parent != NULL)
+    {
+      Intsp_Aggregate_Member* member = &parent->members[parent->members_count++];
+      member->is_aggregate = true; // Because parent is not null
+
+      member->aggregate_data.kind = aggregate_kind;
+      member->aggregate_data.parent = parent;
+      member->aggregate_data.identifier = string_copy(introspection->aggregates_arena, struct_name);
+      member->aggregate_data.members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
+      member->aggregate_data.members = push_array(introspection->aggregates_arena, Intsp_Aggregate_Member, member->aggregate_data.members_capacity);
+      struct_object = &member->aggregate_data;
+    }
+    else
+    {
+      assert(parent == NULL);
+      u64 hash = string_hash(struct_name); // Because it's not nested, I.e. has no parent, we just just hash the name and get the correct hash
+      struct_object = _intsp_find_struct(introspection, hash);
+      if (struct_object == NULL)
+      {
+        _intsp_report(introspection, Intsp_Log_Severity_Error, file_path, token->l0, token->c0, Sf(introspection->arena, "Struct '"S_FMT"' must be forward declared before its definition.", S_ARG(struct_name)));
+        return NULL;
+      }
+    }
+
+    struct_object->kind = aggregate_kind;
+    struct_object->identifier = string_copy(introspection->aggregates_arena, struct_name); // Might not be set if it's nested.
+
+    struct_object->members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
+    struct_object->members = push_array(introspection->aggregates_arena, Intsp_Aggregate_Member, struct_object->members_capacity);
+
+    struct_object->definition.file = file_path;
+    struct_object->definition.line = aggregate_line;
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+
+    for (;;)
+    {
+      b32 semicolon_found = false;
+      _intsp_eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+
+      if (token->kind == Token_Close_Brace)
+      {
+        break;      
+      }
+
+      if (string_equals(token->value, S("union"), true) || string_equals(token->value, S("struct"), true))
+      {
+        //Intsp_Aggregate_Member* m = &struct_object->members[struct_object->members_count++];
+        //m->is_aggregate = true;
+
+        Intsp_Agreggate_Object* o = _intsp_parse_aggregate(lexer, introspection, file_path, struct_object);
+        //m->aggregate_data = *o;
+
+        // @TODO(fz): Documentation for this.
+        //m->documentation = string_copy(introspection->structs_arena, documentation);
+        // @TODO(fz): Parse identifier
+        //m->identifier    = string_copy(introspection->structs_arena, member_identifier);
+
+        token = lexer_peek_token(lexer);
+        if (token->kind == Token_Semicolon)
+        {
+          lexer_eat_token(lexer);
+          _intsp_eat_trivia(lexer);
+        }
+      }
+      else
+      {
+        Scratch scratch = scratch_begin(0,0);
+
+        u32 tokens_capacity = 32;
+        u32 tokens_count = 0;
+        Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
+        String member_identifier = S("");
+
+        for (;;)
+        {
+          _intsp_eat_trivia(lexer);
+          token = lexer_peek_token(lexer);
+          
+          // Member variable
+          if (token->kind == Token_Semicolon)
+          {
+            member_identifier = string_copy(introspection->aggregates_arena, tokens[tokens_count-1].value);
+            break;
+          }
+          // Function pointer
+          else if (token->kind == Token_Open_Parentheses)
+          {
+            member_identifier = S("(");
+            
+            for (;;)
+            {
+              token = lexer_peek_token(lexer);
+              if (token->kind == Token_Semicolon)
+              {
+                semicolon_found = true;
+                break;
+              }
+              lexer_eat_token(lexer);
+              member_identifier = string_join(scratch.arena, member_identifier, token->value);
+            }
+          }
+          // Continue parsing
+          else
+          {
+            tokens[tokens_count++] = *token;
+            lexer_eat_token(lexer);
+          }
+
+          if (semicolon_found)
+          {
+            break;
+          }
+        }
+
+        _intsp_eat_trivia(lexer);
+
+        token = lexer_peek_token(lexer);
+
+        if (parent == NULL)
+        {
+          assert(token->kind == Token_Semicolon);
+        }
+        else
+        {
+          if (token->kind == Token_Identifier)
+          {
+            member_identifier = string_copy(introspection->aggregates_arena, token->value);
+            lexer_eat_token(lexer);
+            _intsp_eat_trivia(lexer);
+
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Semicolon);
+            lexer_eat_token(lexer);
+            _intsp_eat_trivia(lexer);
+          }
+          else
+          {
+            // @NOTE(fz): It's a nameless aggregate.
+          }
+        }
+
+        assert(lexer_current_token(lexer)->kind == Token_Semicolon);        
+        lexer_eat_token(lexer);
+        _intsp_eat_trivia(lexer);
+
+        String documentation = S("");
+        token = lexer_peek_token(lexer);
+        if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
+        {
+          documentation = string_slice(scratch.arena, token->value, 2, token->value.count - 2);
+          documentation = string_trim(scratch.arena, documentation);
+          lexer_eat_token(lexer);
+          _intsp_eat_trivia(lexer);
+        }
+
+        if (struct_object->members_count >= struct_object->members_capacity)
+        {
+          // @TODO(fz): Propper error logging
+          assert(0);
+        }
+
+        Intsp_Aggregate_Member* m = &struct_object->members[struct_object->members_count++];
+        m->is_aggregate = false;
+        m->documentation = string_copy(introspection->aggregates_arena, documentation);
+        m->data_type = _intsp_parse_data_type(introspection->aggregates_arena, tokens, 0, tokens_count);
+        m->identifier = string_copy(introspection->aggregates_arena, member_identifier);
+
+        scratch_end(&scratch);
+      }
+    }
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+
+    return struct_object;
+  }
+
+  // @TODO(fz): This should'nt be reachable. Anyway, we have to report an error here.
+  assert(0);
+  return NULL;
 }
 
 function void
@@ -1093,7 +1272,6 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
 
   enum_object->definition.file = string_copy(introspection->enums_arena, file_path);
   enum_object->definition.line = token->l0;
-  enum_object->definition.column = token->c0;
 
   lexer_eat_token(lexer);
   _intsp_eat_trivia(lexer);
@@ -1122,7 +1300,7 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path)
     }
     else
     {
-      _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, enum_object->definition.line, enum_object->definition.column,
+      _intsp_report(introspection, Intsp_Log_Severity_Warning, file_path, enum_object->definition.line, 0,
         Sf(introspection->arena,
           "Enum was declared without previously being typedefed.\n"
           "Consider adding: typedef u32 "S_FMT"; in: "S_FMT"::%u,1", S_ARG(enum_object->identifier), S_ARG(file_path), enum_object->definition.line-1));
@@ -1405,7 +1583,6 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, String file_pa
 
     function_object->declaration.file = string_copy(introspection->functions_arena, file_path);
     function_object->declaration.line = (u32)line;
-    function_object->declaration.column = (u32)column;
   }
   else
   {
@@ -1499,6 +1676,23 @@ _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String 
     } break;
   };
   ilog->text = string_join(introspection->arena, ilog->text, text_to_log);
+}
+
+function u64
+intsp_aggregate_hash(Intsp_Agreggate_Object* obj)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  String result  = obj->identifier;
+
+  for (Intsp_Agreggate_Object* parent = obj->parent; parent != 0; parent = parent->parent)
+  {
+    result = string_join(scratch.arena, parent->identifier, result);
+  }
+
+  u64 hash = string_hash(result);
+
+  scratch_end(&scratch);
+  return hash;
 }
 
 #endif // INTROSPECTION_H

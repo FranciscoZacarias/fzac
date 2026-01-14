@@ -1,9 +1,7 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
-/* @File: Implements memory allocators and thread context (used for temporary memory)
-*/ 
-
+/* @File: Implements memory allocators and thread context (used for temporary memory) */ 
 
 // @Section: Allocator
 typedef struct Allocator Allocator; /* Allocator slot structure that holds function pointers to an actual allocator */

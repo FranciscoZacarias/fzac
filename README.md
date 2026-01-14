@@ -20,6 +20,7 @@ w - work in progress
 - [x] Launch window
   - [x] Allow multiple windows
   - [x] Opengl context
+- [ ] Add module to print callstack
 
 # How to
 `fzac.h` Includes the all the `base\` headers in the project. These are the 

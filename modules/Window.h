@@ -222,7 +222,6 @@ enum META_ENUM_LINK(Event_Kind)
   Event_Quit,
   Event_Drag_And_Drop,
 };
-META_ENUM_TO_STRING(Event_Kind);
 
 typedef struct Window_Event Window_Event;
 struct Window_Event

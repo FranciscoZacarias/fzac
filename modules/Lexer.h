@@ -24,8 +24,7 @@
 // @TODO(fz): Fix static asserts
 // static_assert(is_power_of_two(MAX_CONCURRENT_TOKENS), "MAX_CONCURRENT_TOKENS Must be a power of two");
 
-typedef u32 Token_Kind;
-enum META_ENUM_LINK(Token_Kind)
+typedef enum 
 {
   Token_Error = 0,
 
@@ -96,7 +95,7 @@ enum META_ENUM_LINK(Token_Kind)
   Token_Form_Feed,
 
   Token_Count,
-};
+} Token_Kind;
 
 typedef struct Token Token;
 struct Token
@@ -173,6 +172,7 @@ function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a c
 function void   lexer_eat_character(Lexer* lexer); /* Advances the lexer by 1 character */
 function void   lexer_eat_token(Lexer* lexer); /* Advances lexer by 1 token */
 function void   lexer_eat_spaces(Lexer* lexer); /* Advances over all spaces */
+function Token* lexer_current_token(Lexer* lexer); /* Returns the current token. Doesn't peek, doesn't make. Can return garbage. */
 
 // @Section: Parsing helpers
 function void lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind); /* Parses a token that is a single character long */
@@ -909,6 +909,12 @@ token_is_trivia(Token* token)
     break;
   }
   return result;
+}
+
+function Token*
+lexer_current_token(Lexer* lexer)
+{
+  return &lexer->incoming_tokens[lexer->incoming_tokens_head];
 }
 
 #endif // LEXER_H
