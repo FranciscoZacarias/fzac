@@ -13,11 +13,13 @@
 #define INTSP_MAX_TYPEDEFS 256
 
 #define INTSP_MAX_STRUCTS 512
-#define INTSP_MAX_STRUCTS_MEMBERS 128
+#define INTSP_MAX_STRUCTS_MEMBERS 64
 
 #define INTSP_MAX_META_COMMANDS 128
 
-#define INTSP_MAX_LOGS 512
+#define INTSP_MAX_LOGS 128
+
+#define INTSP_MAX_GLOBALS 256
 
 typedef struct Intsp_Source_Location Intsp_Source_Location;
 struct Intsp_Source_Location
@@ -90,18 +92,6 @@ enum META_ENUM_LINK(Intsp_Aggregate_Kind)
   Intsp_Aggregate_Kind_Union,
 };
 
-/*
-@TODO(fz): In order to parse structs
-  fields
-  anonymous structs/unions
-  named nested structs/unions
-  bitfields
-  flexible array members
-  alignment attributes
-  packing pragmas
-  typedef indirection
-  unions (same syntax, different semantics)
-*/
 typedef struct Intsp_Agreggate_Object Intsp_Agreggate_Object;
 typedef struct Intsp_Aggregate_Member Intsp_Aggregate_Member;
 
@@ -167,9 +157,10 @@ struct Intsp_Enum_Object
 typedef struct Intsp_Global_Variable Intsp_Global_Variable;
 struct Intsp_Global_Variable
 {
-  Intsp_Data_Type data_type;
-  String identifier;
-  String initialization; // If it's initialized, this string will contain the value;
+  Intsp_Data_Type data_type; /* Data type */
+  String identifier; /* Variable name */
+  String body; // If it's initialized, this string will contain the value;
+  String documentation; /* Documentation in front of the variable */
 };
 
 typedef u32 Intsp_Log_Severity;
@@ -222,6 +213,24 @@ struct Introspection
   Intsp_Typedef_Object* typedefs;
   u32 typedefs_capacity;
   u32 typedefs_count;
+
+  Arena* globals_arena;
+  Intsp_Global_Variable* globals;
+  u32 globals_capacity;
+  u32 globals_count;
+
+  struct
+  {
+    int a;
+    int b;
+  } dummy;
+
+  union
+  {
+    int a;
+    int b;
+  } dummy_union;
+
 };
 
 function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
@@ -230,15 +239,16 @@ function void          intsp_report_functions(Introspection* introspection, b32 
 function void          intsp_report_enums(Introspection* introspection, String* out);
 function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
 function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f); /* Convers a Intsp_Function_Object to a string */
-function u64           intsp_aggregate_hash(Intsp_Agreggate_Object* obj);
 
 function u32  _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
 function void _intsp_parse_enum(Lexer* lexer, Introspection* introspection, String file_path); /* Parses enums */
 function void _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, String file_path); /* Parses typedefs that are not structs nor enums */
 function void _intsp_parse_function(Lexer* lexer, Introspection* introspection, String file_path);
-function Intsp_Agreggate_Object* _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_path, Intsp_Agreggate_Object* parent);
+function void _intsp_parse_global(Lexer* lexer, Introspection* introspection, String file_path);
 function void _intsp_eat_trivia(Lexer* lexer);
 function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
+function u64  _intsp_aggregate_hash(Intsp_Agreggate_Object* obj);
+function Intsp_Agreggate_Object* _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_path, Intsp_Agreggate_Object* parent);
 function Intsp_Data_Type         _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
 function Intsp_Function_Object*  _intsp_find_function(Introspection* introspection, String function_name);
 function Intsp_Enum_Object*      _intsp_find_enum(Introspection* introspection, String enum_name);
@@ -272,6 +282,10 @@ intsp_run(String source_directory, b32 introspect_base_library)
   result.aggregates_arena    = arena_alloc();
   result.aggregates_capacity = INTSP_MAX_STRUCTS;
   result.aggregates          = push_array(result.aggregates_arena, Intsp_Agreggate_Object, result.aggregates_capacity);
+
+  result.globals_arena    = arena_alloc();
+  result.globals_capacity = INTSP_MAX_GLOBALS;
+  result.globals          = push_array(result.globals_arena, Intsp_Global_Variable, result.globals_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
@@ -375,7 +389,7 @@ intsp_run(String source_directory, b32 introspect_base_library)
         }
         else if (string_equals(token->value, S("global"), true))
         {
-          lexer_eat_token(&lexer);
+          _intsp_parse_global(&lexer, &result, file_being_lexed);
           at_line_start = false;
           continue;
         }
@@ -456,7 +470,6 @@ intsp_report_functions(Introspection* introspection, b32 report_documentation, S
   string_buffer_init(&buffer, &MallocAllocator, 1024);
 
   u32 num_mismatches = 0;
-  u32 num_no_documentation = 0;
 
   for (u32 i = 0; i < introspection->functions_count; i += 1)
   {
@@ -473,24 +486,11 @@ intsp_report_functions(Introspection* introspection, b32 report_documentation, S
         S_ARG(func_object->implementation.file), func_object->implementation.line);
       num_mismatches += 1;
     }
-
-    if (func_object->documentation.count == 0)
-    {
-      if (report_documentation)
-      {
-        string_buffer_push(&buffer, "Function "S_FMT" doesn't have documentation.\n\n", S_ARG(func_object->identifier));
-      }
-      num_no_documentation += 1;
-    }
   }
 
   string_buffer_push(&buffer, "[Function Report]:\n");
-
   if (num_mismatches == 0) string_buffer_push(&buffer, " No Function mismatches.\n");
   else                     string_buffer_push(&buffer, " Mismatches: %u/%u\n", num_mismatches, introspection->functions_count);
-
-  if (num_no_documentation == 0) string_buffer_push(&buffer, " No function without documentation.\n");
-  else                           string_buffer_push(&buffer, " No documentation: %u/%u\n", num_no_documentation, introspection->functions_count);
 
   *out = string_buffer_to_string(introspection->arena, &buffer);
   string_buffer_free(&buffer);
@@ -637,6 +637,88 @@ _intsp_find_typedef(Introspection* introspection, String typedef_name)
     }
   }
   return result;
+}
+
+function void
+_intsp_parse_global(Lexer* lexer, Introspection* introspection, String file_path)
+{
+  Token* token = lexer_peek_token(lexer);
+  assert(token->kind == Token_Identifier);
+
+  lexer_eat_token(lexer);
+  _intsp_eat_trivia(lexer);
+
+  Scratch scratch = scratch_begin(0,0);
+
+  u32 tokens_capacity = 32;
+  u32 tokens_count = 0;
+  u32 end_index = 0;
+  Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
+  b32 is_declaration = true;
+
+  for (;;)
+  {
+    token = lexer_peek_token(lexer);
+    if (token->kind == Token_Semicolon)
+    {
+      is_declaration = true;
+      break;
+    }
+    if (token->kind == Token_Equal)
+    {
+      is_declaration = false;
+      break;
+    }
+    if (tokens_count >= tokens_capacity)
+    {
+      assert(0);
+    }
+    tokens[tokens_count++] = *token;
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+  }
+
+  Intsp_Global_Variable* gvariable = &(introspection->globals[introspection->globals_count++]);
+  memory_zero_struct(gvariable);
+  gvariable->data_type = _intsp_parse_data_type(introspection->globals_arena, tokens, 0, tokens_count);
+  gvariable->identifier = string_copy(introspection->globals_arena, tokens[tokens_count-1].value);
+
+  if (is_declaration)
+  {
+    lexer_eat_token(lexer); // Eat semicolon
+  }
+  else
+  {
+    String body = S("");
+    for (;;)
+    {
+      token = lexer_peek_token(lexer);
+      body = string_join(scratch.arena, body, token->value);
+      if (token->kind == Token_Semicolon)
+      {
+        break;
+      }
+      lexer_eat_token(lexer);
+    }
+    gvariable->body = string_trim(introspection->globals_arena, body);
+    lexer_eat_token(lexer); // Eat semicolon
+  }
+
+  for (;;)
+  {
+    token = lexer_peek_token(lexer);
+    if (token->kind == Token_Line_Break) break;
+    if(token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
+    {
+      u64 start = 2;
+      u64 end   = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
+      String comment = string_slice(scratch.arena, token->value, start, end - start);
+      gvariable->documentation = string_trim(introspection->globals_arena, comment);
+    }
+    lexer_eat_token(lexer);
+  }
+
+  scratch_end(&scratch);
 }
 
 function Intsp_Data_Type
@@ -1020,7 +1102,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
     _intsp_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
   }
-  
+
   // Forward declaration
   if (token->kind == Token_Identifier && parent == NULL)
   {
@@ -1054,8 +1136,8 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
     struct_object->members = push_array(introspection->aggregates_arena, Intsp_Aggregate_Member, struct_object->members_capacity);
 
     assert(parent == NULL); // forward declarations should never have parents, since they're global scope.
-    assert(string_hash(struct_object->identifier) == intsp_aggregate_hash(struct_object)); // Sanity check
-    struct_object->hash = intsp_aggregate_hash(struct_object);
+    assert(string_hash(struct_object->identifier) == _intsp_aggregate_hash(struct_object)); // Sanity check
+    struct_object->hash = _intsp_aggregate_hash(struct_object);
 
     struct_object->forward_declaration.file = file_path;
     struct_object->forward_declaration.line = token->l0;
@@ -1109,28 +1191,23 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
 
       if (token->kind == Token_Close_Brace)
       {
-        break;      
+        break;
       }
 
       if (string_equals(token->value, S("union"), true) || string_equals(token->value, S("struct"), true))
       {
-        //Intsp_Aggregate_Member* m = &struct_object->members[struct_object->members_count++];
-        //m->is_aggregate = true;
-
         Intsp_Agreggate_Object* o = _intsp_parse_aggregate(lexer, introspection, file_path, struct_object);
-        //m->aggregate_data = *o;
-
-        // @TODO(fz): Documentation for this.
-        //m->documentation = string_copy(introspection->structs_arena, documentation);
-        // @TODO(fz): Parse identifier
-        //m->identifier    = string_copy(introspection->structs_arena, member_identifier);
-
         token = lexer_peek_token(lexer);
-        if (token->kind == Token_Semicolon)
+        if (token->kind == Token_Identifier)
         {
+          o->identifier = string_copy(introspection->aggregates_arena, token->value);
           lexer_eat_token(lexer);
           _intsp_eat_trivia(lexer);
         }
+        token = lexer_peek_token(lexer);
+        assert(token->kind == Token_Semicolon);
+        lexer_eat_token(lexer);
+        _intsp_eat_trivia(lexer);
       }
       else
       {
@@ -1145,7 +1222,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
         {
           _intsp_eat_trivia(lexer);
           token = lexer_peek_token(lexer);
-          
+
           // Member variable
           if (token->kind == Token_Semicolon)
           {
@@ -1156,7 +1233,6 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
           else if (token->kind == Token_Open_Parentheses)
           {
             member_identifier = S("(");
-            
             for (;;)
             {
               token = lexer_peek_token(lexer);
@@ -1209,18 +1285,36 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, String file_p
           }
         }
 
-        assert(lexer_current_token(lexer)->kind == Token_Semicolon);        
+        assert(lexer_current_token(lexer)->kind == Token_Semicolon);
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
 
+        // Check for same-line documentation comment (don't eat trivia yet)
         String documentation = S("");
         token = lexer_peek_token(lexer);
+
         if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
         {
-          documentation = string_slice(scratch.arena, token->value, 2, token->value.count - 2);
+          u64 start = 2;
+          u64 end = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
+          documentation = string_slice(scratch.arena, token->value, start, end);
           documentation = string_trim(scratch.arena, documentation);
           lexer_eat_token(lexer);
+        }
+
+        // eat all trivia including any non-documentation comments
+        for (;;)
+        {
           _intsp_eat_trivia(lexer);
+          token = lexer_peek_token(lexer);
+
+          // Skip any comments that weren't documentation (not on same line as semicolon)
+          if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
+          {
+            lexer_eat_token(lexer);
+            continue;
+          }
+
+          break;
         }
 
         if (struct_object->members_count >= struct_object->members_capacity)
@@ -1644,7 +1738,7 @@ _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String 
       ilog->text = Sf(introspection->arena, "[Introspection] LOG: "S_FMT"::(%u,%u)\n", S_ARG(file), line, col);
     } break;
     case Intsp_Log_Severity_Warning:
-    { 
+    {
       ilog->text = Sf(introspection->arena, "[Introspection] WARNING: "S_FMT"::(%u,%u)\n", S_ARG(file), line, col);
     } break;
     case Intsp_Log_Severity_Error:
@@ -1657,7 +1751,7 @@ _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, String 
 }
 
 function u64
-intsp_aggregate_hash(Intsp_Agreggate_Object* obj)
+_intsp_aggregate_hash(Intsp_Agreggate_Object* obj)
 {
   Scratch scratch = scratch_begin(0, 0);
   String result  = obj->identifier;
