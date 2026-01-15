@@ -26,6 +26,8 @@ function b32 directory_create(String path);
 function b32 is_directory(String path);
 function b32 directory_exists(String path);
 
+function void error_box(String title, String content, String file, u32 line);
+
 #if OS_WINDOWS
 # include "Platform/Platform_Win32.c"
 #else

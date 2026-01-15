@@ -4,7 +4,6 @@ function b32      win32_is_dot_dir(const char* name);
 function b32      win32_collect_recursive(Arena* arena, String_List* out, String dir_path);
 function void     win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path);
 
-
 function void
 console_attach()
 {
@@ -448,4 +447,13 @@ directory_create(String path)
   }
 
   return false;
+}
+
+function void
+error_box(String title, String content, String file, u32 line)
+{
+  Scratch scratch = scratch_begin(0,0);
+  String body = Sf(scratch.arena, S_FMT" line:%u\n"S_FMT, S_ARG(file), line, S_ARG(content));
+  MessageBoxA(NULL, (LPCSTR)title.cstring, (LPCSTR)body.cstring, MB_OK);
+  scratch_end(&scratch);
 }
