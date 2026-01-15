@@ -1,12 +1,16 @@
 #ifndef INTROSPECTION_H
 #define INTROSPECTION_H
 
+/* @File: Implementa introspection implemented specifically for my C code base. It makes very important assumptions and hardcodes things based on those assumptions.
+          This is only meant to work on a codebase that follows my programming style. */
+
+/*
+@TODO:
+- Rewrite parse_data_type to use the lexer directly, and not a view into a token array. Also, exceptionally, recognize Array(Some_Type) as a data type.
+*/
+
 #include "../Base.h"
 #include "Lexer.h"
-
-#define INTSP_MAX_FUNCTION_KEYWORDS 4
-#define INTSP_MAX_FUNCTION_ARGUMENTS 16
-#define INTSP_MAX_STRUCTS_MEMBERS 64
 
 #define intsp_error(intsp, message) intsp->fatal_error=true;error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__)
 
@@ -56,6 +60,7 @@ struct Intsp_Typedef_Object
 };
 
 typedef struct Intsp_Function_Argument Intsp_Function_Argument;
+Make_Array_Type(Intsp_Function_Argument);
 struct Intsp_Function_Argument
 {
   String identifier;
@@ -70,13 +75,8 @@ struct Intsp_Function_Object
   String identifier;
   Intsp_Data_Type return_type;
 
-  String* keywords; /* Things like 'function', 'inline', 'CALLBACK', 'WINAPI' etc... */
-  u32 keywords_count;
-  u32 keywords_capacity;
-
-  Intsp_Function_Argument* arguments;
-  u32 arguments_count;
-  u32 arguments_capacity;
+  Array(String) keywords; /* Things like 'function', 'inline', 'CALLBACK', 'WINAPI' etc... */
+  Array(Intsp_Function_Argument) arguments;
 
   String body;
   String documentation;
@@ -93,9 +93,11 @@ enum META_ENUM_LINK(Intsp_Aggregate_Kind)
 };
 
 typedef struct Intsp_Aggregate_Member Intsp_Aggregate_Member;
+Make_Array_Type(Intsp_Aggregate_Member);
 
 typedef struct Intsp_Aggregate_Object Intsp_Aggregate_Object;
 Make_Array_Type(Intsp_Aggregate_Object);
+
 struct Intsp_Aggregate_Object
 {
   String identifier;
@@ -106,10 +108,7 @@ struct Intsp_Aggregate_Object
   b32 is_nested; /* If this is nested inside another Intsp_Aggregate_Object, we don't enforce it to be named. */
   Intsp_Aggregate_Object* parent; /* if is_nested=false then this is NULL. Pointer to struct where this object is nested at. */
 
-
-  Intsp_Aggregate_Member* members; /* @NOTE(fz): Order matters, since struct order influences padding. We want to preserve this. */
-  u32 members_count;
-  u32 members_capacity;
+  Array(Intsp_Aggregate_Member) members;
 
   String documentation;
 
@@ -194,13 +193,13 @@ struct Introspection
 
   b32 fatal_error; /* If true, signals intsp_run to stop. */
 
-  ArrayType(Intsp_Log) logs;
-  ArrayType(Intsp_File) files;
-  ArrayType(Intsp_Function_Object) functions;
-  ArrayType(Intsp_Aggregate_Object) aggregates;
-  ArrayType(Intsp_Enum_Object) enums;
-  ArrayType(Intsp_Typedef_Object) typedefs;
-  ArrayType(Intsp_Global_Variable) globals;
+  Array(Intsp_Log) logs;
+  Array(Intsp_File) files;
+  Array(Intsp_Function_Object) functions;
+  Array(Intsp_Aggregate_Object) aggregates;
+  Array(Intsp_Enum_Object) enums;
+  Array(Intsp_Typedef_Object) typedefs;
+  Array(Intsp_Global_Variable) globals;
 };
 
 function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
@@ -301,6 +300,16 @@ intsp_run(String source_directory, b32 introspect_base_library)
         continue;
       }
 
+      if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
+      {
+        if (string_contains(token->value, S("@File:")))
+        {
+          intsp_file->documentation = string_copy(result.arena, token->value);
+        }
+        lexer_eat_token(&lexer);
+        continue;
+      }
+
       if (token_is_trivia(token))
       {
         lexer_eat_token(&lexer);
@@ -383,14 +392,15 @@ intsp_run(String source_directory, b32 introspect_base_library)
           else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
           {
             _intsp_parse_aggregate(&lexer, &result, intsp_file, NULL);
+            at_line_start = true;
+            continue;
           }
           else
           {
             _intsp_parse_typedef(&lexer, &result, intsp_file);
+            at_line_start = true;
+            continue;
           }
-
-          at_line_start = true;
-          continue;
         }
       }
 
@@ -520,14 +530,18 @@ intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f)
   String_Buffer buffer;
   string_buffer_init(&buffer, &MallocAllocator, 128);
 
-  for (u32 i = 0; i < f->keywords_count; i += 1) string_buffer_push(&buffer, S_FMT " ", S_ARG(f->keywords[i]));
+  for (u32 i = 0; i < f->keywords.count; i += 1)
+  {
+    String* keyword = &array_get(&f->keywords, i);
+    string_buffer_push(&buffer, S_FMT " ", S_ARG((*keyword)));
+  }
   String return_type = intsp_data_type_to_string(scratch.arena, f->return_type);
   string_buffer_push(&buffer, S_FMT " ", S_ARG(return_type));
   string_buffer_push(&buffer, S_FMT "(", S_ARG(f->identifier));
 
-  for (u32 i = 0; i < f->arguments_count; i += 1)
+  for (u32 i = 0; i < f->arguments.count; i += 1)
   {
-    Intsp_Function_Argument* arg = &f->arguments[i];
+    Intsp_Function_Argument* arg = &array_get(&f->arguments, i);
     if (arg->is_var_args)
     {
       string_buffer_push(&buffer, "...");
@@ -537,7 +551,7 @@ intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f)
       String arg_type = intsp_data_type_to_string(scratch.arena, arg->data_type);
       string_buffer_push(&buffer, S_FMT " " S_FMT, S_ARG(arg_type), S_ARG(arg->identifier) );
     }
-    if (i + 1 < f->arguments_count) string_buffer_push(&buffer, ", ");
+    if (i + 1 < f->arguments.count) string_buffer_push(&buffer, ", ");
   }
 
   string_buffer_push(&buffer, ")");
@@ -716,7 +730,7 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
   }
   else
   {
-    String body = S("");
+    String body = string_zero();
     for (;;)
     {
       token = lexer_peek_token(lexer);
@@ -1089,8 +1103,12 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
 function Intsp_Aggregate_Object*
 _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate_Object* parent)
 {
-  Intsp_Aggregate_Object* struct_object = NULL;
+  if (introspection->fatal_error)
+  {
+    return NULL;
+  }
 
+  Intsp_Aggregate_Object* struct_object = NULL;
   Token* token = lexer_peek_token(lexer);
 
   Intsp_Aggregate_Kind aggregate_kind = Intsp_Aggregate_Kind_Struct;
@@ -1113,7 +1131,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     return NULL;
   }
 
-  String struct_name = S("");
+  String struct_name = string_zero();
 
   if (parent == NULL)
   {
@@ -1162,10 +1180,8 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     array_get_next(&introspection->aggregates, Intsp_Aggregate_Object, struct_object);
     struct_object->kind = aggregate_kind;
     struct_object->identifier = string_copy(introspection->arena, struct_name);
-    struct_object->members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
-    struct_object->members = push_array(introspection->arena, Intsp_Aggregate_Member, struct_object->members_capacity);
+    struct_object->members = array_make(Intsp_Aggregate_Member, 32);
 
-    assert(parent == NULL); // forward declarations should never have parents, since they're global scope.
     assert(string_hash(struct_object->identifier) == _intsp_aggregate_hash(struct_object)); // Sanity check
     struct_object->hash = _intsp_aggregate_hash(struct_object);
 
@@ -1179,14 +1195,15 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
   {
     if (parent != NULL)
     {
-      Intsp_Aggregate_Member* member = &parent->members[parent->members_count++];
-      member->is_aggregate = true; // Because parent is not null
+      Intsp_Aggregate_Member* member;
+      array_get_next(&parent->members, Intsp_Aggregate_Member, member);
 
+      member->is_aggregate = true; // Because parent is not null
       member->aggregate_data.kind = aggregate_kind;
       member->aggregate_data.parent = parent;
       member->aggregate_data.identifier = string_copy(introspection->arena, struct_name);
-      member->aggregate_data.members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
-      member->aggregate_data.members = push_array(introspection->arena, Intsp_Aggregate_Member, member->aggregate_data.members_capacity);
+      member->aggregate_data.members = array_make(Intsp_Aggregate_Member, 32);
+
       struct_object = &member->aggregate_data;
     }
     else
@@ -1203,10 +1220,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
 
     struct_object->kind = aggregate_kind;
     struct_object->identifier = string_copy(introspection->arena, struct_name); // Might not be set if it's nested.
-
-    struct_object->members_capacity = INTSP_MAX_STRUCTS_MEMBERS;
-    struct_object->members = push_array(introspection->arena, Intsp_Aggregate_Member, struct_object->members_capacity);
-
+    struct_object->members = array_make(Intsp_Aggregate_Member, 32);
     struct_object->definition.file = file_obj;
     struct_object->definition.line = aggregate_line;
 
@@ -1246,12 +1260,24 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
         u32 tokens_capacity = 32;
         u32 tokens_count = 0;
         Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
-        String member_identifier = S("");
+        String member_identifier = string_zero();
+
+        b32 is_multiple_declaration = false;
+        u32 first_identifier_index = 0; // In case we have something like "f32 x, y, z;", this will index 'x'
 
         for (;;)
         {
           _intsp_eat_trivia(lexer);
           token = lexer_peek_token(lexer);
+
+          if (token->kind == Token_Comma)
+          {
+            if (!is_multiple_declaration)
+            {
+              is_multiple_declaration = true;
+              first_identifier_index = tokens_count - 1;
+            }
+          }
 
           // Member variable
           if (token->kind == Token_Semicolon)
@@ -1319,7 +1345,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
         lexer_eat_token(lexer);
 
         // Check for same-line documentation comment (don't eat trivia yet)
-        String documentation = S("");
+        String documentation = string_zero();
         token = lexer_peek_token(lexer);
 
         if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
@@ -1347,17 +1373,34 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
           break;
         }
 
-        if (struct_object->members_count >= struct_object->members_capacity)
+        if (!is_multiple_declaration)
         {
-          // @TODO(fz): replace struct object members with array
-          assert(0);
-        }
+          Intsp_Aggregate_Member* m;
+          array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
 
-        Intsp_Aggregate_Member* m = &struct_object->members[struct_object->members_count++];
-        m->is_aggregate = false;
-        m->documentation = string_copy(introspection->arena, documentation);
-        m->data_type = _intsp_parse_data_type(introspection->arena, tokens, 0, tokens_count);
-        m->identifier = string_copy(introspection->arena, member_identifier);
+          m->is_aggregate = false;
+          m->documentation = string_copy(introspection->arena, documentation);
+          m->data_type = _intsp_parse_data_type(introspection->arena, tokens, 0, tokens_count);
+          m->identifier = string_copy(introspection->arena, member_identifier);
+        }
+        else
+        {
+          Intsp_Data_Type type = _intsp_parse_data_type(introspection->arena, tokens, 0, first_identifier_index);
+          for (u32 i = first_identifier_index; i < tokens_count; i += 1)
+          {
+            Token* t = &tokens[i];
+            if (t->kind == Token_Identifier)
+            {
+              Intsp_Aggregate_Member* m;
+              array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
+
+              m->is_aggregate = false;
+              m->documentation = string_copy(introspection->arena, documentation);
+              m->data_type = type;
+              m->identifier = string_copy(introspection->arena, t->value);
+            }
+          }
+        }
 
         scratch_end(&scratch);
       }
@@ -1569,13 +1612,8 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
     memory_zero_struct(function_object);
     function_object->identifier = string_copy(introspection->arena, function_name);
 
-    function_object->keywords_count = 0;
-    function_object->keywords_capacity = INTSP_MAX_FUNCTION_KEYWORDS;
-    function_object->keywords = push_array(introspection->arena, String, function_object->keywords_capacity);
-
-    function_object->arguments_count = 0;
-    function_object->arguments_capacity = INTSP_MAX_FUNCTION_ARGUMENTS;
-    function_object->arguments = push_array(introspection->arena, Intsp_Function_Argument, function_object->arguments_capacity);
+    function_object->keywords = array_make(String, 8);
+    function_object->arguments = array_make(Intsp_Function_Argument, 8);
 
     // Parse keywords + return type
     s32 return_type_start = (s32)name_index - 1;
@@ -1597,8 +1635,9 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
     {
       if (tokens[k].kind == Token_Identifier)
       {
-        assert(function_object->keywords_count < function_object->keywords_capacity);
-        function_object->keywords[function_object->keywords_count++] = string_copy(introspection->arena, tokens[k].value);
+        String* keyword;
+        array_get_next(&function_object->keywords, String, keyword);
+        *keyword = string_copy(introspection->arena, tokens[k].value);
       }
     }
 
@@ -1609,8 +1648,8 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
 
     for (u32 i = name_index + 2; i < tokens_count - 1; )
     {
-      Intsp_Function_Argument* argument = &function_object->arguments[function_object->arguments_count++];
-      memory_zero_struct(argument);
+      Intsp_Function_Argument* argument;
+      array_get_next(&function_object->arguments, Intsp_Function_Argument, argument);
 
       // Varargs
       if (tokens[i].kind == Token_Dot)
@@ -1693,7 +1732,7 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
   }
   else
   {
-    String body = S("");
+    String body = string_zero();
     u32 braces_stack = 0;
 
     for (;;)

@@ -100,12 +100,10 @@ typedef enum
 typedef struct Token Token;
 struct Token
 {
+  String value; /* Value of token */
   Token_Kind kind;
-
   s32 l0, c0; /* Starting line and column of token */
   s32 l1, c1; /* Ending line and column of token */
-
-  String value; /* Value of token */
 };
 
 typedef u8 Trivia_Flags;

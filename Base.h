@@ -44,6 +44,7 @@ Usage Example:
 #include "base\Core.h" 
 #include "base\Math.h"
 
+#include "base\Array.h"
 #include "base\Memory.h"
 #include "base\Allocator.h"
 #include "base\String.h"
