@@ -141,6 +141,7 @@ struct Lexer
   u8 scratch_buffer[MAX_LEXER_SCRATCH_BUFFER_SIZE]; /* Scratch buffer for storing identifier values and parsing tokens */
 
   // Character stream
+  String file_path; /* File path that is currently loaded into the lexer */
   String source; /* Source text to do lexical analysis on */
   s32    source_cursor; /* Cursor for indexing source */
   s32 current_line_number;     /* Relative to the beginning of the current line */
@@ -280,6 +281,7 @@ lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_
   memory_zero_struct(lexer);
 
   lexer->arena  = arena_alloc();
+  lexer->file_path = path;
   lexer->source = file_load(lexer->arena, path);
   lexer->current_line_number     = 1;
   lexer->current_character_index = 1;

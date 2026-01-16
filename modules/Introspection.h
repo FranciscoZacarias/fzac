@@ -12,7 +12,7 @@
 #include "../Base.h"
 #include "Lexer.h"
 
-#define intsp_error(intsp, message) intsp->fatal_error=true;error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__)
+#define intsp_error(intsp, message) intsp->fatal_error=true;raddbg_break();error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__)
 
 typedef struct Intsp_File Intsp_File;
 Make_Array_Type(Intsp_File);
@@ -34,20 +34,27 @@ struct Intsp_Data_Type
 {
   String name;
 
-  b32 is_const; /*const */
-  b32 is_pointer; /* at least one level of indirection */
+#if 1
+  b32 is_short;
+  b32 is_signed;
+  b32 is_unsigned;
+  b32 is_long;
+  b32 is_long_long;
+  b32 is_const;
+#endif
 
-  b32 is_unsigned; /* unsigned */
-  b32 is_signed; /* signed */
-
-  b32 is_short; /* short */
-  b32 is_long; /* long */
-  b32 is_long_long; /* long long */
-
-  b32 is_array; /* [] */
+  b32 is_c_array; /* [] */
   String array_length; /* If data_type.is_array == true, we set here the size of the array, which can be a macro, so we just store a string. */
 
+  b32 is_pointer;
   u32 indirection_level;
+};
+
+typedef struct Intsp_Parse_Data_Type_Result Intsp_Parse_Data_Type_Result;
+struct Intsp_Parse_Data_Type_Result
+{
+  Array(String) names; /* It's an array in case this is a multiple declaration. Like: f32 x, y, z; */
+  Intsp_Data_Type data_type;
 };
 
 typedef struct Intsp_Typedef_Object Intsp_Typedef_Object; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
@@ -131,6 +138,7 @@ struct Intsp_Aggregate_Member
 };
 
 typedef struct Intsp_Enum_Member Intsp_Enum_Member;
+Make_Array_Type(Intsp_Enum_Member);
 struct Intsp_Enum_Member
 {
   String identifier;
@@ -147,9 +155,7 @@ struct Intsp_Enum_Object
   String identifier;
   String type;
 
-  Intsp_Enum_Member* members;
-  u32 members_count;
-  u32 members_capacity;
+  Array(Intsp_Enum_Member) members;
 
   Intsp_Typedef_Object* type_casted_at;
   Intsp_Source_Location definition;
@@ -163,10 +169,6 @@ struct Intsp_Global_Variable
   Intsp_Data_Type data_type; /* Data type */
   String body; // If it's initialized, this string will contain the value;
   String documentation; /* Documentation in front of the variable */
-
-  b32 is_explicit_array;
-  b32 implicit_size; /* If true, array_size doesnt matter. It says the size is counted by the compiler, according to it's definition. This, of course, means this variable is initialied. */
-  String array_size; /* Is a string in case the size is set by an identifier (like a #define constant)  */
 };
 
 typedef u32 Intsp_Log_Severity;
@@ -218,12 +220,13 @@ function void _intsp_parse_preprocessor_define(Lexer* lexer, Introspection* intr
 function void _intsp_eat_trivia(Lexer* lexer);
 function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
 function u64  _intsp_aggregate_hash(Intsp_Aggregate_Object* obj);
-function Intsp_Aggregate_Object* _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate_Object* parent);
-function Intsp_Data_Type         _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
-function Intsp_Function_Object*  _intsp_find_function(Introspection* introspection, String function_name);
-function Intsp_Enum_Object*      _intsp_find_enum(Introspection* introspection, String enum_name);
-function Intsp_Aggregate_Object* _intsp_find_struct(Introspection* introspection, u64 hash);
-function Intsp_Typedef_Object*   _intsp_find_typedef(Introspection* introspection, String typedef_name);
+function Intsp_Aggregate_Object*      _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate_Object* parent);
+function Intsp_Data_Type              _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end); /* Parses a data type from a view into a token array */
+function Intsp_Parse_Data_Type_Result _intsp_parse_datatype(Introspection* introspection, Lexer* lexer); /* Parses a data type from a view into a token array */
+function Intsp_Function_Object*       _intsp_find_function(Introspection* introspection, String function_name);
+function Intsp_Enum_Object*           _intsp_find_enum(Introspection* introspection, String enum_name);
+function Intsp_Aggregate_Object*      _intsp_find_struct(Introspection* introspection, u64 hash);
+function Intsp_Typedef_Object*        _intsp_find_typedef(Introspection* introspection, String typedef_name);
 
 function Introspection
 intsp_run(String source_directory, b32 introspect_base_library)
@@ -453,20 +456,15 @@ intsp_report_functions(Introspection* introspection, b32 report_documentation, S
   string_buffer_init(&buffer, &MallocAllocator, 1024);
 
   u32 num_mismatches = 0;
+  String null = S("NULL");
 
   for (u32 i = 0; i < introspection->functions.count; i += 1)
   {
     Intsp_Function_Object* func_object = &introspection->functions.data[i];
 
-    if (func_object->implementation.file->path.count == 0 || func_object->declaration.file->path.count == 0)
+    if (func_object->implementation.file == NULL || func_object->declaration.file == NULL)
     {
-      string_buffer_push(&buffer,
-        "Function "S_FMT" has a mismatch:\n"
-        " Decl: "S_FMT":%u\n"
-        " Impl: "S_FMT":%u\n\n",
-        S_ARG(func_object->identifier),
-        S_ARG(func_object->declaration.file->path), func_object->declaration.line,
-        S_ARG(func_object->implementation.file->path), func_object->implementation.line);
+      string_buffer_push(&buffer, "Function "S_FMT" has a mismatch\n", S_ARG(func_object->identifier));
       num_mismatches += 1;
     }
   }
@@ -493,7 +491,9 @@ intsp_report_enums(Introspection* introspection, String* out)
     if (e->identifier.count == 0)
     {
       num_missing_identifier += 1;
-      string_buffer_push(&buffer, "Enum missing identifier. First enum value: "S_FMT"\n", S_ARG(e->members[0].identifier));
+
+      Intsp_Enum_Member enum_member = array_get(&e->members, 0);
+      string_buffer_push(&buffer, "Enum missing identifier. First enum value: "S_FMT"\n", S_ARG(enum_member.identifier));
     }
   }
 
@@ -512,10 +512,9 @@ intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type)
   String_Buffer buffer;
   string_buffer_init(&buffer, &MallocAllocator, 64);
 
-  if (type.is_const) string_buffer_push(&buffer, "const ");
   string_buffer_push(&buffer, S_FMT, S_ARG(type.name));
   if (type.is_pointer) for (u32 i = 0; i < type.indirection_level; i += 1) string_buffer_push(&buffer, "*");
-  if (type.is_array) string_buffer_push(&buffer, "[]");
+  if (type.is_c_array) string_buffer_push(&buffer, "[]");
 
   String result = string_buffer_to_string(arena, &buffer);
   string_buffer_free(&buffer);
@@ -637,113 +636,21 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
 
   Scratch scratch = scratch_begin(0,0);
 
-  u32 tokens_capacity = 32;
-  u32 tokens_count = 0;
-  u32 end_index = 0;
-  Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
-
-  b32 is_declaration = true;
-  b32 is_array = false;
-
-  for (;;)
-  {
-    token = lexer_peek_token(lexer);
-    if (token->kind == Token_Semicolon)
-    {
-      is_declaration = true;
-      break;
-    }
-    if (token->kind == Token_Equal)
-    {
-      is_declaration = false;
-      break;
-    }
-    if (token->kind == Token_Open_Bracket)
-    {
-      is_array = true;
-      break;
-    }
-    if (tokens_count >= tokens_capacity)
-    {
-      intsp_error(introspection, S("Parsing a global variable found too many keywords. We currently allocate a small token array on the stack to parse it. Please increase the array capacity."));
-      return;
-    }
-    tokens[tokens_count++] = *token;
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-  }
-
   Intsp_Global_Variable* gvariable;
   array_get_next(&introspection->globals, Intsp_Global_Variable, gvariable);
+  
+  Intsp_Parse_Data_Type_Result result = _intsp_parse_datatype(introspection, lexer);
+  gvariable->data_type = result.data_type;
 
-  if (is_array)
+  if (result.names.count != 1)
   {
-    lexer_eat_token(lexer); // Eat [
-    _intsp_eat_trivia(lexer);
-
-    Token* next = lexer_peek_token(lexer);
-
-    assert(next->kind == Token_Number || next->kind == Token_Identifier || next->kind == Token_Close_Brace);
-
-    gvariable->is_explicit_array = true;
-    gvariable->implicit_size = false;
-
-    if (next->kind != Token_Close_Brace)
-    {
-      gvariable->array_size = string_copy(introspection->arena, next->value);
-      lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
-
-      next = lexer_peek_token(lexer); // Close bracket
-      assert(next->kind == Token_Close_Bracket);
-    }
-    else
-    {
-      gvariable->implicit_size = true;
-    }
-
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-
-    next = lexer_peek_token(lexer);
-    if (next->kind == Token_Equal)
-    {
-      is_declaration = true;
-    }
-    else if (next->kind == Token_Semicolon)
-    {
-      is_declaration = false;
-    }
-    else
-    {
-      intsp_error(introspection, Sf(introspection->arena, "After a global variable is initialized, we expect to see an equal sign or a semi colon. Intead we got: "S_FMT"\n", S_ARG(next->value)));
-      return;
-    }
+    intsp_error(introspection, S("We do not allow multiple declarations in global variables."));
+    return;
   }
+  gvariable->identifier = string_copy(introspection->arena, array_get(&result.names, 0));
 
-  gvariable->data_type = _intsp_parse_data_type(introspection->arena, tokens, 0, tokens_count);
-  gvariable->identifier = string_copy(introspection->arena, tokens[tokens_count-1].value);
-
-  if (is_declaration)
-  {
-    lexer_eat_token(lexer); // Eat semicolon
-  }
-  else
-  {
-    String body = string_zero();
-    for (;;)
-    {
-      token = lexer_peek_token(lexer);
-      body = string_join(scratch.arena, body, token->value);
-      if (token->kind == Token_Semicolon)
-      {
-        break;
-      }
-      lexer_eat_token(lexer);
-    }
-    gvariable->body = string_trim(introspection->arena, body);
-    lexer_eat_token(lexer); // Eat semicolon
-  }
+  _intsp_eat_trivia(lexer);
+  token = lexer_peek_token(lexer);
 
   for (;;)
   {
@@ -766,6 +673,200 @@ function void
 _intsp_parse_preprocessor_define(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
 {
   
+}
+
+function Intsp_Parse_Data_Type_Result
+_intsp_parse_datatype(Introspection* introspection, Lexer* lexer)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  Intsp_Parse_Data_Type_Result result;
+  memory_zero_struct(&result);
+  result.names = array_make(String, 1);
+  Intsp_Data_Type* type = &result.data_type;
+  
+  Token tokens[64];
+  u32 tokens_count = 0;
+  
+  // Collect all tokens until semicolon or equal sign
+  for (;;)
+  {
+    Token* t = lexer_peek_token(lexer);
+    if (t->kind == Token_Semicolon || t->kind == Token_Equal)
+    {
+      break;
+    }
+    tokens[tokens_count++] = *t;
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+  }
+  
+  if (tokens_count == 0)
+  {
+    intsp_error(introspection, S("Expected declaration."));
+    scratch_end(&scratch);
+    return result;
+  }
+  
+  // Determine what kind of declaration this is
+  b32 is_function_pointer = false;
+  u32 function_pointer_start = 0;
+  b32 has_comma = false;
+  u32 first_comma_index = 0;
+  
+  for (u32 i = 0; i < tokens_count; i++)
+  {
+    if (tokens[i].kind == Token_Comma)
+    {
+      if (!has_comma)
+      {
+        first_comma_index = i;
+      }
+      has_comma = true;
+    }
+    if (tokens[i].kind == Token_Open_Parentheses)
+    {
+      // Check if next token is asterisk (function pointer)
+      if (i + 1 < tokens_count && tokens[i + 1].kind == Token_Asterisk)
+      {
+        is_function_pointer = true;
+        function_pointer_start = i;
+        break;
+      }
+    }
+  }
+  
+  if (is_function_pointer && has_comma)
+  {
+    intsp_error(introspection, S("We do not support multiple declaration with function pointers."));
+    scratch_end(&scratch);
+    return result;
+  }
+  
+  if (is_function_pointer)
+  {
+    // Function pointer: everything before '(' is the type, everything from '(' onward is the name
+    String type_name = string_zero();
+    String function_signature = string_zero();
+    
+    for (u32 i = 0; i < function_pointer_start; i++)
+    {
+      if (type_name.count > 0 && tokens[i].kind != Token_Asterisk)
+      {
+        type_name = string_join(scratch.arena, type_name, S(" "));
+      }
+      type_name = string_join(scratch.arena, type_name, tokens[i].value);
+      
+      if (tokens[i].kind == Token_Asterisk)
+      {
+        type->is_pointer = true;
+        type->indirection_level += 1;
+      }
+    }
+    
+    for (u32 i = function_pointer_start; i < tokens_count; i++)
+    {
+      function_signature = string_join(scratch.arena, function_signature, tokens[i].value);
+    }
+    
+    type->name = string_trim(introspection->arena, string_copy(introspection->arena, type_name));
+    array_push(&result.names, String, string_trim(introspection->arena, string_copy(introspection->arena, function_signature)));
+  }
+  else if (has_comma)
+  {
+    // Multiple declaration: everything before first identifier is the type
+    // Identifiers separated by commas are the names
+    
+    // Find where the type ends (last non-identifier token before first comma or first identifier)
+    u32 type_end = first_comma_index-1;
+    
+    // Build type name
+    String type_name = string_zero();
+    for (u32 i = 0; i < type_end; i++)
+    {
+      if (type_name.count > 0 && tokens[i].kind != Token_Asterisk)
+      {
+        type_name = string_join(scratch.arena, type_name, S(" "));
+      }
+      type_name = string_join(scratch.arena, type_name, tokens[i].value);
+      
+      if (tokens[i].kind == Token_Asterisk)
+      {
+        type->is_pointer = true;
+        type->indirection_level += 1;
+      }
+    }
+    type->name = string_trim(introspection->arena, string_copy(introspection->arena, type_name));
+    
+    // Collect variable names (skip commas)
+    for (u32 i = type_end; i < tokens_count; i++)
+    {
+      if (tokens[i].kind == Token_Identifier)
+      {
+        array_push(&result.names, String, string_copy(introspection->arena, tokens[i].value));
+      }
+    }
+  }
+  else
+  {
+    // Simple declaration: last identifier is the name, everything before is the type
+    u32 name_index = tokens_count - 1;
+    
+    // Handle array syntax: name might be followed by [...]
+    b32 found_array = false;
+    for (u32 i = 0; i < tokens_count; i++)
+    {
+      if (tokens[i].kind == Token_Open_Bracket)
+      {
+        type->is_c_array = true;
+        found_array = true;
+        name_index = i - 1; // Identifier is before '['
+        
+        // Get array length if present
+        if (i + 1 < tokens_count && tokens[i + 1].kind != Token_Close_Bracket)
+        {
+          type->array_length = string_copy(introspection->arena, tokens[i + 1].value);
+        }
+        break;
+      }
+    }
+    
+    if (!found_array)
+    {
+      // Find the last identifier as the name
+      for (s32 i = tokens_count - 1; i >= 0; i--)
+      {
+        if (tokens[i].kind == Token_Identifier)
+        {
+          name_index = i;
+          break;
+        }
+      }
+    }
+    
+    // Build type name from tokens before name_index
+    String type_name = string_zero();
+    for (u32 i = 0; i < name_index; i++)
+    {
+      if (type_name.count > 0 && tokens[i].kind != Token_Asterisk)
+      {
+        type_name = string_join(scratch.arena, type_name, S(" "));
+      }
+      type_name = string_join(scratch.arena, type_name, tokens[i].value);
+      
+      if (tokens[i].kind == Token_Asterisk)
+      {
+        type->is_pointer = true;
+        type->indirection_level += 1;
+      }
+    }
+    type->name = string_trim(introspection->arena, string_copy(introspection->arena, type_name));
+    
+    // Store the variable name
+    array_push(&result.names, String, string_copy(introspection->arena, tokens[name_index].value));
+  }
+  
+  scratch_end(&scratch);
+  return result;
 }
 
 function Intsp_Data_Type
@@ -839,7 +940,7 @@ _intsp_parse_data_type(Arena* arena, Token* tokens, u32 start, u32 end)
 
   if (i < end && tokens[i].kind == Token_Open_Bracket)
   {
-    type.is_array = true;
+    type.is_c_array = true;
     i += 1;
 
     if (tokens[i].kind == Token_Number)
@@ -1020,83 +1121,56 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
 {
   Scratch scratch = scratch_begin(0,0);
   Token* token = lexer_peek_token(lexer);
-
   Intsp_Typedef_Object* typedef_datatype;
   array_get_next(&introspection->typedefs, Intsp_Typedef_Object, typedef_datatype);
   typedef_datatype->location.file = file_obj;
   typedef_datatype->location.line = token->l0;
+  
+  _intsp_eat_trivia(lexer);
+  
+  // Parse the data type
 
-  u32 tokens_capacity = 32;
-  u32 tokens_count = 0;
-  Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
+  Intsp_Parse_Data_Type_Result result = _intsp_parse_datatype(introspection, lexer);
+  typedef_datatype->data_type = result.data_type;
 
-  // Collect tokens until semicolon
-  for (;;)
+  if (result.names.count > 1)
   {
-    token = lexer_peek_token(lexer);
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-
-    if (token->kind == Token_Semicolon) break;
-    if (tokens_count >= tokens_capacity)
-    {
-      assert(0);
-    }
-
-    tokens[tokens_count++] = *token;
+    intsp_error(introspection, S("Unexpected multiple declaration in typedef"));
+    return;
   }
-
-  assert(tokens_count > 0);
-
-  // Determine if this is a function pointer
-  b32 is_function_pointer = false;
-  for (u32 i = 0; i < tokens_count; i++)
+  typedef_datatype->identifier = array_get(&result.names, 0);
+  
+  _intsp_eat_trivia(lexer);
+  token = lexer_peek_token(lexer);
+  
+  // Check if this is a function pointer typedef
+  if (token->kind == Token_Open_Parentheses)
   {
-    if (tokens[i].kind == Token_Open_Parentheses)
+    // Function pointer typedef
+    // Collect everything from '(' to ';' as the identifier
+    String declaration_string = string_zero();
+    
+    for (;;)
     {
-      // check if next token is '*' (i.e., (*Name))
-      if (i + 1 < tokens_count && tokens[i + 1].kind == Token_Asterisk)
+      token = lexer_peek_token(lexer);
+      if (token->kind == Token_Semicolon)
       {
-        is_function_pointer = true;
         break;
       }
+      lexer_eat_token(lexer);
+      declaration_string = string_join(scratch.arena, declaration_string, token->value);
+      _intsp_eat_trivia(lexer);
     }
-  }
-
-  if (!is_function_pointer)
-  {
-    // normal typedef: last identifier is the typedef name
-    u32 name_index = tokens_count - 1;
-    typedef_datatype->identifier = string_copy(introspection->arena, tokens[name_index].value);
-    typedef_datatype->data_type  = _intsp_parse_data_type(introspection->arena, tokens, 0, name_index);
+    
+    typedef_datatype->identifier = string_copy(introspection->arena, declaration_string);
   }
   else
   {
-    // function pointer typedef: first identifier tokens are the base type
-    u32 base_type_end = 0;
-    for (u32 i = 0; i < tokens_count; i++)
-    {
-      if (tokens[i].kind == Token_Identifier)
-      {
-        base_type_end = i + 1;
-      }
-      else
-      {
-        break;
-      }
-    }
-
-    typedef_datatype->data_type = _intsp_parse_data_type(introspection->arena, tokens, 0, base_type_end);
-
-    String declaration_string = string_zero();
-    for (u32 i = base_type_end; i < tokens_count; i++)
-    {
-      declaration_string = string_join(scratch.arena, declaration_string, tokens[i].value);
-    }
-
-    typedef_datatype->identifier = string_copy(introspection->arena, declaration_string);
+    // Normal typedef: next identifier is the typedef name
+    assert(token->kind == Token_Semicolon);
+    lexer_eat_token(lexer);
   }
-
+  
   scratch_end(&scratch);
 }
 
@@ -1108,7 +1182,6 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     return NULL;
   }
 
-  Intsp_Aggregate_Object* struct_object = NULL;
   Token* token = lexer_peek_token(lexer);
 
   Intsp_Aggregate_Kind aggregate_kind = Intsp_Aggregate_Kind_Struct;
@@ -1124,296 +1197,200 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
   lexer_eat_token(lexer);
   _intsp_eat_trivia(lexer);
 
-  token = lexer_peek_token(lexer);
-  if (token->kind != Token_Identifier && parent == NULL)
-  {
-    _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0, S("Expected identifier after 'struct'/'union'."));
-    return NULL;
-  }
-
   String struct_name = string_zero();
+
+  token = lexer_peek_token(lexer);
 
   if (parent == NULL)
   {
+    if (token->kind != Token_Identifier)
+    {
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0,
+        S("Expected identifier after 'struct'/'union'."));
+      return NULL;
+    }
+
     struct_name = token->value;
     lexer_eat_token(lexer);
     _intsp_eat_trivia(lexer);
   }
-  else
-  {
-    assert(token->kind == Token_Open_Brace);
-  }
 
   token = lexer_peek_token(lexer);
 
-  if (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
-  {
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-    token = lexer_peek_token(lexer);
-  }
-
+  // ------------------------------------------------------------
   // Forward declaration
+  // ------------------------------------------------------------
   if (token->kind == Token_Identifier && parent == NULL)
   {
-    Token* typedef_name = token;
-
-    if (!string_equals(struct_name, typedef_name->value, true))
+    if (!string_equals(struct_name, token->value, true))
     {
-      _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0, Sf(introspection->arena, "When forward declaring a struct, the struct tag and the typedef name must be the same.\nPlease fix this: typedef struct "S_FMT" "S_FMT";", S_ARG(struct_name), S_ARG(typedef_name->value)));
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0,
+        Sf(introspection->arena,
+          "Struct tag and typedef name must match: typedef struct "S_FMT" "S_FMT";",
+          S_ARG(struct_name), S_ARG(token->value)));
       return NULL;
     }
 
     lexer_eat_token(lexer);
     _intsp_eat_trivia(lexer);
+
     token = lexer_peek_token(lexer);
     if (token->kind != Token_Semicolon)
     {
-      _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0, S("Expected ';' after struct forward declaration."));
+      _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0,
+        S("Expected ';' after forward declaration."));
       return NULL;
     }
 
     lexer_eat_token(lexer);
 
-    struct_object = _intsp_find_struct(introspection, string_hash(struct_name));
-    assert(struct_object == NULL); // In a forward declaration, we should never have collisions
-    array_get_next(&introspection->aggregates, Intsp_Aggregate_Object, struct_object);
-    struct_object->kind = aggregate_kind;
-    struct_object->identifier = string_copy(introspection->arena, struct_name);
-    struct_object->members = array_make(Intsp_Aggregate_Member, 32);
+    Intsp_Aggregate_Object* obj = NULL;
+    array_get_next(&introspection->aggregates, Intsp_Aggregate_Object, obj);
 
-    assert(string_hash(struct_object->identifier) == _intsp_aggregate_hash(struct_object)); // Sanity check
-    struct_object->hash = _intsp_aggregate_hash(struct_object);
+    obj->kind = aggregate_kind;
+    obj->identifier = string_copy(introspection->arena, struct_name);
+    obj->members = array_make(Intsp_Aggregate_Member, 32);
+    obj->hash = _intsp_aggregate_hash(obj);
+    obj->forward_declaration.file = file_obj;
+    obj->forward_declaration.line = aggregate_line;
 
-    struct_object->forward_declaration.file = file_obj;
-    struct_object->forward_declaration.line = token->l0;
-
-    return struct_object;
+    return obj;
   }
+
+  // ------------------------------------------------------------
   // Definition
-  else if (token->kind == Token_Open_Brace)
+  // ------------------------------------------------------------
+  if (token->kind != Token_Open_Brace)
   {
-    if (parent != NULL)
+    intsp_error(introspection, S("Expected '{' after aggregate declaration."));
+    return NULL;
+  }
+
+  Intsp_Aggregate_Object* struct_object = NULL;
+
+  if (parent)
+  {
+    Intsp_Aggregate_Member* m;
+    array_get_next(&parent->members, Intsp_Aggregate_Member, m);
+
+    m->is_aggregate = true;
+    m->aggregate_data.kind = aggregate_kind;
+    m->aggregate_data.parent = parent;
+    m->aggregate_data.identifier = string_copy(introspection->arena, struct_name);
+    m->aggregate_data.members = array_make(Intsp_Aggregate_Member, 32);
+
+    struct_object = &m->aggregate_data;
+  }
+  else
+  {
+    struct_object = _intsp_find_struct(introspection, string_hash(struct_name));
+    if (!struct_object)
     {
-      Intsp_Aggregate_Member* member;
-      array_get_next(&parent->members, Intsp_Aggregate_Member, member);
+      intsp_error(introspection, S("Aggregate must be forward-declared before definition."));
+      return NULL;
+    }
+  }
 
-      member->is_aggregate = true; // Because parent is not null
-      member->aggregate_data.kind = aggregate_kind;
-      member->aggregate_data.parent = parent;
-      member->aggregate_data.identifier = string_copy(introspection->arena, struct_name);
-      member->aggregate_data.members = array_make(Intsp_Aggregate_Member, 32);
+  struct_object->kind = aggregate_kind;
+  struct_object->identifier = string_copy(introspection->arena, struct_name);
+  struct_object->members = array_make(Intsp_Aggregate_Member, 32);
+  struct_object->definition.file = file_obj;
+  struct_object->definition.line = aggregate_line;
 
-      struct_object = &member->aggregate_data;
+  lexer_eat_token(lexer); // eat '{'
+  _intsp_eat_trivia(lexer);
+
+  // ------------------------------------------------------------
+  // Members
+  // ------------------------------------------------------------
+  for (;;)
+  {
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+
+    if (token->kind == Token_Close_Brace)
+    {
+      break;
+    }
+
+    // Nested aggregate
+    if (string_equals(token->value, S("struct"), true) ||
+      string_equals(token->value, S("union"), true))
+    {
+      Intsp_Aggregate_Object* nested =
+        _intsp_parse_aggregate(lexer, introspection, file_obj, struct_object);
+
+      token = lexer_peek_token(lexer);
+      if (token->kind == Token_Identifier)
+      {
+        nested->identifier = string_copy(introspection->arena, token->value);
+        lexer_eat_token(lexer);
+        _intsp_eat_trivia(lexer);
+      }
+
+      token = lexer_peek_token(lexer);
+      assert(token->kind == Token_Semicolon);
+      lexer_eat_token(lexer);
+      continue;
+    }
+
+    // ------------------------------------------------------------
+    // Normal member → NEW PARSER
+    // ------------------------------------------------------------
+    Intsp_Parse_Data_Type_Result parsed = _intsp_parse_datatype(introspection, lexer);
+
+    token = lexer_peek_token(lexer);
+
+    // Skip initializer if present
+    if (token->kind == Token_Equal)
+    {
+      while (lexer_peek_token(lexer)->kind != Token_Semicolon)
+      {
+        lexer_eat_token(lexer);
+      }
+    }
+
+    token = lexer_peek_token(lexer);
+    assert(token->kind == Token_Semicolon);
+
+    lexer_eat_token(lexer);
+    _intsp_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+    
+
+    if (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
+    {
+      lexer_eat_token(lexer);
+      _intsp_eat_trivia(lexer);
+    }
+
+    if (parsed.names.count > 1)
+    {
+      for (u32 i = 0; i < parsed.names.count; i += 1)
+      {
+        Intsp_Aggregate_Member* m;
+        array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
+        m->is_aggregate = false;
+        m->data_type = parsed.data_type;
+        m->identifier = array_get(&parsed.names, 0);
+        m->documentation = string_copy(introspection->arena, token->value);
+      }
     }
     else
     {
-      assert(parent == NULL);
-      u64 hash = string_hash(struct_name); // Because it's not nested, I.e. has no parent, we just just hash the name and get the correct hash
-      struct_object = _intsp_find_struct(introspection, hash);
-      if (struct_object == NULL)
-      {
-        _intsp_report(introspection, Intsp_Log_Severity_Error, file_obj, token->l0, token->c0, Sf(introspection->arena, "Struct '"S_FMT"' must be forward declared before its definition.", S_ARG(struct_name)));
-        return NULL;
-      }
+      Intsp_Aggregate_Member* m;
+      array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
+      m->is_aggregate = false;
+      m->data_type = parsed.data_type;
+      m->identifier = array_get(&parsed.names, 0);
+      m->documentation = string_copy(introspection->arena, token->value);
     }
-
-    struct_object->kind = aggregate_kind;
-    struct_object->identifier = string_copy(introspection->arena, struct_name); // Might not be set if it's nested.
-    struct_object->members = array_make(Intsp_Aggregate_Member, 32);
-    struct_object->definition.file = file_obj;
-    struct_object->definition.line = aggregate_line;
-
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-
-    for (;;)
-    {
-      b32 semicolon_found = false;
-      _intsp_eat_trivia(lexer);
-      token = lexer_peek_token(lexer);
-
-      if (token->kind == Token_Close_Brace)
-      {
-        break;
-      }
-
-      if (string_equals(token->value, S("union"), true) || string_equals(token->value, S("struct"), true))
-      {
-        Intsp_Aggregate_Object* o = _intsp_parse_aggregate(lexer, introspection, file_obj, struct_object);
-        token = lexer_peek_token(lexer);
-        if (token->kind == Token_Identifier)
-        {
-          o->identifier = string_copy(introspection->arena, token->value);
-          lexer_eat_token(lexer);
-          _intsp_eat_trivia(lexer);
-        }
-        token = lexer_peek_token(lexer);
-        assert(token->kind == Token_Semicolon);
-        lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
-      }
-      else
-      {
-        Scratch scratch = scratch_begin(0,0);
-
-        u32 tokens_capacity = 32;
-        u32 tokens_count = 0;
-        Token* tokens = push_array(scratch.arena, Token, tokens_capacity);
-        String member_identifier = string_zero();
-
-        b32 is_multiple_declaration = false;
-        u32 first_identifier_index = 0; // In case we have something like "f32 x, y, z;", this will index 'x'
-
-        for (;;)
-        {
-          _intsp_eat_trivia(lexer);
-          token = lexer_peek_token(lexer);
-
-          if (token->kind == Token_Comma)
-          {
-            if (!is_multiple_declaration)
-            {
-              is_multiple_declaration = true;
-              first_identifier_index = tokens_count - 1;
-            }
-          }
-
-          // Member variable
-          if (token->kind == Token_Semicolon)
-          {
-            member_identifier = string_copy(introspection->arena, tokens[tokens_count-1].value);
-            break;
-          }
-          // Function pointer
-          else if (token->kind == Token_Open_Parentheses)
-          {
-            member_identifier = S("(");
-            for (;;)
-            {
-              token = lexer_peek_token(lexer);
-              if (token->kind == Token_Semicolon)
-              {
-                semicolon_found = true;
-                break;
-              }
-              lexer_eat_token(lexer);
-              member_identifier = string_join(scratch.arena, member_identifier, token->value);
-            }
-          }
-          // Continue parsing
-          else
-          {
-            tokens[tokens_count++] = *token;
-            lexer_eat_token(lexer);
-          }
-
-          if (semicolon_found)
-          {
-            break;
-          }
-        }
-
-        _intsp_eat_trivia(lexer);
-
-        token = lexer_peek_token(lexer);
-
-        if (parent == NULL)
-        {
-          assert(token->kind == Token_Semicolon);
-        }
-        else
-        {
-          if (token->kind == Token_Identifier)
-          {
-            member_identifier = string_copy(introspection->arena, token->value);
-            lexer_eat_token(lexer);
-            _intsp_eat_trivia(lexer);
-
-            token = lexer_peek_token(lexer);
-            assert(token->kind == Token_Semicolon);
-            lexer_eat_token(lexer);
-            _intsp_eat_trivia(lexer);
-          }
-          else
-          {
-            // @NOTE(fz): It's a nameless aggregate.
-          }
-        }
-
-        assert(lexer_current_token(lexer)->kind == Token_Semicolon);
-        lexer_eat_token(lexer);
-
-        // Check for same-line documentation comment (don't eat trivia yet)
-        String documentation = string_zero();
-        token = lexer_peek_token(lexer);
-
-        if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
-        {
-          u64 start = 2;
-          u64 end = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
-          documentation = string_slice(scratch.arena, token->value, start, end);
-          documentation = string_trim(scratch.arena, documentation);
-          lexer_eat_token(lexer);
-        }
-
-        // eat all trivia including any non-documentation comments
-        for (;;)
-        {
-          _intsp_eat_trivia(lexer);
-          token = lexer_peek_token(lexer);
-
-          // Skip any comments that weren't documentation (not on same line as semicolon)
-          if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
-          {
-            lexer_eat_token(lexer);
-            continue;
-          }
-
-          break;
-        }
-
-        if (!is_multiple_declaration)
-        {
-          Intsp_Aggregate_Member* m;
-          array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
-
-          m->is_aggregate = false;
-          m->documentation = string_copy(introspection->arena, documentation);
-          m->data_type = _intsp_parse_data_type(introspection->arena, tokens, 0, tokens_count);
-          m->identifier = string_copy(introspection->arena, member_identifier);
-        }
-        else
-        {
-          Intsp_Data_Type type = _intsp_parse_data_type(introspection->arena, tokens, 0, first_identifier_index);
-          for (u32 i = first_identifier_index; i < tokens_count; i += 1)
-          {
-            Token* t = &tokens[i];
-            if (t->kind == Token_Identifier)
-            {
-              Intsp_Aggregate_Member* m;
-              array_get_next(&struct_object->members, Intsp_Aggregate_Member, m);
-
-              m->is_aggregate = false;
-              m->documentation = string_copy(introspection->arena, documentation);
-              m->data_type = type;
-              m->identifier = string_copy(introspection->arena, t->value);
-            }
-          }
-        }
-
-        scratch_end(&scratch);
-      }
-    }
-
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-
-    return struct_object;
   }
 
-  intsp_error(introspection, S("Reached code that shoudl be unreachable. Something went wrong parsing an aggregate type."));
-  return NULL;
+  lexer_eat_token(lexer); // eat '}'
+  _intsp_eat_trivia(lexer);
+
+  return struct_object;
 }
 
 function void
@@ -1499,13 +1476,12 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
   assert(token->kind == Token_Semicolon);
   lexer_eat_token(lexer);
 
-  enum_object->members_count = members_count;
-  enum_object->members_capacity = members_count;
-  enum_object->members = push_array(introspection->arena, Intsp_Enum_Member, members_count);
+  enum_object->members = array_make(Intsp_Enum_Member, 16);
 
   for(u32 i = 0; i < members_count; ++i)
   {
-    enum_object->members[i] = temp_members[i];
+    //enum_object->members[i] = temp_members[i];
+    array_push(&enum_object->members, Intsp_Enum_Member, temp_members[i]);
   }
 
   scratch_end(&scratch);
