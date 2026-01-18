@@ -6,7 +6,7 @@
 typedef struct Thread_Context Thread_Context;
 struct Thread_Context
 {
-  Arena* arena; /* Persistant arena for lifetime allocations */
+  Arena* temporary_storage; /* Used for allocating without thinking too hard about where the allocation goes to. Use get_temporary_storage() and clear_temporary_storage(); */
   Arena* temporary_arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT]; /* Used for scratches arenas */
 };
 
@@ -18,15 +18,30 @@ function void            thread_context_free(); /* Frees the thread context */
 function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count); /* Returns a scratch arena */
 function Thread_Context* thread_context_get_equipped(); /* Returns currently attached thread_context */
 
+function Arena* get_temporary_storage();
+function void   clear_temporary_storage();
+
 #define scratch_begin(conflicts, count) arena_temp_begin(_thread_context_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) arena_temp_end(scratch)
+
+function Arena* 
+get_temporary_storage()
+{
+  return MainThreadContext.temporary_storage;
+}
+
+function void   
+clear_temporary_storage()
+{
+  arena_clear(MainThreadContext.temporary_storage);
+}
 
 function void
 thread_context_init_and_attach(Thread_Context* thread_context)
 {
   memory_zero_struct(thread_context);
 
-  thread_context->arena = arena_alloc();
+  thread_context->temporary_storage = arena_alloc();
   for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
   {
     thread_context->temporary_arenas[i] = arena_alloc();

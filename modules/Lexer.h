@@ -157,6 +157,11 @@ struct Lexer
   Emit_Structures emit_structures; /* Predefined structures that this lexer can emit. E.g. String literals, block comments ... */
 };
 
+
+// @Section: Token_helpers
+function b32 token_is_trivia(Token* token);
+function b32 token_is_comment(Token* token);
+
 function s32    lexer_token_index(Lexer* lexer, s32 lookahead); /* Ensure we get a valid index into the circular buffer */
 function Token* lexer_reserve_token_slot(Lexer* lexer); /* Add a new incoming token to buffer */
 function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures);
@@ -170,7 +175,7 @@ function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the 
 function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a call to lexer_eat_token */
 function void   lexer_eat_character(Lexer* lexer); /* Advances the lexer by 1 character */
 function void   lexer_eat_token(Lexer* lexer); /* Advances lexer by 1 token */
-function void   lexer_eat_spaces(Lexer* lexer); /* Advances over all spaces */
+function void   lexer_eat_trivia(Lexer* lexer); /* Advances over all spaces */
 function Token* lexer_current_token(Lexer* lexer); /* Returns the current token. Doesn't peek, doesn't make. Can return garbage. */
 
 // @Section: Parsing helpers
@@ -185,10 +190,39 @@ function void lexer_parse_block_comment(Lexer* lexer, Token* token); /* Parses a
 function Token_Kind lexer_classify_trivia(u8 c);
 function b32        lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind);
 
-// @Section: Token_helpers
-function b32  token_is_trivia(Token* token);
 
 // @Section: Implementation
+
+function b32
+token_is_comment(Token* token)
+{
+  b32 result = false;
+  if (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block)
+  {
+    result = true;
+  }
+  return result;
+}
+
+function b32
+token_is_trivia(Token* token)
+{
+  b32 result = false;
+  switch (token->kind)
+  {
+    case Token_Whitespace:
+    case Token_Tab:
+    case Token_Vertical_Tab:
+    case Token_Line_Break:
+    case Token_Carriage_Return:
+    case Token_Form_Feed:
+    {
+      result = true;
+    }
+    break;
+  }
+  return result;
+}
 
 function s32
 lexer_token_index(Lexer* lexer, s32 lookahead)
@@ -459,15 +493,13 @@ lexer_parse_number(Lexer* lexer, Token* token)
 }
 
 function void
-lexer_eat_spaces(Lexer* lexer)
+lexer_eat_trivia(Lexer* lexer)
 {
   for (;;)
   {
-    s16 c_s16 = lexer_peek_character(lexer);
-    if (c_s16 == -1) break;
-    u8 c = (u8)c_s16;
-    if (!char8_is_space(c)) break;
-    lexer_eat_character(lexer); // fallback if you don't want tokens
+    Token* token = lexer_peek_token(lexer);
+    if (!token_is_trivia(token)) break;
+    lexer_eat_token(lexer);
   }
 }
 
@@ -889,26 +921,6 @@ lexer_rewind_token(Lexer* lexer, u32 count)
     }
     lexer->incoming_tokens_count += 1;
   }
-}
-
-function b32
-token_is_trivia(Token* token)
-{
-  b32 result = false;
-  switch (token->kind)
-  {
-    case Token_Whitespace:
-    case Token_Tab:
-    case Token_Vertical_Tab:
-    case Token_Line_Break:
-    case Token_Carriage_Return:
-    case Token_Form_Feed:
-    {
-      result = true;
-    }
-    break;
-  }
-  return result;
 }
 
 function Token*

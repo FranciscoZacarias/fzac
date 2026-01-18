@@ -12,7 +12,10 @@
 #include "../Base.h"
 #include "Lexer.h"
 
-#define intsp_error(intsp, message) intsp->fatal_error=true;raddbg_break();error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__)
+#define _intsp_error(intsp, message) \
+  intsp->fatal_error=true;\
+  error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
+  raddbg_break()
 
 typedef struct Intsp_File Intsp_File;
 Make_Array_Type(Intsp_File);
@@ -48,9 +51,9 @@ struct Intsp_Parse_Data_Type_Result
   Intsp_Data_Type data_type;
 };
 
-typedef struct Intsp_Typedef_Object Intsp_Typedef_Object; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
-Make_Array_Type(Intsp_Typedef_Object);
-struct Intsp_Typedef_Object
+typedef struct Intsp_Typedef Intsp_Typedef; /* For when the user typedefs something that isn't a struct or enum. E.g. "typedef unsigned char c8", unsigned char is data_type, c8 is identifier */
+Make_Array_Type(Intsp_Typedef);
+struct Intsp_Typedef
 {
   String identifier;
   Intsp_Data_Type data_type;
@@ -66,9 +69,9 @@ struct Intsp_Function_Argument
   Intsp_Data_Type data_type;
 };
 
-typedef struct Intsp_Function_Object Intsp_Function_Object;
-Make_Array_Type(Intsp_Function_Object);
-struct Intsp_Function_Object
+typedef struct Intsp_Function Intsp_Function;
+Make_Array_Type(Intsp_Function);
+struct Intsp_Function
 {
   String identifier;
   Intsp_Data_Type return_type;
@@ -92,18 +95,18 @@ enum META_ENUM_LINK(Intsp_Aggregate_Kind)
 typedef struct Intsp_Aggregate_Member Intsp_Aggregate_Member;
 Make_Array_Type(Intsp_Aggregate_Member);
 
-typedef struct Intsp_Aggregate_Object Intsp_Aggregate_Object;
-Make_Array_Type(Intsp_Aggregate_Object);
+typedef struct Intsp_Aggregate Intsp_Aggregate;
+Make_Array_Type(Intsp_Aggregate);
 
-struct Intsp_Aggregate_Object
+struct Intsp_Aggregate
 {
   String identifier;
   u64 hash;
 
   Intsp_Aggregate_Kind kind;
 
-  b32 is_nested; /* If this is nested inside another Intsp_Aggregate_Object, we don't enforce it to be named. */
-  Intsp_Aggregate_Object* parent; /* if is_nested=false then this is NULL. Pointer to struct where this object is nested at. */
+  b32 is_nested; /* If this is nested inside another Intsp_Aggregate, we don't enforce it to be named. */
+  Intsp_Aggregate* parent; /* if is_nested=false then this is NULL. Pointer to struct where this object is nested at. */
 
   Array(Intsp_Aggregate_Member) members;
 
@@ -122,9 +125,8 @@ struct Intsp_Aggregate_Member
   union
   {
     Intsp_Data_Type data_type; /* if is_aggregate=false */
-    Intsp_Aggregate_Object aggregate_data; /* if is_aggregate=true */
+    Intsp_Aggregate aggregate_data; /* if is_aggregate=true */
   };
-
 };
 
 typedef struct Intsp_Enum_Member Intsp_Enum_Member;
@@ -138,16 +140,16 @@ struct Intsp_Enum_Member
   s64 value;
 };
 
-typedef struct Intsp_Enum_Object Intsp_Enum_Object;
-Make_Array_Type(Intsp_Enum_Object);
-struct Intsp_Enum_Object
+typedef struct Intsp_Enum Intsp_Enum;
+Make_Array_Type(Intsp_Enum);
+struct Intsp_Enum
 {
   String identifier;
   String type;
 
   Array(Intsp_Enum_Member) members;
 
-  Intsp_Typedef_Object* type_casted_at;
+  Intsp_Typedef* type_casted_at;
   Intsp_Source_Location definition;
 };
 
@@ -170,6 +172,15 @@ enum META_ENUM_LINK(Intsp_Log_Severity)
   Intsp_Log_Severity_Error, /* Error just acts as a fatal error. */
 };
 
+typedef struct Intsp_Define Intsp_Define;
+Make_Array_Type(Intsp_Define);
+struct Intsp_Define
+{
+  String name;
+  Array(String) arguments;
+  String body;
+};
+
 typedef struct Intsp_Log Intsp_Log;
 Make_Array_Type(Intsp_Log);
 struct Intsp_Log
@@ -187,11 +198,12 @@ struct Introspection
 
   Array(Intsp_Log) logs;
   Array(Intsp_File) files;
-  Array(Intsp_Function_Object) functions;
-  Array(Intsp_Aggregate_Object) aggregates;
-  Array(Intsp_Enum_Object) enums;
-  Array(Intsp_Typedef_Object) typedefs;
+  Array(Intsp_Function) functions;
+  Array(Intsp_Aggregate) aggregates;
+  Array(Intsp_Enum) enums;
+  Array(Intsp_Typedef) typedefs;
   Array(Intsp_Global_Variable) globals;
+  Array(Intsp_Define) defines;
 };
 
 function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
@@ -199,23 +211,22 @@ function b32           intsp_report_introspection(Introspection* introspection, 
 function void          intsp_report_functions(Introspection* introspection, b32 report_documentation, String* out);
 function void          intsp_report_enums(Introspection* introspection, String* out);
 function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
-function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f); /* Convers a Intsp_Function_Object to a string */
+function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function* f); /* Convers a Intsp_Function to a string */
 
 function u32  _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
 function void _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj); /* Parses enums */
 function void _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj); /* Parses typedefs that are not structs nor enums */
 function void _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
 function void _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
-function void _intsp_parse_preprocessor_define(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
-function void _intsp_eat_trivia(Lexer* lexer);
+function void _intsp_parse_preprocessor_macros(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
 function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
-function u64  _intsp_aggregate_hash(Intsp_Aggregate_Object* obj);
-function Intsp_Aggregate_Object*      _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate_Object* parent);
+function u64  _intsp_aggregate_hash(Intsp_Aggregate* obj);
+function Intsp_Aggregate*      _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent);
 function Intsp_Parse_Data_Type_Result _intsp_parse_datatype(Introspection* introspection, Lexer* lexer); /* Parses a data type from a view into a token array */
-function Intsp_Function_Object*       _intsp_find_function(Introspection* introspection, String function_name);
-function Intsp_Enum_Object*           _intsp_find_enum(Introspection* introspection, String enum_name);
-function Intsp_Aggregate_Object*      _intsp_find_struct(Introspection* introspection, u64 hash);
-function Intsp_Typedef_Object*        _intsp_find_typedef(Introspection* introspection, String typedef_name);
+function Intsp_Function*       _intsp_find_function(Introspection* introspection, String function_name);
+function Intsp_Enum*           _intsp_find_enum(Introspection* introspection, String enum_name);
+function Intsp_Aggregate*      _intsp_find_struct(Introspection* introspection, u64 hash);
+function Intsp_Typedef*        _intsp_find_typedef(Introspection* introspection, String typedef_name);
 
 function Introspection
 intsp_run(String source_directory, b32 introspect_base_library)
@@ -227,22 +238,22 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
   result.arena = arena_alloc();
 
-  result.files      = array_make(Intsp_File,             32);
-  result.logs       = array_make(Intsp_Log,              32);
-  result.functions  = array_make(Intsp_Function_Object,  512);
-  result.aggregates = array_make(Intsp_Aggregate_Object, 256);
-  result.enums      = array_make(Intsp_Enum_Object,      256);
-  result.typedefs   = array_make(Intsp_Typedef_Object,   256);
-  result.globals    = array_make(Intsp_Global_Variable,  256);
+  result.files      = array_make(Intsp_File,            32);
+  result.logs       = array_make(Intsp_Log,             32);
+  result.functions  = array_make(Intsp_Function,        512);
+  result.aggregates = array_make(Intsp_Aggregate,       256);
+  result.enums      = array_make(Intsp_Enum,            256);
+  result.typedefs   = array_make(Intsp_Typedef,         256);
+  result.globals    = array_make(Intsp_Global_Variable, 256);
+  result.defines    = array_make(Intsp_Define,          1024);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
   {
     String file_being_lexed = next->value;
 
-    if (!is_file(file_being_lexed)) continue; // Skip anything that is not a file
+    if (!is_file(file_being_lexed)) continue;
 
-    // Directories we don't care about.
     if(string_contains(file_being_lexed, S("\\Extern\\"))  ||
        string_contains(file_being_lexed, S("\\.git\\"))    ||
        string_contains(file_being_lexed, S("\\.svn\\"))    ||
@@ -254,13 +265,12 @@ intsp_run(String source_directory, b32 introspect_base_library)
       continue;
     }
 
-    if (!introspect_base_library && string_contains(file_being_lexed, S("fzac"))) continue; // Skip anything from fzac library if we're introspecting it
-    if (string_contains(file_being_lexed, S("metaprogram.c"))) continue; // Skip the metaprogram itself
+    if (!introspect_base_library && string_contains(file_being_lexed, S("fzac"))) continue;
+    if (string_contains(file_being_lexed, S("metaprogram.c"))) continue;
 
     String_View extension = file_get_extension(file_being_lexed);
     String ext = string_new(extension.count, extension.string);
 
-    // Make sure we introspect files we care about
     if (!(string_equals(ext, S("c"), true) || string_equals(ext, S("h"), true)))
     {
       continue;
@@ -273,7 +283,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
     array_get_next(&result.files, Intsp_File, intsp_file);
     intsp_file->path = string_copy(result.arena, file_being_lexed);
 
-    b32 at_line_start = true;
+    s32 scope_depth = 0;
+    s32 line_start_column = 0;
+    
     for (;;)
     {
       if (result.fatal_error)
@@ -285,10 +297,32 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
       if (token->kind == Token_End_Of_File) break;
 
+      // Track scope depth
+      if (token->kind == Token_Open_Brace)
+      {
+        scope_depth++;
+        lexer_eat_token(&lexer);
+        continue;
+      }
+      
+      if (token->kind == Token_Close_Brace)
+      {
+        scope_depth--;
+        lexer_eat_token(&lexer);
+        continue;
+      }
+
       if (token->kind == Token_Line_Break)
       {
         lexer_eat_token(&lexer);
-        at_line_start = true;
+        token = lexer_peek_token(&lexer);
+        // Track the column of the first non-trivia token on the new line
+        while (token->kind != Token_End_Of_File && token_is_trivia(token) && token->kind != Token_Line_Break)
+        {
+          lexer_eat_token(&lexer);
+          token = lexer_peek_token(&lexer);
+        }
+        line_start_column = token->c0;
         continue;
       }
 
@@ -308,96 +342,64 @@ intsp_run(String source_directory, b32 introspect_base_library)
         continue;
       }
 
-      if (!at_line_start)
+      // Only parse declarations that are:
+      // 1. At global scope (scope_depth == 0)
+      // 2. At the start of the line (c0 == line_start_column)
+      b32 is_global_line_start = (scope_depth == 0 && token->c0 == line_start_column);
+
+      if (is_global_line_start && token->kind == Token_Hash)
       {
-        lexer_eat_token(&lexer);
+        _intsp_parse_preprocessor_macros(&lexer, &result, intsp_file);
         continue;
       }
 
-      if (token->kind == Token_Hash)
-      {
-        b32 prev_was_backslash = false;
-        while (token->kind != Token_End_Of_File)
-        {
-          if (token->kind == Token_Backslash)
-          {
-            prev_was_backslash = true;
-          }
-          else if (token->kind == Token_Line_Break)
-          {
-            if (!prev_was_backslash)
-            {
-              break;
-            }
-            prev_was_backslash = false;
-          }
-          else
-          {
-            prev_was_backslash = false;
-          }
-    
-          lexer_eat_token(&lexer);
-          token = lexer_peek_token(&lexer);
-        }
-        at_line_start = true;
-        continue;
-      }
-
-      if (token->kind == Token_Identifier)
+      if (is_global_line_start && token->kind == Token_Identifier)
       {
         if (string_equals(token->value, S("function"), true))
         {
           _intsp_parse_function(&lexer, &result, intsp_file);
-          at_line_start = true;
           continue;
         }
         else if (string_equals(token->value, S("enum"), true))
         {
           _intsp_parse_enum(&lexer, &result, intsp_file);
-          at_line_start = true;
           continue;
         }
         else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
         {
           _intsp_parse_aggregate(&lexer, &result, intsp_file, NULL);
-          at_line_start = false;
           continue;
         }
         else if (string_equals(token->value, S("global"), true))
         {
           _intsp_parse_global(&lexer, &result, intsp_file);
-          at_line_start = false;
           continue;
         }
         else if (string_equals(token->value, S("typedef"), true))
         {
           lexer_eat_token(&lexer);
-          _intsp_eat_trivia(&lexer);
+          lexer_eat_trivia(&lexer);
           token = lexer_peek_token(&lexer);
 
           if (string_equals(token->value, S("enum"), true))
           {
             _intsp_parse_enum(&lexer, &result, intsp_file);
-            at_line_start = true;
             continue;
           }
           else if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
           {
             _intsp_parse_aggregate(&lexer, &result, intsp_file, NULL);
-            at_line_start = true;
             continue;
           }
           else
           {
             _intsp_parse_typedef(&lexer, &result, intsp_file);
-            at_line_start = true;
             continue;
           }
         }
       }
 
       lexer_eat_token(&lexer);
-      at_line_start = false;
     }
   }
 
@@ -449,7 +451,7 @@ intsp_report_functions(Introspection* introspection, b32 report_documentation, S
 
   for (u32 i = 0; i < introspection->functions.count; i += 1)
   {
-    Intsp_Function_Object* func_object = &introspection->functions.data[i];
+    Intsp_Function* func_object = &introspection->functions.data[i];
 
     if (func_object->implementation.file == NULL || func_object->declaration.file == NULL)
     {
@@ -476,7 +478,7 @@ intsp_report_enums(Introspection* introspection, String* out)
 
   for (u32 i = 0; i < introspection->enums.count; i += 1)
   {
-    Intsp_Enum_Object* e = &array_get(&introspection->enums, i);
+    Intsp_Enum* e = &array_get(&introspection->enums, i);
     if (e->identifier.count == 0)
     {
       num_missing_identifier += 1;
@@ -511,7 +513,7 @@ intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type)
 }
 
 function String
-intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f)
+intsp_function_signature_to_string(Arena* arena, Intsp_Function* f)
 {
   Scratch scratch = scratch_begin(0, 0);
 
@@ -545,13 +547,13 @@ intsp_function_signature_to_string(Arena* arena, Intsp_Function_Object* f)
   return result;
 }
 
-function Intsp_Enum_Object*
+function Intsp_Enum*
 _intsp_find_enum(Introspection* introspection, String enum_name)
 {
-  Intsp_Enum_Object* result = NULL;
+  Intsp_Enum* result = NULL;
   for (u32 i = 0; i < introspection->enums.count; i += 1)
   {
-    Intsp_Enum_Object* e = &array_get(&introspection->enums, i);
+    Intsp_Enum* e = &array_get(&introspection->enums, i);
     if (string_equals(enum_name, e->identifier, true))
     {
       result = e;
@@ -561,13 +563,13 @@ _intsp_find_enum(Introspection* introspection, String enum_name)
   return result;
 }
 
-function Intsp_Function_Object*
+function Intsp_Function*
 _intsp_find_function(Introspection* introspection, String function_name)
 {
-  Intsp_Function_Object* result = NULL;
+  Intsp_Function* result = NULL;
   for (u32 i = 0; i < introspection->functions.count; i += 1)
   {
-    Intsp_Function_Object* function_object = &(introspection->functions.data[i]);
+    Intsp_Function* function_object = &(introspection->functions.data[i]);
     if (string_equals(function_name, function_object->identifier, true))
     {
       result = function_object;
@@ -577,13 +579,13 @@ _intsp_find_function(Introspection* introspection, String function_name)
   return result;
 }
 
-function Intsp_Aggregate_Object*
+function Intsp_Aggregate*
 _intsp_find_struct(Introspection* introspection, u64 hash)
 {
-  Intsp_Aggregate_Object* result = NULL;
+  Intsp_Aggregate* result = NULL;
   for (u32 i = 0; i < introspection->aggregates.count; i += 1)
   {
-    Intsp_Aggregate_Object* struct_object = &array_get(&introspection->aggregates, i);
+    Intsp_Aggregate* struct_object = &array_get(&introspection->aggregates, i);
     if (struct_object->hash == hash)
     {
       result = struct_object;
@@ -593,13 +595,13 @@ _intsp_find_struct(Introspection* introspection, u64 hash)
   return result;
 }
 
-function Intsp_Typedef_Object*
+function Intsp_Typedef*
 _intsp_find_typedef(Introspection* introspection, String typedef_name)
 {
-  Intsp_Typedef_Object* result = NULL;
+  Intsp_Typedef* result = NULL;
   for (u32 i = 0; i < introspection->typedefs.count; i += 1)
   {
-    Intsp_Typedef_Object* typedef_object = &array_get(&introspection->typedefs, i);
+    Intsp_Typedef* typedef_object = &array_get(&introspection->typedefs, i);
     if (string_equals(typedef_name, typedef_object->identifier, true))
     {
       result = typedef_object;
@@ -616,7 +618,7 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
   assert(token->kind == Token_Identifier);
 
   lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   Scratch scratch = scratch_begin(0,0);
 
@@ -628,12 +630,12 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
 
   if (result.names.count != 1)
   {
-    intsp_error(introspection, S("We do not allow multiple declarations in global variables."));
+    _intsp_error(introspection, S("We do not allow multiple declarations in global variables."));
     return;
   }
   gvariable->identifier = string_copy(introspection->arena, array_get(&result.names, 0));
 
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
   token = lexer_peek_token(lexer);
 
   for (;;)
@@ -651,12 +653,6 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
   }
 
   scratch_end(&scratch);
-}
-
-function void
-_intsp_parse_preprocessor_define(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
-{
-  
 }
 
 function Intsp_Parse_Data_Type_Result
@@ -681,12 +677,12 @@ _intsp_parse_datatype(Introspection* introspection, Lexer* lexer)
     }
     tokens[tokens_count++] = *t;
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
   }
   
   if (tokens_count == 0)
   {
-    intsp_error(introspection, S("Expected declaration."));
+    _intsp_error(introspection, S("Expected declaration."));
     scratch_end(&scratch);
     return result;
   }
@@ -721,7 +717,7 @@ _intsp_parse_datatype(Introspection* introspection, Lexer* lexer)
   
   if (is_function_pointer && has_comma)
   {
-    intsp_error(introspection, S("We do not support multiple declaration with function pointers."));
+    _intsp_error(introspection, S("We do not support multiple declaration with function pointers."));
     scratch_end(&scratch);
     return result;
   }
@@ -860,7 +856,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
   assert(token->kind == Token_Open_Brace);
 
   lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   u32 members_count = 0;
   s64 next_enum_value = 0;
@@ -884,14 +880,14 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
     member->identifier = string_copy(arena, token->value);
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
 
     token = lexer_peek_token(lexer);
 
     if(token->kind == Token_Equal)
     {
       lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
 
       token = lexer_peek_token(lexer);
 
@@ -901,17 +897,17 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
         member->is_explicit_bit_flag = true;
 
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Number && token->value.cstring[0] == '1');
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Less_Less);
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Number);
@@ -923,13 +919,13 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
         member->value = ((s64)1 << shift);
 
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
 
         token = lexer_peek_token(lexer);
         assert(token->kind == Token_Close_Parentheses);
 
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
       }
       // Symbol OR expression: A | B | C
       else if(token->kind == Token_Identifier)
@@ -954,13 +950,13 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
           assert(found);
 
           lexer_eat_token(lexer);
-          _intsp_eat_trivia(lexer);
+          lexer_eat_trivia(lexer);
 
           token = lexer_peek_token(lexer);
           if(token->kind != Token_Or) break;
 
           lexer_eat_token(lexer);
-          _intsp_eat_trivia(lexer);
+          lexer_eat_trivia(lexer);
 
           token = lexer_peek_token(lexer);
         }
@@ -974,7 +970,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
         assert(ok);
 
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
       }
 
       next_enum_value = member->value + 1;
@@ -990,7 +986,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
     if(token->kind == Token_Comma)
     {
       lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
     }
 
     // Trailing comment/documentation
@@ -1004,7 +1000,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
       member->documentation = string_trim(arena, comment);
 
       lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
     }
 
     token = lexer_peek_token(lexer);
@@ -1019,12 +1015,12 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
 {
   Scratch scratch = scratch_begin(0,0);
   Token* token = lexer_peek_token(lexer);
-  Intsp_Typedef_Object* typedef_datatype;
-  array_get_next(&introspection->typedefs, Intsp_Typedef_Object, typedef_datatype);
+  Intsp_Typedef* typedef_datatype;
+  array_get_next(&introspection->typedefs, Intsp_Typedef, typedef_datatype);
   typedef_datatype->location.file = file_obj;
   typedef_datatype->location.line = token->l0;
   
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
   
   // Parse the data type
 
@@ -1033,12 +1029,12 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
 
   if (result.names.count > 1)
   {
-    intsp_error(introspection, S("Unexpected multiple declaration in typedef"));
+    _intsp_error(introspection, S("Unexpected multiple declaration in typedef"));
     return;
   }
   typedef_datatype->identifier = array_get(&result.names, 0);
   
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
   token = lexer_peek_token(lexer);
   
   // Check if this is a function pointer typedef
@@ -1057,7 +1053,7 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
       }
       lexer_eat_token(lexer);
       declaration_string = string_join(scratch.arena, declaration_string, token->value);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
     }
     
     typedef_datatype->identifier = string_copy(introspection->arena, declaration_string);
@@ -1072,8 +1068,8 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
   scratch_end(&scratch);
 }
 
-function Intsp_Aggregate_Object*
-_intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate_Object* parent)
+function Intsp_Aggregate*
+_intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent)
 {
   if (introspection->fatal_error)
   {
@@ -1093,7 +1089,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
   u32 aggregate_line = token->l0;
 
   lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   String struct_name = string_zero();
 
@@ -1109,7 +1105,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
 
     struct_name = token->value;
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
   }
 
   token = lexer_peek_token(lexer);
@@ -1124,7 +1120,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     }
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
 
     token = lexer_peek_token(lexer);
     if (token->kind != Token_Semicolon)
@@ -1135,8 +1131,8 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
 
     lexer_eat_token(lexer);
 
-    Intsp_Aggregate_Object* obj = NULL;
-    array_get_next(&introspection->aggregates, Intsp_Aggregate_Object, obj);
+    Intsp_Aggregate* obj = NULL;
+    array_get_next(&introspection->aggregates, Intsp_Aggregate, obj);
 
     obj->kind = aggregate_kind;
     obj->identifier = string_copy(introspection->arena, struct_name);
@@ -1150,11 +1146,11 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
 
   if (token->kind != Token_Open_Brace)
   {
-    intsp_error(introspection, S("Expected '{' after aggregate declaration."));
+    _intsp_error(introspection, S("Expected '{' after aggregate declaration."));
     return NULL;
   }
 
-  Intsp_Aggregate_Object* struct_object = NULL;
+  Intsp_Aggregate* struct_object = NULL;
 
   if (parent)
   {
@@ -1174,7 +1170,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     struct_object = _intsp_find_struct(introspection, string_hash(struct_name));
     if (!struct_object)
     {
-      intsp_error(introspection, S("Aggregate must be forward-declared before definition."));
+      _intsp_error(introspection, S("Aggregate must be forward-declared before definition."));
       return NULL;
     }
   }
@@ -1186,11 +1182,11 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
   struct_object->definition.line = aggregate_line;
 
   lexer_eat_token(lexer); // eat '{'
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   for (;;)
   {
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
 
     if (token->kind == Token_Close_Brace)
@@ -1201,14 +1197,14 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     // Nested aggregate
     if (string_equals(token->value, S("struct"), true) || string_equals(token->value, S("union"), true))
     {
-      Intsp_Aggregate_Object* nested = _intsp_parse_aggregate(lexer, introspection, file_obj, struct_object);
+      Intsp_Aggregate* nested = _intsp_parse_aggregate(lexer, introspection, file_obj, struct_object);
 
       token = lexer_peek_token(lexer);
       if (token->kind == Token_Identifier)
       {
         nested->identifier = string_copy(introspection->arena, token->value);
         lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
+        lexer_eat_trivia(lexer);
       }
 
       token = lexer_peek_token(lexer);
@@ -1233,14 +1229,14 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
     assert(token->kind == Token_Semicolon);
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
     
 
     if (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
     {
       lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
     }
 
     if (parsed.names.count > 1)
@@ -1267,7 +1263,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
   }
 
   lexer_eat_token(lexer); // eat '}'
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   return struct_object;
 }
@@ -1281,14 +1277,14 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
   u32 enum_keyword_line = token->l0;
   u32 enum_keyword_col = token->c0;
 
-  Intsp_Enum_Object* enum_object;
-  array_get_next(&introspection->enums, Intsp_Enum_Object, enum_object);
+  Intsp_Enum* enum_object;
+  array_get_next(&introspection->enums, Intsp_Enum, enum_object);
 
   enum_object->definition.file = file_obj;
   enum_object->definition.line = token->l0;
 
   lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
 
   token = lexer_peek_token(lexer);
 
@@ -1300,14 +1296,14 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
     assert(token->kind == Token_Open_Parentheses);
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
     assert(token->kind == Token_Identifier);
 
     enum_object->identifier = string_copy(introspection->arena, token->value);
 
     // Try to link enum to typedef
-    Intsp_Typedef_Object* typedef_object = _intsp_find_typedef(introspection, enum_object->identifier);
+    Intsp_Typedef* typedef_object = _intsp_find_typedef(introspection, enum_object->identifier);
     if (typedef_object != NULL)
     {
       enum_object->type_casted_at = typedef_object;
@@ -1319,12 +1315,12 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
     }
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
     assert(token->kind == Token_Close_Parentheses);
 
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
   }
 
@@ -1338,14 +1334,14 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
   assert(token->kind == Token_Close_Brace);
 
   lexer_eat_token(lexer);
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
   token = lexer_peek_token(lexer);
 
   if (token->kind == Token_Identifier)
   {
     enum_object->identifier = string_copy(introspection->arena, token->value);
     lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
   }
 
@@ -1367,11 +1363,14 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
 {
   Scratch scratch = scratch_begin(0,0);
 
-  _intsp_eat_trivia(lexer);
+  lexer_eat_trivia(lexer);
   Token* token = lexer_peek_token(lexer);
   assert(token->kind == Token_Identifier && string_equals(token->value, S("function"), true));
+  b32 is_new_function = false;
+  
+  u32 line = token->l0;
 
-  Token* previous = token;
+  Token* previous = NULL;
 
   String full_return_type = string_zero();
   String function_name = string_zero();
@@ -1379,123 +1378,433 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
   for (;;)
   {
     lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
     token = lexer_peek_token(lexer);
 
     if (token->kind == Token_Open_Parentheses)
     {
       lexer_eat_token(lexer);
-      _intsp_eat_trivia(lexer);
+      lexer_eat_trivia(lexer);
       break;
     }
 
-    full_return_type = string_join(introspection->arena, full_return_type, token->value);
+    if (previous != NULL)
+    {
+      full_return_type = string_join(introspection->arena, full_return_type, previous->value);
+    }
     previous = token;
   }
 
   function_name = string_copy(introspection->arena, previous->value);
 
-  Intsp_Function_Object* function_object = _intsp_find_function(introspection, function_name);
+  Intsp_Function* function_object = _intsp_find_function(introspection, function_name);
   if (function_object == NULL)
   {
-    array_get_next(&introspection->functions, Intsp_Function_Object, function_object);
-  }
+    is_new_function = true;
 
-  function_object->return_type.name = string_copy(introspection->arena, full_return_type);
-  for (u32 i = 0; i < function_object->return_type.name.count; i += 1)
-  {
-    if (function_object->return_type.name.cstring[i] == '*')
+    array_get_next(&introspection->functions, Intsp_Function, function_object);
+    function_object->identifier = string_copy(introspection->arena, function_name);
+    function_object->arguments = array_make(Intsp_Function_Argument, 2);
+    function_object->return_type.name = string_copy(introspection->arena, full_return_type);
+    for (u32 i = 0; i < function_object->return_type.name.count; i += 1)
     {
-      function_object->return_type.is_pointer = true;
-      function_object->return_type.indirection_level += 1;
+      if (function_object->return_type.name.cstring[i] == '*')
+      {
+        function_object->return_type.is_pointer = true;
+        function_object->return_type.indirection_level += 1;
+      }
     }
   }
-
-  token = lexer_peek_token(lexer); // Data type or close parenthises
-
-  if (token->kind == Token_Close_Parentheses)
+  else if (function_object->declaration.file != NULL && function_object->implementation.file != NULL)
   {
-    lexer_eat_token(lexer);
-    _intsp_eat_trivia(lexer);
-  }
-  else
-  {
-    previous = token;
-    String full_type = string_zero();
-
-    for (;;)
-    {
-      lexer_eat_token(lexer);
-      token = lexer_peek_token(lexer);
-
-      if (token->kind == Token_Dot)
-      {
-        Intsp_Function_Argument* arg;
-        array_get_next(&function_object->arguments, Intsp_Function_Argument, arg);
-        arg->is_var_args = true;
-        arg->identifier = S("...");
-        token = lexer_peek_token(lexer);
-        assert(token->kind == Token_Dot);
-        token = lexer_peek_token(lexer);
-        assert(token->kind == Token_Dot);
-      }
-
-      if (token->kind == Token_Comma)
-      {
-        Intsp_Function_Argument* arg;
-        array_get_next(&function_object->arguments, Intsp_Function_Argument, arg);
-        arg->is_var_args = false;
-        arg->identifier  = string_copy(introspection->arena, previous->value);
-        arg->data_type.name = string_copy(introspection->arena, full_type);
-        for (u32 i = 0; i < function_object->return_type.name.count; i += 1)
-        {
-          if (function_object->return_type.name.cstring[i] == '*')
-          {
-            function_object->return_type.is_pointer = true;
-            function_object->return_type.indirection_level += 1;
-          }
-        }
-        full_type = string_zero();
-      }
-
-      if (token->kind == Token_Close_Parentheses)
-      {
-        lexer_eat_token(lexer);
-        _intsp_eat_trivia(lexer);
-        break;
-      }
-
-      full_type = string_join(introspection->arena, full_return_type, token->value);
-      previous = token;
-    }
+    _intsp_error(introspection, Sf(scratch.arena, "Function: "S_FMT" already has a declaration and implementation. Found a third reference in: "S_FMT": %u\n", S_ARG(function_object->identifier), S_ARG(lexer->file_path), token->l0));
+    scratch_end(&scratch);
+    return;
   }
 
   token = lexer_peek_token(lexer);
-  
-  if (token->kind == Token_Semicolon)
+
+  // Determine if this is a declaration or implementation by looking ahead
+  b32 is_declaration_syntax = true;
+  if (token->kind == Token_Close_Parentheses)
   {
-    // Function declaration
-    function_object.declaration.file = file_obj;
-  }
-  else if (token->kind == Token_Open_Brace)
-  {
-  
+    // Could be either, need to look past the )
+    is_declaration_syntax = true;
   }
   else
   {
-  
+    // Has arguments, need to parse them
+    is_declaration_syntax = true;
+  }
+
+  // Parse arguments (only if this is a new function or if we haven't parsed arguments yet)
+  if (is_new_function || function_object->arguments.count == 0)
+  {
+    if (token->kind == Token_Close_Parentheses)
+    {
+      lexer_eat_token(lexer);
+      lexer_eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+    }
+    else
+    {
+      for (;;)
+      {
+        String type_string = string_zero();
+        Token* last_identifier = NULL;
+
+        Intsp_Data_Type data_type;
+        memory_zero_struct(&data_type);
+
+        Intsp_Function_Argument arg;
+        memory_zero_struct(&arg);
+        
+        lexer_eat_trivia(lexer);
+        
+        for (;;)
+        {
+          token = lexer_peek_token(lexer);
+
+          if (token->kind == Token_Dot)
+          {
+            lexer_eat_token(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Dot);
+            lexer_eat_token(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Dot);
+            lexer_eat_token(lexer);
+
+            arg.is_var_args = true;
+            arg.identifier = S("...");
+            memory_zero_struct(&arg.data_type);
+
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Close_Parentheses);
+
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+            break;
+          }
+          else
+          {
+            if (token->kind == Token_Comma || token->kind == Token_Close_Parentheses)
+            {
+              break;
+            }
+
+            if (token->kind == Token_Asterisk)
+            {
+              data_type.is_pointer = true;
+              data_type.indirection_level += 1;
+            }
+
+            if (last_identifier != NULL)
+            {
+              if (type_string.count > 0)
+              {
+                type_string = string_join(introspection->arena, type_string, S(" "));
+              }
+              type_string = string_join(introspection->arena, type_string, last_identifier->value);
+            }
+
+            last_identifier = token;
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+          }
+        }
+
+        if (arg.is_var_args)
+        {
+          break;
+        }
+
+        if (last_identifier == NULL)
+        {
+          _intsp_error(introspection, S("Expected argument identifier."));
+          return;
+        }
+
+        arg.is_var_args = false;
+        arg.identifier = string_copy(introspection->arena, last_identifier->value);
+
+        data_type.name = string_copy(introspection->arena, type_string);
+        arg.data_type = data_type;
+
+        array_push(&function_object->arguments, Intsp_Function_Argument, arg);
+        token = lexer_peek_token(lexer);
+
+        if (token->kind == Token_Comma)
+        {
+          lexer_eat_token(lexer);
+          lexer_eat_trivia(lexer);
+          token = lexer_peek_token(lexer);
+          continue;
+        }
+        else if (token->kind == Token_Close_Parentheses)
+        {
+          lexer_eat_token(lexer);
+          lexer_eat_trivia(lexer);
+          token = lexer_peek_token(lexer);
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+    // Skip over arguments since we already have them
+    s32 paren_depth = 1;
+    while (paren_depth > 0)
+    {
+      lexer_eat_token(lexer);
+      lexer_eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+      
+      if (token->kind == Token_Open_Parentheses)
+      {
+        paren_depth += 1;
+      }
+      else if (token->kind == Token_Close_Parentheses)
+      {
+        paren_depth -= 1;
+      }
+    }
+    lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+  }
+
+  while (token_is_comment(token))
+  {
+    lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+  }
+
+  if (token->kind == Token_Semicolon)
+  {
+    // Function declaration
+    function_object->declaration.file = file_obj;
+    function_object->declaration.line = line;
+
+    lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);
+
+    if (token_is_comment(token))
+    {
+      function_object->documentation = string_copy(introspection->arena, token->value);
+      lexer_eat_token(lexer);
+      lexer_eat_trivia(lexer);
+    }
+  }
+  else if (token->kind == Token_Open_Brace)
+  {
+    // Function implementation
+    function_object->implementation.file = file_obj;
+    function_object->implementation.line = line;
+
+    s32 brace_stack = 0;
+
+    String implementation = string_zero();
+    for (;;)
+    {
+      implementation = string_join(scratch.arena, implementation, token->value);
+
+      if (token->kind == Token_Close_Brace && brace_stack == 0)
+      {
+        break;
+      }
+
+      if (token->kind == Token_Open_Brace)
+      {
+        brace_stack += 1;
+      }
+
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+
+      if (token->kind == Token_Close_Brace)
+      {
+        brace_stack -= 1;
+        assert(brace_stack >= 0);
+      }
+    }
+    function_object->body = string_copy(introspection->arena, implementation);
+    
+    lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
+  }
+  else
+  {
+    _intsp_error(introspection, Sf(scratch.arena, "Unexpected token at %u after function close paren: "S_FMT"\n", token->l0, S_ARG(token->value)));
+    scratch_end(&scratch);
+    return;
   }
 
   scratch_end(&scratch);
 }
 
 function void
-_intsp_eat_trivia(Lexer* lexer)
+_intsp_parse_preprocessor_macros(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
 {
-  for (;;)
+  Token* token = lexer_peek_token(lexer);
+  assert(token->kind == Token_Hash);
+  lexer_eat_token(lexer);
+  lexer_eat_trivia(lexer);
+  token = lexer_peek_token(lexer);
+  if (token->kind == Token_Hash) return;
+  assert(token->kind == Token_Identifier);
+  
+  if (string_equals(token->value, S("define"), true))
   {
-    Token* token = lexer_peek_token(lexer);
-    if (!token_is_trivia(token)) break;
+    Intsp_Define* define;
+    array_get_next(&introspection->defines, Intsp_Define, define);
     lexer_eat_token(lexer);
+    lexer_eat_trivia(lexer);
+    token = lexer_peek_token(lexer);  
+    assert(token->kind == Token_Identifier);
+    define->name = string_copy(introspection->arena, token->value);
+    lexer_eat_token(lexer);
+    token = lexer_peek_token(lexer);
+    
+    // Parse args if present
+    if (token->kind == Token_Open_Parentheses)
+    {
+      lexer_eat_token(lexer);
+      lexer_eat_trivia(lexer);
+      token = lexer_peek_token(lexer);
+      
+      if (token->kind == Token_Close_Parentheses)
+      {
+        define->name = string_join(introspection->arena, define->name, S("()"));
+        lexer_eat_token(lexer);
+        token = lexer_peek_token(lexer);
+      }
+      else
+      {
+        define->arguments = array_make(String, 2);
+        for (;;)
+        {
+          if (token->kind == Token_Dot)
+          {
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Dot);
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Dot);
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+            assert(token->kind == Token_Close_Parentheses);
+            break;
+          }
+
+          assert(token->kind == Token_Identifier);
+          String* arg_name;
+          array_get_next(&define->arguments, String, arg_name);
+          *arg_name = string_copy(introspection->arena, token->value);
+          lexer_eat_token(lexer);
+          lexer_eat_trivia(lexer);
+          token = lexer_peek_token(lexer);
+          
+          if (token->kind == Token_Comma)
+          {
+            lexer_eat_token(lexer);
+            lexer_eat_trivia(lexer);
+            token = lexer_peek_token(lexer);
+          }
+          else if (token->kind == Token_Close_Parentheses)
+          {
+            lexer_eat_token(lexer);
+            token = lexer_peek_token(lexer);
+            break;
+          }
+        }
+      }
+    }
+    
+    // Skip whitespace but not newlines
+    while (token->kind == Token_Whitespace || token->kind == Token_Tab)
+    {
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+    }
+    
+    // Check if there's a body (anything other than newline/backslash+newline)
+    if (token->kind == Token_Line_Break || token->kind == Token_End_Of_File)
+    {
+      // No body, we're done
+      define->body = string_zero();
+      return;
+    }
+    
+    Scratch scratch = scratch_begin(0, 0);
+    String body = string_zero();
+    b32 prev_was_backslash = false;
+    
+    for (;;)
+    {
+      if (token->kind == Token_End_Of_File)
+      {
+        break;
+      }
+      
+      if (token->kind == Token_Line_Break)
+      {
+        if (!prev_was_backslash)
+        {
+          break;
+        }
+        // Include the backslash-continued line break
+        body = string_join(scratch.arena, body, token->value);
+        prev_was_backslash = false;
+      }
+      else
+      {
+        body = string_join(scratch.arena, body, token->value);
+        prev_was_backslash = (token->kind == Token_Backslash);
+      }
+      
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+    }
+    
+    define->body = string_copy(introspection->arena, body);
+    scratch_end(&scratch);
+  }
+  else
+  {
+    // Skip non-define preprocessor directive
+    b32 prev_was_backslash = false;
+    while (token->kind != Token_End_Of_File)
+    {
+      if (token->kind == Token_Backslash)
+      {
+        prev_was_backslash = true;
+      }
+      else if (token->kind == Token_Line_Break)
+      {
+        if (!prev_was_backslash)
+        {
+          break;
+        }
+        prev_was_backslash = false;
+      }
+      else
+      {
+        prev_was_backslash = false;
+      }
+      
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+    }
   }
 }
 
@@ -1533,12 +1842,12 @@ _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, Intsp_F
 }
 
 function u64
-_intsp_aggregate_hash(Intsp_Aggregate_Object* obj)
+_intsp_aggregate_hash(Intsp_Aggregate* obj)
 {
   Scratch scratch = scratch_begin(0, 0);
   String result  = obj->identifier;
 
-  for (Intsp_Aggregate_Object* parent = obj->parent; parent != 0; parent = parent->parent)
+  for (Intsp_Aggregate* parent = obj->parent; parent != 0; parent = parent->parent)
   {
     result = string_join(scratch.arena, parent->identifier, result);
   }
