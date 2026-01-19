@@ -82,6 +82,7 @@ function Vector2 vector2_invert(Vector2 v); /* Inverts each component of a 2D ve
 function Vector2 vector2_clamp(Vector2 v, Vector2 min, Vector2 max); /* Clamps each component of a 2D vector between min and max values */
 function b32     vector2_equals(Vector2 p, Vector2 q); /* Returns true if two 2D vectors are equal component-wise */
 function Vector2 vector2_refract(Vector2 v, Vector2 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
+function Vector2 vector2_snap45(Vector2 v); /* Snaps v to the closest 45 degree angle */
 
 // @Section: Vector3
 struct Vector3 { f32 x, y, z; };
@@ -397,6 +398,22 @@ vector2_refract(Vector2 v, Vector2 n, f32 r)
     result = v;
   }
   return result;
+}
+
+function Vector2
+vector2_snap45(Vector2 v)
+{
+  // Source: https://www.shadertoy.com/view/M3ycWd
+
+  v.x = roundf(v.x * 1.30656296f);
+  v.y = roundf(v.y * 1.30656296f);
+    
+  // Scale by sqrt(0.5) if sum of absolute values > 1.5, otherwise by 1.0
+  float scale = (fabsf(v.x) + fabsf(v.y) > 1.5f) ? sqrtf(0.5f) : 1.0f;
+  v.x *= scale;
+  v.y *= scale;
+    
+  return v;
 }
 
 function Vector3

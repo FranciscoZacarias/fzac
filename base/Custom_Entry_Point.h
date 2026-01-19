@@ -1,9 +1,9 @@
-#ifndef ENTRY_POINT_H
-#define ENTRY_POINT_H
+#ifndef CUSTOM_ENTRY_POINT_H
+#define CUSTOM_ENTRY_POINT_H
 
 #include "..\modules\Command_Line.h"
 
-function void entry_point(Command_Line* command_line); /* Application entry point, defined by user. */
+function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
 raddbg_entry_point(entry_point);
 
 function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
@@ -56,4 +56,4 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
 # error fzac with Operating System not supported
 #endif
 
-#endif // ENTRY_POINT_H
+#endif // CUSTOM_ENTRY_POINT_H
