@@ -4,9 +4,23 @@
 /* @File: Implementa introspection implemented specifically for my C code base. It makes very important assumptions and hardcodes things based on those assumptions.
           This is only meant to work on a codebase that follows my programming style. */
 
-/*
-@TODO:
-- Rewrite parse_data_type to use the lexer directly, and not a view into a token array. Also, exceptionally, recognize Array(Some_Type) as a data type.
+/* @Section: Introspection macros. These are used to mark introspection specific functionality. 
+  They are defined here but Introspection is not included by default.
+  These macros don't do anything at runtime. 
+  They are Introspection commands that can be used in user code and only have meaning during the introspection process
+
+  META_ENUM_LINK is used to link an enum to a forward declaration of an enum. 
+  This is defined in Base.h so that every file has access to it.
+  #define META_ENUM_LINK(enum_name)
+
+  Usage Example:
+
+  typedef u32 Event_Kind;
+  enum META_ENUM_LINK(Event_Kind, u32)
+  {
+    Event_Error = 0,
+    Event_Keyboard,
+  };
 */
 
 #include "../Base.h"

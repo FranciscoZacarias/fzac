@@ -40,8 +40,9 @@ bare minimum modules for the library which are to be included in each project.
 
 # Global variables
 - Add 'global' before it. 
-- PascalCase 
+- PascalCase (Unless specifying a namespace through a prefix. Say that the namespace is 'R', it would be R_ThisIsMyGlobalVariable).
 - global u32 ThisIsMyGlobalVariable;
+- global u32 R_ThisIsMyGlobalVariable; // Inside a namespace
 
 # Functions:
 - Add 'function' before it
