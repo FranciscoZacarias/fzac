@@ -65,5 +65,6 @@ GL_FUNC(void,   glViewport,                 (GLint x, GLint y, GLsizei width, GL
 GL_FUNC(GLenum, glGetError,                 (void))
 GL_FUNC(void,   glClear,                    (GLbitfield mask))
 GL_FUNC(void,   glBlendFunc,                (GLenum sfactor, GLenum dfactor))
+GL_FUNC(void,   glVertexArrayElementBuffer, (GLuint vaobj, GLuint buffer))
 
 
