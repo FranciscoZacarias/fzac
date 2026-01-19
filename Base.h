@@ -51,6 +51,6 @@ Usage Example:
 
 #include "base\Data_Structures.h"
 #include "base\Thread_Context.h"
-#include "base\Entry_Point.h"
+#include "base\Custom_Entry_Point.h"
 
 #endif // BASE_H

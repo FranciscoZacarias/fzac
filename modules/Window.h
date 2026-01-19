@@ -149,8 +149,10 @@ enum META_ENUM_LINK(Keyboard_Key)
   Keyboard_Key_Count,
 };
 
-function u32          _native_key_from_os_key(Keyboard_Key key); /* Converts os key to native key */
-function Keyboard_Key _os_key_from_native_key(u32 native_key); /* Converts native key to os key */
+function void         _init_win32_key_tables(); /* Initializes the key tables for quick lookup at runtime */
+function u32          _native_key_from_key(Keyboard_Key key); /* Converts os key to native key */
+function Keyboard_Key _key_from_native_key(u32 native_key); /* Converts native key to os key */
+
 
 typedef u32 Mouse_Button;
 enum META_ENUM_LINK(Mouse_Button)

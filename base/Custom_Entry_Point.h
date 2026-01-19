@@ -4,8 +4,12 @@
 #include "..\modules\Command_Line.h"
 
 function void entry_point(Command_Line* command_line); /* Application entry point, defined by user. */
+raddbg_entry_point(entry_point);
 
 function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+
+// @Section: Implementation
+
 function void
 main_thread_base_entry_point(String command_line)
 {

@@ -5,6 +5,7 @@
 #define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP;
 #define SECONDARY_WINDOW_STYLE WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
 
+global Keyboard_Key _win32_vk_to_key[Keyboard_Key_Count];
 global u32 _win32_key_table[Keyboard_Key_Count] =
 {
   0x08, // Keyboard_Key_BACKSPACE
@@ -364,7 +365,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
       if (lparam & (1 << 30)) break; // ignore auto-repeat
 
       u32 vk = (u32)wparam;
-      Keyboard_Key key = _os_key_from_native_key(vk);
+      Keyboard_Key key = _key_from_native_key(vk);
 
       if (key != Keyboard_Key_Count)
       {
@@ -388,7 +389,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_SYSKEYUP:
     {
       u32 vk = (u32)wparam;
-      Keyboard_Key key = _os_key_from_native_key(vk);
+      Keyboard_Key key = _key_from_native_key(vk);
 
       if (key != Keyboard_Key_Count)
       {
@@ -422,6 +423,9 @@ _init_window_class()
   if(WindowClassInited) return;
   assert_no_reentry();
 
+  _input_init();
+  _init_win32_key_tables();
+
   HMODULE hInstance = GetModuleHandle(NULL);
 
   WNDCLASSEXW wc = {0};
@@ -450,6 +454,8 @@ update_window_events()
   ctx->events_this_frame.count = 0;
   arena_clear(ctx->frame_arena);
 
+  _input_update(&ctx->input);
+
   for (;;)
   {
     MSG msg;
@@ -465,8 +471,6 @@ update_window_events()
     TranslateMessage(&msg);
     DispatchMessageW(&msg);
   }
-
-  _input_update(&ctx->input);
 
   if (WindowContext.any_window_pending_close)
   {
@@ -505,23 +509,39 @@ get_event_this_frame(u32 index)
   return &(WindowContext.events_this_frame.data[index]);
 }
 
-function u32 
-_native_key_from_os_key(Keyboard_Key key)
+function void
+_init_win32_key_tables()
 {
+  for (u32 i = 0; i < 256; ++i)
+  {
+    _win32_vk_to_key[i] = Keyboard_Key_Count;
+  }
+
+  for (u32 key = 0; key < Keyboard_Key_Count; ++key)
+  {
+    u32 vk = _win32_key_table[key];
+    if (vk < 256)
+    {
+      _win32_vk_to_key[vk] = (Keyboard_Key)key;
+    }
+  }
+}
+
+function u32
+_native_key_from_key(Keyboard_Key key)
+{
+  assert(key < Keyboard_Key_Count);
   return _win32_key_table[key];
 }
 
-function Keyboard_Key 
-_os_key_from_native_key(u32 native_key)
+function Keyboard_Key
+_key_from_native_key(u32 native_key)
 {
-  for(u32 i = 0; i < Keyboard_Key_Count; ++i)
+  if (native_key < 256)
   {
-    if(_win32_key_table[i] == native_key)
-    {
-      return (Keyboard_Key)i;
-    }
+    return _win32_vk_to_key[native_key];
   }
-  return Keyboard_Key_Count; // invalid
+  return Keyboard_Key_Count;
 }
 
 function void
