@@ -2,7 +2,7 @@
 #define OPENGL_H
 
 #include "OpenGL/OpenGL_Constants.h"
-#include "OpenGL/cgen.generated/Opengl.h.inl"
+#include "OpenGL/generated/Opengl.h.inl"
 
 // @Section: Opengl entry point
 function b32  opengl_init(Window* window); /* Initializes opengl context */
@@ -16,7 +16,7 @@ function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuin
 function void*          _load_gl_function(const char *name);                                                                                                        /* Helper to load a single opengl function */
 
 // @Section: Implementation
-#include "OpenGL/cgen.generated/Opengl.c.inl"
+#include "OpenGL/generated/Opengl.c.inl"
 
 function void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
