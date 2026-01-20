@@ -1,227 +1,152 @@
 #ifndef CONTEXT_CRACKING_H
 #define CONTEXT_CRACKING_H
 
-/* === C/C++ Linkage === */
-#if __cplusplus
-#
+#if defined(__cplusplus)
 # define C_LINKAGE extern "C"
 # define C_LINKAGE_BEGIN extern "C" {
-# define C_LINKAGE_END   }
-#
+# define C_LINKAGE_END }
 #else
-#
 # define C_LINKAGE
 # define C_LINKAGE_BEGIN
 # define C_LINKAGE_END
-#
 #endif
 
-/* === Compiler Detection === */
+#define COMPILER_CLANG 0
+#define COMPILER_MSVC  0
+#define COMPILER_GCC   0
+
 #if defined(__clang__)
-#
+# undef COMPILER_CLANG
 # define COMPILER_CLANG 1
 # define COMPILER_CLANG_MAJOR __clang_major__
 # define COMPILER_CLANG_MINOR __clang_minor__
-#
 #elif defined(_MSC_VER)
-#
+# undef COMPILER_MSVC
 # define COMPILER_MSVC 1
 # define COMPILER_MSVC_VER _MSC_VER
-#
-#elif defined(__GNUC__) || defined(__GNUG__)
-#
+#elif defined(__GNUC__)
+# undef COMPILER_GCC
 # define COMPILER_GCC 1
 # define COMPILER_GCC_MAJOR __GNUC__
 # define COMPILER_GCC_MINOR __GNUC_MINOR__
-#
 #else
-#
-# error "Unsupported compiler"
-#
+# error Unsupported compiler
 #endif
 
-/* === Compiler to string === */
-#if COMPILER_MSVC
-#
-# define COMPILER_NAME "MSVC"
-# define COMPILER_VERSION_STRING _MSC_FULL_VER
-#
-#elif COMPILER_CLANG
-#
-# define COMPILER_NAME "Clang"
-# define COMPILER_VERSION_STRING (__clang_major__ * 100 + __clang_minor__)
-#
-#elif COMPILER_GCC
-#
-# define COMPILER_NAME "GCC"
-# define COMPILER_VERSION_STRING (__GNUC__ * 100 + __GNUC_MINOR__)
-#
-#endif
+#define OS_WINDOWS 0
+#define OS_LINUX   0
+#define OS_MACOS   0
+#define OS_IOS     0
+#define OS_FREEBSD 0
+#define OS_OPENBSD 0
 
-/* === Default Compiler macros === */
-#ifndef COMPILER_CLANG
-# define COMPILER_CLANG 0
-#endif
-#ifndef COMPILER_MSVC
-# define COMPILER_MSVC 0
-#endif
-#ifndef COMPILER_GCC
-# define COMPILER_GCC 0
-#endif
-
-/* === OS Detection (Independent of Compiler) === */
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-#
+#if defined(_WIN32)
+# undef OS_WINDOWS
 # define OS_WINDOWS 1
-#
-# ifdef UNICODE
-#  undef UNICODE
-# endif // UNICODE
-#
-# pragma warning(push)
-# pragma warning(disable: 4042) // Avoids known warning from winnls.h
-#
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-#
-# ifdef min
-#  undef min
-# endif
-#
-# ifdef max
-#  undef max
-# endif
-# pragma warning(pop)
-#
 #elif defined(__APPLE__) && defined(__MACH__)
-#
-# define OS_MAC 1
 # include <TargetConditionals.h>
-# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+# if TARGET_OS_IPHONE
+#  undef OS_IOS
 #  define OS_IOS 1
-# elif TARGET_OS_MAC
+# else
+#  undef OS_MACOS
 #  define OS_MACOS 1
 # endif
-#
-#elif defined(__linux__) || defined(__gnu_linux__)
-#
+#elif defined(__linux__)
+# undef OS_LINUX
 # define OS_LINUX 1
-#
 #elif defined(__FreeBSD__)
-#
+# undef OS_FREEBSD
 # define OS_FREEBSD 1
-#
 #elif defined(__OpenBSD__)
-#
+# undef OS_OPENBSD
 # define OS_OPENBSD 1
-#
 #else
-#
-# error "Unknown OS"
-#
+# error Unsupported OS
 #endif
 
-/* Default OS macros */
-#ifndef OS_WINDOWS
-# define OS_WINDOWS 0
-#endif
-#ifndef OS_MAC
-# define OS_MAC 0
-#endif
-#ifndef OS_LINUX
-# define OS_LINUX 0
-#endif
-#ifndef OS_IOS
-# define OS_IOS 0
-#endif
-#ifndef OS_MACOS
-# define OS_MACOS 0
-#endif
+#define ARCH_X64   0
+#define ARCH_X86   0
+#define ARCH_ARM64 0
+#define ARCH_ARM32 0
+#define ARCH_PPC64 0
+#define ARCH_PPC32 0
 
-/* === Architecture Detection === */
-#if defined(__x86_64__) || defined(_M_AMD64) || defined(__amd64__)
+#if defined(__x86_64__) || defined(_M_AMD64)
+# undef ARCH_X64
 # define ARCH_X64 1
-#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#elif defined(__i386__) || defined(_M_IX86)
+# undef ARCH_X86
 # define ARCH_X86 1
 #elif defined(__aarch64__) || defined(_M_ARM64)
+# undef ARCH_ARM64
 # define ARCH_ARM64 1
 #elif defined(__arm__) || defined(_M_ARM)
+# undef ARCH_ARM32
 # define ARCH_ARM32 1
-#elif defined(__ppc64__) || defined(__powerpc64__)
+#elif defined(__ppc64__)
+# undef ARCH_PPC64
 # define ARCH_PPC64 1
-#elif defined(__ppc__) || defined(__powerpc__)
+#elif defined(__ppc__)
+# undef ARCH_PPC32
 # define ARCH_PPC32 1
 #else
-# error "Unsupported architecture"
+# error Unsupported architecture
 #endif
 
-/* Default arch macros */
-#ifndef ARCH_X64
-# define ARCH_X64 0
-#endif
-#ifndef ARCH_X86
-# define ARCH_X86 0
-#endif
-#ifndef ARCH_ARM64
-# define ARCH_ARM64 0
-#endif
-#ifndef ARCH_ARM32
-# define ARCH_ARM32 0
-#endif
-
-/* === Address Size === */
 #if ARCH_X64 || ARCH_ARM64 || ARCH_PPC64
 # define ARCH_ADDRSIZE 64
 #else
 # define ARCH_ADDRSIZE 32
 #endif
 
-/* === Endianness === */
-#if ARCH_X86 || ARCH_X64 || ARCH_ARM32 || ARCH_ARM64
-#
-# define ARCH_LITTLE_ENDIAN 1
-# define ARCH_BIG_ENDIAN    0
-#
-#elif ARCH_PPC32 || ARCH_PPC64
-#
+#if ARCH_PPC32 || ARCH_PPC64
+# define ARCH_BIG_ENDIAN 1
 # define ARCH_LITTLE_ENDIAN 0
-# define ARCH_BIG_ENDIAN    1
-#
 #else
-#
-# define ARCH_LITTLE_ENDIAN 1  // assume LE
-# define ARCH_BIG_ENDIAN    0
-#
+# define ARCH_BIG_ENDIAN 0
+# define ARCH_LITTLE_ENDIAN 1
 #endif
 
-/* === Thread Local Storage === */
 #if COMPILER_MSVC
-#
 # define thread_static __declspec(thread)
-#
 #elif COMPILER_CLANG || COMPILER_GCC
-#
 # define thread_static __thread
-#
 #else
-#
-# define thread_static /* not supported */
-#
+# define thread_static
 #endif
 
-/* === DLL Export === */
 #if OS_WINDOWS
-#
 # if COMPILER_MSVC
-#  define shared_function __declspec(dllexport) C_LINKAGE
+#  define shared_function C_LINKAGE __declspec(dllexport)
 # else
-#  define shared_function __attribute__((dllexport)) C_LINKAGE
+#  define shared_function C_LINKAGE __attribute__((dllexport))
 # endif
-#
 #else
-#
 # define shared_function C_LINKAGE
-#
 #endif
 
-#endif // CONTEXT_CRACKING_H
+#if OS_WINDOWS
+# ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# ifdef UNICODE
+#  undef UNICODE
+# endif
+# if COMPILER_MSVC
+#  pragma warning(push)
+#  pragma warning(disable: 4042)
+# endif
+# include <windows.h>
+# ifdef min
+#  undef min
+# endif
+# ifdef max
+#  undef max
+# endif
+# if COMPILER_MSVC
+#  pragma warning(pop)
+# endif
+#endif
+
+#endif
