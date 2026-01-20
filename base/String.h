@@ -37,8 +37,8 @@ struct String_View
 typedef struct String_Node String_Node; /* 8 bit string node */
 struct String_Node
 {
-  String_Node* next;
   String value;
+  String_Node* next;
 };
 
 typedef struct String_List String_List; /* 8 bit string list */

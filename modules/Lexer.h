@@ -547,22 +547,16 @@ function void
 lexer_parse_string_literal(Lexer* lexer, Token* token)
 {
   // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
-
   u32 scratch_position = 0;
-  lexer_eat_character(lexer);
-  lexer->scratch_buffer[scratch_position++] = '"';
-
+  lexer_eat_character(lexer); // Skip opening "
   for (;;)
   {
     s16 c_s16 = lexer_peek_character(lexer);
     if (c_s16 == -1) break;
     u8 c = (u8)c_s16;
-
+    if (c == '"') break; // Don't include closing "
     lexer_eat_character(lexer);
-
     if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = c;
-    if (c == '"') break;
-
     if (c == '\\')
     {
       s16 esc = lexer_peek_character(lexer);
@@ -573,7 +567,7 @@ lexer_parse_string_literal(Lexer* lexer, Token* token)
       }
     }
   }
-
+  lexer_eat_character(lexer); // Skip closing "
   lexer->scratch_buffer[scratch_position] = '\0';
   token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
   token->kind  = Token_String_Literal;
@@ -585,22 +579,16 @@ function void
 lexer_parse_string_backtick(Lexer* lexer, Token* token)
 {
   // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
-
   u32 scratch_position = 0;
-  lexer_eat_character(lexer);
-  lexer->scratch_buffer[scratch_position++] = '`';
-
+  lexer_eat_character(lexer); // Skip opening `
   for (;;)
   {
     s16 c_s16 = lexer_peek_character(lexer);
     if (c_s16 == -1) break;
     u8 c = (u8)c_s16;
-
+    if (c == '`') break; // Don't include closing `
     lexer_eat_character(lexer);
-
     if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = c;
-    if (c == '`') break;
-
     if (c == '\\')
     {
       s16 esc = lexer_peek_character(lexer);
@@ -611,7 +599,7 @@ lexer_parse_string_backtick(Lexer* lexer, Token* token)
       }
     }
   }
-
+  lexer_eat_character(lexer); // Skip closing `
   lexer->scratch_buffer[scratch_position] = '\0';
   token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
   token->kind  = Token_String_Backtick;
@@ -623,17 +611,12 @@ function void
 lexer_parse_character_literal(Lexer* lexer, Token* token)
 {
   u32 scratch_position = 0;
-  lexer_eat_character(lexer);
-  lexer->scratch_buffer[scratch_position++] = '\'';
-
+  lexer_eat_character(lexer); // Skip opening '
   s16 c_s16 = lexer_peek_character(lexer);
   if (c_s16 == -1) return;
   u8 char_val = (u8)c_s16;
-
   lexer_eat_character(lexer);
-
   if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = char_val;
-
   if (char_val == '\\')
   {
     s16 esc = lexer_peek_character(lexer);
@@ -643,14 +626,11 @@ lexer_parse_character_literal(Lexer* lexer, Token* token)
       if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = (u8)esc;
     }
   }
-
   s16 closing = lexer_peek_character(lexer);
   if (closing == '\'')
   {
-    lexer_eat_character(lexer);
-    if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = '\'';
+    lexer_eat_character(lexer); // Skip closing '
   }
-
   lexer->scratch_buffer[scratch_position] = '\0';
   token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
   token->kind  = Token_Character_Literal;

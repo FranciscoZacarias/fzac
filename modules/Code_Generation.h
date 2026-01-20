@@ -55,23 +55,21 @@ struct CGen_Table
 
 typedef enum
 {
-  CGen_Command_None = 0,
-  CGen_Command_String, /* Just pasts the string */
-  CGen_Command_Foreach, /* Runs the string for each row in the table */
+  CGen_Command_Kind_None = 0,
+  CGen_Command_Kind_String, /* Just pasts the string */
+  CGen_Command_Kind_Foreach, /* Runs the string for each row in the table */
 } CGen_Command_Kind;
 
 struct CGen_Command
 {
   CGen_Command_Kind kind;
-  CGen_File* file;
-  CGen_Table* table;
-  CGen_String template_string;
+  CGen_Table *table;
+  CGen_String string;
 };
 
 struct CGen_Generator
 {
   Array(CGen_Command) commands; /* Commands specified in this generator */
-  String path; /* Defaults to the directory of the current file being lexed. Can be overridden as backtick argument for a generator, like @Generator(path=`some\custom\path`) */
 };
 
 struct CGen_File
@@ -84,16 +82,18 @@ struct CGen_File
 typedef struct CGen_Context CGen_Context;
 struct CGen_Context
 {
-  Arena* arena;
+  Arena *arena;
   Array(CGen_File) files;
 };
 
 function CGen_Context cgen_run(String source_directory); /* Runs the code generator on any .cgen file */
-function void cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file); /* Parses a table */
-function void cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file); /* Parses a generator */
+function void cgen_execute_commands(CGen_Context *ctx); /* Runs all commands in the Code Generator Context */
+function void cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a table */
+function void cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a generator */
 
-function CGen_String _cgen_string_from_string(Arena* arena, String str); /* Creates a CGen_String from a String */
-function b32 _cgen_token_is_acceptable_row_value(Token* token); /* Checks if a token is a valid row value */
+function String      _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index); /* Replaces a CGen_String with the appropriate row values of the given table */
+function CGen_String _cgen_string_from_string(Arena *arena, String str); /* Creates a CGen_String from a String */
+function b32         _cgen_token_is_acceptable_row_value(Token *token); /* Checks if a token is a valid row value */
 
 // @Section: Implementation
 
@@ -109,7 +109,7 @@ cgen_run(String source_directory)
   result.files = array_make(CGen_File, 8);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
-  for (String_Node* next = files.first; next != NULL; next = next->next)
+  for (String_Node *next = files.first; next != NULL; next = next->next)
   {
     String file_being_lexed = next->value;
 
@@ -137,7 +137,7 @@ cgen_run(String source_directory)
       continue;
     }
 
-    CGen_File* cgen_file;
+    CGen_File *cgen_file;
     array_get_next(&result.files, CGen_File, cgen_file);
     cgen_file->name = string_copy(result.arena, file_being_lexed);
 
@@ -146,7 +146,7 @@ cgen_run(String source_directory)
 
     for (;;)
     {
-      Token* token = lexer_peek_token(&lexer);
+      Token *token = lexer_peek_token(&lexer);
 
       if (token->kind == Token_End_Of_File)
       {
@@ -185,16 +185,116 @@ cgen_run(String source_directory)
 }
 
 function void
-cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
+cgen_execute_commands(CGen_Context *ctx)
 {
   Scratch scratch = scratch_begin(0,0);
-  CGen_Table* result;
+  
+  String_Buffer buffer; // Where the file data will be written to 
+  string_buffer_init(&buffer, &MallocAllocator, kilobytes(16));
+
+  for (u32 file_index = 0; file_index < ctx->files.count; file_index += 1)
+  {
+    string_buffer_push(&buffer, "/* Generated code */\n\n");
+
+    CGen_File *file = &ctx->files.data[file_index];
+
+    u8 *str = file->name.cstring;
+    u64 len = file->name.count;
+
+    s64 slash_index = -1;
+    s64 dot_index   = -1;
+
+    for (s64 i = (s64)len - 1; i >= 0; --i)
+    {
+      u8 c = str[i];
+      if (c == '.' && dot_index < 0)
+      {
+        dot_index = i;
+        continue;
+      }
+      if (c == '/' || c == '\\')
+      {
+        slash_index = i;
+        break;
+      }
+    }
+
+    if (slash_index < 0) 
+    {
+      _cgen_error(S("Unable to find a file path separator."));
+    }
+
+    u8 separator   = str[slash_index];
+    u64 name_start = (u64)slash_index + 1;
+    u64 name_end   = (dot_index > slash_index) ? (u64)dot_index : len;
+
+    String output_file = string_zero();
+    String name = string_substring(scratch.arena, file->name, name_start, name_end);
+    output_file = string_substring(scratch.arena, file->name, 0, (u64)slash_index + 1);
+    output_file = string_join(scratch.arena, output_file, S("cgen.generated"));
+    if (!directory_exists(output_file)) directory_create(output_file);
+    output_file = string_join(scratch.arena, output_file, (separator == '/') ? S("/") : S("\\"));
+    output_file = string_join(scratch.arena, output_file, name);
+    output_file = string_join(scratch.arena, output_file, S(".gen.h"));
+
+    for (u32 generator_index = 0; generator_index < file->generators.count; generator_index += 1)
+    {
+      CGen_Generator *generator = &file->generators.data[generator_index];
+
+      for (u32 command_index = 0; command_index < generator->commands.count; command_index += 1)
+      {
+        CGen_Command *command = &generator->commands.data[command_index];
+
+        switch (command->kind)
+        {
+          case CGen_Command_Kind_String:
+          {
+            string_buffer_push(&buffer, (const char*)command->string.data.cstring);
+          }
+          break;
+
+          case CGen_Command_Kind_Foreach:
+          {
+            for (u32 row_index = 0; row_index < command->table->rows.count; row_index += 1)
+            {
+              String final_string = _cgen_string_replace_arguments(scratch.arena, command->string, command->table, row_index);
+              string_buffer_push(&buffer, (const char*)final_string.cstring);
+            }
+            break;
+          }
+
+          default:
+          {
+            _cgen_error(Sf(scratch.arena, "Unhandled CGen_Command_Kind: %u\n", command->kind));
+          }
+          break;
+        }
+      }
+    }
+
+    u32 written = file_write(output_file, buffer.data, buffer.count);
+    if (written == 0)
+    {
+      _cgen_error(Sf(scratch.arena, "Unable to write buffer to "S_FMT"\n", S_ARG(output_file)));
+    }
+    string_buffer_clear(&buffer);
+  }
+
+  string_buffer_free(&buffer);
+  scratch_end(&scratch);
+}
+
+function void
+cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
+{
+  Scratch scratch = scratch_begin(0,0);
+  CGen_Table *result;
   array_get_next(&file->tables, CGen_Table, result);
   memory_zero_struct(result);
   result->columns = array_make(String, 8);
   result->rows    = array_make(CGen_Table_Row, 32);
   
-  Token* token = lexer_peek_token(lexer);
+  Token *token = lexer_peek_token(lexer);
   if (!string_equals(token->value, S("Table"), true))
   {
     _cgen_error(Sf(scratch.arena, "Expected 'Table' keyword, got: "S_FMT"\n", S_ARG(token->value)));
@@ -225,7 +325,7 @@ cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
       _cgen_error(Sf(scratch.arena, "Expected column name identifier, got: "S_FMT"\n", S_ARG(token->value)));
     }
     
-    String* column;
+    String *column;
     array_get_next(&result->columns, String, column);
     *column = string_copy(ctx->arena, token->value);
     lexer_eat_token(lexer);
@@ -259,7 +359,7 @@ cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
     lexer_eat_token(lexer);
     token = lexer_peek_token(lexer);
     
-    CGen_Table_Row* row;
+    CGen_Table_Row *row;
     array_get_next(&result->rows, CGen_Table_Row, row);
     memory_zero_struct(row);
     row->entries = array_make(String, result->columns.count);
@@ -273,7 +373,7 @@ cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
       
       if (_cgen_token_is_acceptable_row_value(token))
       {
-        String* entry;
+        String *entry;
         array_get_next(&row->entries, String, entry);
         *entry = string_copy(ctx->arena, token->value);
       }
@@ -309,17 +409,16 @@ cgen_parse_table(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
 }
 
 function void
-cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
+cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
   
-  CGen_Generator* generator;
+  CGen_Generator *generator;
   array_get_next(&file->generators, CGen_Generator, generator);
   memory_zero_struct(generator);
   generator->commands = array_make(CGen_Command, 16);
-  generator->path = string_zero();
   
-  Token* token = lexer_peek_token(lexer);
+  Token *token = lexer_peek_token(lexer);
   if (!string_equals(token->value, S("Generator"), true))
   {
     _cgen_error(Sf(scratch.arena, "Expected 'Generator' keyword, got: "S_FMT"\n", S_ARG(token->value)));
@@ -327,47 +426,7 @@ cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
   
   lexer_eat_token(lexer);
   token = lexer_peek_token(lexer);
-  
-  if (token->kind == Token_Open_Parentheses)
-  {
-    lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
     
-    if (!string_equals(token->value, S("path"), true))
-    {
-      _cgen_error(Sf(scratch.arena, "Expected 'path' argument, got: "S_FMT"\n", S_ARG(token->value)));
-    }
-
-    lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
-    
-    if (token->kind != Token_Equal)
-    {
-      _cgen_error(Sf(scratch.arena, "Expected '=' after path, got: "S_FMT"\n", S_ARG(token->value)));
-    }
-
-    lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
-    
-    if (token->kind != Token_String_Backtick)
-    {
-      _cgen_error(Sf(scratch.arena, "Expected path string value, got: "S_FMT"\n", S_ARG(token->value)));
-    }
-
-    generator->path = string_copy(ctx->arena, token->value);
-
-    lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
-    
-    if (token->kind != Token_Close_Parentheses)
-    {
-      _cgen_error(Sf(scratch.arena, "Expected ')' after path argument, got: "S_FMT"\n", S_ARG(token->value)));
-    }
-
-    lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
-  }
-  
   if (token->kind != Token_Open_Brace)
   {
     _cgen_error(Sf(scratch.arena, "Expected '{' to begin generator body, got: "S_FMT"\n", S_ARG(token->value)));
@@ -422,8 +481,8 @@ cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
         {
           _cgen_error(Sf(scratch.arena, "Expected backtick string after foreach, got: "S_FMT"\n", S_ARG(token->value)));
         }
-      
-        CGen_Table* found_table = NULL;
+
+        CGen_Table *found_table = NULL;
         for (u64 i = 0; i < file->tables.count; i += 1)
         {
           if (string_equals(file->tables.data[i].name, table_name, true))
@@ -438,12 +497,11 @@ cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
           _cgen_error(Sf(scratch.arena, "Table '"S_FMT"' not found in file\n", S_ARG(table_name)));
         }
       
-        CGen_Command* command;
+        CGen_Command *command;
         array_get_next(&generator->commands, CGen_Command, command);
-        command->kind = CGen_Command_Foreach;
-        command->file = file;
+        command->kind  = CGen_Command_Kind_Foreach;
         command->table = found_table;
-        command->template_string = _cgen_string_from_string(ctx->arena, token->value);
+        command->string = _cgen_string_from_string(ctx->arena, token->value);
       
         lexer_eat_token(lexer);
         token = lexer_peek_token(lexer);
@@ -455,12 +513,11 @@ cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
     }
     else if (token->kind == Token_String_Backtick)
     {
-      CGen_Command* command;
+      CGen_Command *command;
       array_get_next(&generator->commands, CGen_Command, command);
-      command->kind = CGen_Command_String;
-      command->file = file;
+      command->kind  = CGen_Command_Kind_String;
       command->table = NULL;
-      command->template_string = _cgen_string_from_string(ctx->arena, token->value);
+      command->string = _cgen_string_from_string(ctx->arena, token->value);
       
       lexer_eat_token(lexer);
       token = lexer_peek_token(lexer);
@@ -481,7 +538,7 @@ cgen_parse_generator(CGen_Context* ctx, Lexer* lexer, CGen_File* file)
 }
 
 function CGen_String
-_cgen_string_from_string(Arena* arena, String str)
+_cgen_string_from_string(Arena *arena, String str)
 {
   CGen_String result;
   result.data = string_copy(arena, str);
@@ -510,11 +567,11 @@ _cgen_string_from_string(Arena* arena, String str)
       if (found_close)
       {
         u32 name_length = name_end - name_start;
-        u8* name_str = push_array(arena, u8, name_length + 1);
+        u8 *name_str = push_array(arena, u8, name_length + 1);
         memory_copy(name_str, str.cstring + name_start, name_length);
         name_str[name_length] = 0;
         
-        CGen_String_Argument* arg;
+        CGen_String_Argument *arg;
         array_get_next(&result.arguments, CGen_String_Argument, arg);
         arg->name.count = name_length;
         arg->name.cstring = name_str;
@@ -529,8 +586,53 @@ _cgen_string_from_string(Arena* arena, String str)
   return result;
 }
 
+function String
+_cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index)
+{
+  Scratch scratch = scratch_begin(&arena, 1);
+  
+  if (row_index >= table->rows.count)
+  {
+    _cgen_error(Sf(scratch.arena, "Row index %llu out of bounds for table '"S_FMT"'\n", row_index, S_ARG(table->name)));
+  }
+  
+  String result = string_copy(arena, cgen_str.data);
+  CGen_Table_Row *row = &table->rows.data[row_index];
+  
+  for (s64 i = cgen_str.arguments.count - 1; i >= 0; i -= 1)
+  {
+    CGen_String_Argument *arg = &cgen_str.arguments.data[i];
+    
+    s64 column_index = -1;
+    for (u64 j = 0; j < table->columns.count; j += 1)
+    {
+      if (string_equals(table->columns.data[j], arg->name, true))
+      {
+        column_index = j;
+        break;
+      }
+    }
+    
+    if (column_index == -1)
+    {
+      _cgen_error(Sf(scratch.arena, "Column '"S_FMT"' not found in table '"S_FMT"'\n", S_ARG(arg->name), S_ARG(table->name)));
+    }
+    
+    if (column_index >= (s64)row->entries.count)
+    {
+      _cgen_error(Sf(scratch.arena, "Column index %lld out of bounds for row %llu in table '"S_FMT"'\n", column_index, row_index, S_ARG(table->name)));
+    }
+    
+    String replacement = row->entries.data[column_index];
+    result = string_replace_range(arena, result, arg->start_index, arg->length, replacement);
+  }
+  
+  scratch_end(&scratch);
+  return result;
+}
+
 function b32
-_cgen_token_is_acceptable_row_value(Token* token)
+_cgen_token_is_acceptable_row_value(Token *token)
 {
   b32 result = false;
   if (token->kind == Token_Identifier      ||

@@ -12,16 +12,17 @@ struct String_Buffer
   u8* data;
   u64 count;
   u64 capacity;
-  Allocator* allocator;
+  Allocator *allocator;
 };
 
-function void string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity); /* Initializes the buffer */
-function void string_buffer_push(String_Buffer* buffer, const char* fmt, ...); /* Adds data to the buffer */
-function void string_buffer_free(String_Buffer* buffer); /* Frees the buffer */
-function String string_buffer_to_string(Arena* arena, String_Buffer* buffer); /* Copies the contents of buffer into a string */
+function void string_buffer_init(String_Buffer *buffer, Allocator *allocator, u64 initial_capacity); /* Initializes the buffer */
+function void string_buffer_push(String_Buffer *buffer, const char *fmt, ...); /* Adds data to the buffer */
+function void string_buffer_clear(String_Buffer *buffer); /* Clears the buffer */
+function void string_buffer_free(String_Buffer *buffer); /* Frees the buffer */
+function String string_buffer_to_string(Arena* arena, String_Buffer *buffer); /* Copies the contents of buffer into a string */
 
 function void
-string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capacity)
+string_buffer_init(String_Buffer *buffer, Allocator *allocator, u64 initial_capacity)
 {
   buffer->allocator = allocator;
   buffer->count     = 0;
@@ -38,7 +39,7 @@ string_buffer_init(String_Buffer* buffer, Allocator* allocator, u64 initial_capa
 }
 
 function void
-string_buffer_push(String_Buffer* buffer, const char* fmt, ...)
+string_buffer_push(String_Buffer *buffer, const char* fmt, ...)
 {
   if (buffer->data == NULL)
   {
@@ -79,7 +80,13 @@ string_buffer_push(String_Buffer* buffer, const char* fmt, ...)
 }
 
 function void
-string_buffer_free(String_Buffer* buffer)
+string_buffer_clear(String_Buffer *buffer)
+{
+  buffer->count = 0;
+}
+
+function void
+string_buffer_free(String_Buffer *buffer)
 {
   if (buffer->data)
   {
@@ -92,7 +99,7 @@ string_buffer_free(String_Buffer* buffer)
 }
 
 function String
-string_buffer_to_string(Arena* arena, String_Buffer* buffer)
+string_buffer_to_string(Arena* arena, String_Buffer *buffer)
 {
   String result = {0};
 

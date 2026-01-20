@@ -268,12 +268,13 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
     if (!is_file(file_being_lexed)) continue;
 
-    if(string_contains(file_being_lexed, S("\\Extern\\"))  ||
-       string_contains(file_being_lexed, S("\\.git\\"))    ||
-       string_contains(file_being_lexed, S("\\.svn\\"))    ||
-       string_contains(file_being_lexed, S("\\.idea\\"))   ||
-       string_contains(file_being_lexed, S("\\.vs\\"))     ||
-       string_contains(file_being_lexed, S("\\.vscode\\")) ||
+    if(string_contains(file_being_lexed, S("\\Extern\\"))         ||
+       string_contains(file_being_lexed, S("\\.git\\"))           ||
+       string_contains(file_being_lexed, S("\\.svn\\"))           ||
+       string_contains(file_being_lexed, S("\\.idea\\"))          ||
+       string_contains(file_being_lexed, S("\\.vs\\"))            ||
+       string_contains(file_being_lexed, S("\\.vscode\\"))        ||
+       string_contains(file_being_lexed, S("\\cgen.generated\\")) ||
        string_contains(file_being_lexed, S("\\.code\\")))
     {
       continue;
