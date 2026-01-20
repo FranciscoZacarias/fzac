@@ -31,6 +31,15 @@
   error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break()
 
+typedef struct Intsp_Scratch_Info Intsp_Scratch_Info;
+struct Intsp_Scratch_Info
+{
+  String name;
+  u32 line;
+  u32 scope_depth;
+  b32 ended;
+};
+
 typedef struct Intsp_File Intsp_File;
 Make_Array_Type(Intsp_File);
 struct Intsp_File
@@ -224,6 +233,7 @@ function Intsp_Context intsp_run(String source_directory, b32 introspect_base_li
 function b32           intsp_report_introspection(Intsp_Context* introspection, b32 verbose, String* out); /* Produces a report of the introspection. Reports true if no fatal errors were found. If there are fatal errors, the introspection will be incomplete but the report still has an ERROR log. */
 function void          intsp_report_functions(Intsp_Context* introspection, b32 report_documentation, String* out);
 function void          intsp_report_enums(Intsp_Context* introspection, String* out);
+function void          intsp_report_scratch_arenas(Intsp_Context* introspection, String *out); /* Goes through all functions and checks if all scratch arenas are properly closed */
 function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
 function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function* f); /* Convers a Intsp_Function to a string */
 
@@ -512,6 +522,162 @@ intsp_report_enums(Intsp_Context* introspection, String* out)
   string_buffer_free(&buffer);
 }
 
+function void
+  intsp_report_scratch_arenas(Intsp_Context* introspection, String *out)
+{
+  /*
+  We're looking for this pattern:
+  Scratch scratch = scratch_begin(0,0);
+  scratch_end(&scratch);
+  */
+
+  Scratch scratch = scratch_begin(0,0); // scratch arena for message joins
+  Arena* lexer_arena = arena_alloc();
+
+  for (u32 i = 0; i < introspection->functions.count; i += 1)
+  {
+    Intsp_Function* f = &introspection->functions.data[i];
+    String *src = &f->body;
+
+    Lexer lexer = {0};
+    lexer.arena = lexer_arena;
+    lexer_init_from_string(&lexer, *src, Trivia_None, Emit_None);
+
+    Token* token = NULL;
+    u32 scope_depth = 0;
+
+    String temp_message = string_zero();
+    Intsp_Scratch_Info scratches[2] = {0};
+    u32 scratch_count = 0;
+
+    for (;;)
+    {
+      token = lexer_peek_token(&lexer);
+      if (token->kind == Token_End_Of_File) break;
+
+      switch (token->kind)
+      {
+        case Token_Open_Brace:  scope_depth += 1; break;
+        case Token_Close_Brace:
+        {
+          scope_depth -= 1;
+
+          for (u32 s = 0; s < scratch_count; s += 1)
+          {
+            Intsp_Scratch_Info *info = &scratches[s];
+            if (!info->ended && info->scope_depth > scope_depth)
+            {
+              temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Scratch "S_FMT" in function "S_FMT" created at line %llu leaves scope without scratch_end\n", S_ARG(info->name), S_ARG(f->identifier), info->line));
+              info->ended = true;
+            }
+          }
+        }
+        break;
+
+        case Token_Identifier:
+        {
+          // Scratch declaration
+          if (scratch_count < 2 && string_equals(token->value, S("Scratch"), true))
+          {
+            lexer_eat_token(&lexer);
+            Token *name = lexer_peek_token(&lexer);
+
+            if (name->kind == Token_Identifier)
+            {
+              lexer_eat_token(&lexer);
+              Token *equal = lexer_peek_token(&lexer);
+
+              if (equal->kind == Token_Equal)
+              {
+                Intsp_Scratch_Info *info = &scratches[scratch_count++];
+                info->name = name->value;
+                info->line = name->l0;
+                info->scope_depth = scope_depth;
+                info->ended = false;
+              }
+            }
+
+            continue;
+          }
+
+          // scratch_end(&scratch)
+          if (string_equals(token->value, S("scratch_end"), true))
+          {
+            lexer_eat_token(&lexer);
+            Token *open = lexer_peek_token(&lexer);
+
+            if (open->kind == Token_Open_Parentheses)
+            {
+              lexer_eat_token(&lexer);
+              Token *token_reference = lexer_peek_token(&lexer);
+
+              if (token_reference->kind == Token_And)
+              {
+                lexer_eat_token(&lexer);
+                Token *name = lexer_peek_token(&lexer);
+
+                if (name->kind == Token_Identifier)
+                {
+                  for (u32 s = 0; s < scratch_count; s += 1)
+                  {
+                    Intsp_Scratch_Info *info = &scratches[s];
+                    if (!info->ended && string_equals(info->name, name->value, true))
+                    {
+                      info->ended = true;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+
+            continue;
+          }
+
+          // early return
+          if (string_equals(token->value, S("return"), true))
+          {
+            for (u32 s = 0; s < scratch_count; s += 1)
+            {
+              Intsp_Scratch_Info *info = &scratches[s];
+              if (!info->ended)
+              {
+                temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Early return before scratch_end for "S_FMT" in function "S_FMT" (line %u)\n", S_ARG(info->name), S_ARG(f->identifier), info->line));
+              }
+            }
+          }
+        }
+        break;
+      }
+
+      lexer_eat_token(&lexer);
+    }
+
+    // Cleanup
+    for (u32 s = 0; s < scratch_count; s += 1)
+    {
+      Intsp_Scratch_Info *info = &scratches[s];
+      if (!info->ended)
+      {
+        temp_message = string_join( scratch.arena, temp_message, Sf(scratch.arena, "Function exits without scratch_end for "S_FMT" in function "S_FMT" (line %u)\n", S_ARG(info->name), S_ARG(f->identifier), info->line) );
+      }
+    }
+
+    // Copy all messages into the introspection arena
+    if (temp_message.count > 0)
+    {
+      String final_msg = string_copy(introspection->arena, temp_message);
+      *out = string_join(introspection->arena, *out, final_msg);
+    }
+
+    // Clear lexer arena for next function
+    arena_clear(lexer_arena);
+  }
+
+  scratch_end(&scratch);
+  arena_free(lexer_arena);
+}
+ 
 function String
 intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type)
 {
@@ -646,6 +812,7 @@ _intsp_parse_global(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file
   if (result.names.count != 1)
   {
     _intsp_error(introspection, S("We do not allow multiple declarations in global variables."));
+    scratch_end(&scratch);
     return;
   }
   gvariable->identifier = string_copy(introspection->arena, array_get(&result.names, 0));
