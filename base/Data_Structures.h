@@ -17,7 +17,6 @@ struct String_Buffer
 
 function void string_buffer_init(String_Buffer *buffer, Allocator *allocator, u64 initial_capacity); /* Initializes the buffer */
 function void string_buffer_push(String_Buffer *buffer, const char *fmt, ...); /* Adds data to the buffer */
-function void string_buffer_clear(String_Buffer *buffer); /* Clears the buffer */
 function void string_buffer_free(String_Buffer *buffer); /* Frees the buffer */
 function String string_buffer_to_string(Arena* arena, String_Buffer *buffer); /* Copies the contents of buffer into a string */
 
@@ -77,12 +76,6 @@ string_buffer_push(String_Buffer *buffer, const char* fmt, ...)
     buffer->data     = new_data;
     buffer->capacity = new_capacity;
   }
-}
-
-function void
-string_buffer_clear(String_Buffer *buffer)
-{
-  buffer->count = 0;
 }
 
 function void

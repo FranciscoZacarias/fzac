@@ -3,6 +3,8 @@
 #ifndef OPENGL_FUNCTIONS_H
 #define OPENGL_FUNCTIONS_H
 
+function b32 _os_opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */
+
 typedef void (*PFNglProgramUniform1iPROC)(GLuint program, GLint location, GLint v0);
 global PFNglProgramUniform1iPROC __glProgramUniform1i = NULL;
 function inline void
@@ -483,6 +485,30 @@ glProgramUniformMatrix3fv (GLuint program, GLint location, GLsizei count, GLbool
   __glProgramUniformMatrix3fv (program, location, count, transpose, value);
 }
 
+typedef void (*PFNglViewportPROC)(GLint x, GLint y, GLsizei width, GLsizei height);
+global PFNglViewportPROC __glViewport = NULL;
+function inline void
+glViewport (GLint x, GLint y, GLsizei width, GLsizei height)
+{
+  __glViewport (x, y, width, height);
+}
+
+typedef void (*PFNglBlendFuncPROC)(GLenum sfactor, GLenum dfactor);
+global PFNglBlendFuncPROC __glBlendFunc = NULL;
+function inline void
+glBlendFunc (GLenum sfactor, GLenum dfactor)
+{
+  __glBlendFunc (sfactor, dfactor);
+}
+
+typedef void (*PFNglClearPROC)(GLbitfield mask);
+global PFNglClearPROC __glClear = NULL;
+function inline void
+glClear (GLbitfield mask)
+{
+  __glClear (mask);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
@@ -529,6 +555,14 @@ function inline void*
 glMapNamedBufferRange (GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
   return __glMapNamedBufferRange (buffer, offset, length, access);
+}
+
+typedef GLenum (*PFNglGetErrorPROC)(void);
+global PFNglGetErrorPROC __glGetError = NULL;
+function inline GLenum
+glGetError (void)
+{
+  return __glGetError ();
 }
 
 #endif // OPENGL_FUNCTIONS_H

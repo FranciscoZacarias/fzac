@@ -190,13 +190,8 @@ cgen_execute_commands(CGen_Context *ctx)
 {
   Scratch scratch = scratch_begin(0,0);
   
-  String_Buffer buffer; // Where the file data will be written to 
-  string_buffer_init(&buffer, &MallocAllocator, kilobytes(16));
-
   for (u32 file_index = 0; file_index < ctx->files.count; file_index += 1)
   {
-    string_buffer_push(&buffer, "/* Generated code */\n\n");
-
     CGen_File *file = &ctx->files.data[file_index];
 
     u8 *str = file->name.cstring;
@@ -242,6 +237,11 @@ cgen_execute_commands(CGen_Context *ctx)
     for (u32 generator_index = 0; generator_index < file->generators.count; generator_index += 1)
     {
       CGen_Generator *generator = &file->generators.data[generator_index];
+
+      String_Buffer buffer; // Where the file data will be written to 
+      string_buffer_init(&buffer, &MallocAllocator, kilobytes(16));
+      string_buffer_push(&buffer, "/* Generated code */\n\n");
+
       if (generator->custom_file_name.count > 0)
       {
         output_file = string_join(scratch.arena, output_directory, generator->custom_file_name);
@@ -277,17 +277,19 @@ cgen_execute_commands(CGen_Context *ctx)
           break;
         }
       }
-    }
 
-    u32 written = file_write(output_file, buffer.data, buffer.count);
-    if (written == 0)
-    {
-      _cgen_error(Sf(scratch.arena, "Unable to write buffer to "S_FMT"\n", S_ARG(output_file)));
+      if (file_exists(output_file))
+      {
+        file_delete(output_file);
+      }
+      u32 written = file_write(output_file, buffer.data, buffer.count);
+      if (written == 0)
+      {
+        _cgen_error(Sf(scratch.arena, "Unable to write buffer to "S_FMT"\n", S_ARG(output_file)));
+      }
+      string_buffer_free(&buffer);
     }
-    string_buffer_clear(&buffer);
   }
-
-  string_buffer_free(&buffer);
   scratch_end(&scratch);
 }
 

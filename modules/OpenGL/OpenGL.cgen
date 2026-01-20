@@ -63,6 +63,9 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glLineWidth                     `(GLfloat width)`                                                                                                                            `(width)`                                                                 }
   {  glVertexArrayElementBuffer      `(GLuint vaobj, GLuint buffer)`                                                                                                              `(vaobj, buffer)`                                                         }
   {  glProgramUniformMatrix3fv       `(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)`                                                 `(program, location, count, transpose, value)`                            }
+  {  glViewport                      `(GLint x, GLint y, GLsizei width, GLsizei height)`                                                                                          `(x, y, width, height)`                                                   }
+  {  glBlendFunc                     `(GLenum sfactor, GLenum dfactor)`                                                                                                           `(sfactor, dfactor)`                                                      }
+  {  glClear                         `(GLbitfield mask)`                                                                                                                          `(mask)`                                                                  }
 }
 
 @Table
@@ -74,13 +77,15 @@ OpenGL_Function_Table (return name args call_args)
   {  GLenum           glCheckNamedFramebufferStatus   `(GLuint framebuffer, GLenum target)`                                      `(framebuffer, target)`             }
   { `const GLubyte *` glGetString                     `(GLenum name)`                                                            `(name)`                            }
   { `void*`           glMapNamedBufferRange           `(GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access)`   `(buffer, offset, length, access)`  }
+  {  GLenum           glGetError                      `(void)`                                                                   `()`                                }
 }
 
-
-@Generator(OpenGL.h)
+@Generator(Opengl.h)
 {
   `#ifndef OPENGL_FUNCTIONS_H
 #define OPENGL_FUNCTIONS_H
+
+function b32 _os_opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */
 
 `
 
@@ -105,4 +110,34 @@ $(name) $(args)
 `
 
   `#endif // OPENGL_FUNCTIONS_H`
+}
+
+@Generator(Opengl.c)
+{
+  `function b32
+_opengl_load_functions()
+{
+`
+
+  @foreach(OpenGL_Function_Table) `  __$(name) = (PFN$(name)PROC)_load_gl_function("$(name)"); 
+  if (!$(name))
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+`
+
+  @foreach(OpenGL_Void_Function_Table) `  __$(name) = (PFN$(name)PROC)_load_gl_function("$(name)"); 
+  if (!__$(name))
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+`
+
+  `  return true;
+`
+  `}`
 }

@@ -1039,14 +1039,77 @@ _intsp_parse_typedef(Lexer* lexer, Intsp_Context* introspection, Intsp_File* fil
   
   // Parse the data type
 
+  Lexer lexer_save_state; // Hack to save lexer state in case we hit if (result.names.count > 1)
+  memory_copy_struct(&lexer_save_state, lexer);
+
   Intsp_Parse_Data_Type_Result result = _intsp_parse_datatype(introspection, lexer);
   typedef_datatype->data_type = result.data_type;
 
   if (result.names.count > 1)
   {
-    _intsp_error(introspection, S("Unexpected multiple declaration in typedef"));
+    // This is a hack, but it seems to work for now. If there are multiple names
+    // It means the parse is incorrect, so I'll just assume it's a function typedef (like: typedef void (APIENTRY  *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);)
+  
+    String type = string_zero();
+    String identifier = string_zero();
+    b32 found_open_paren = false;
+  
+    for (;;)
+    {
+      token = lexer_peek_token(&lexer_save_state);
+    
+      if (token->kind == Token_Semicolon || token->kind == Token_End_Of_File)
+      {
+        break;
+      }
+    
+      if (!found_open_paren)
+      {
+        if (token->kind == Token_Open_Parentheses)
+        {
+          found_open_paren = true;
+          identifier = string_join(scratch.arena, identifier, token->value);
+        }
+        else
+        {
+          // Part of the type
+          type = string_join(scratch.arena, type, token->value);
+        }
+      }
+      else
+      {
+        // Part of the identifier (everything after first '(')
+        identifier = string_join(scratch.arena, identifier, token->value);
+      }
+    
+      lexer_eat_token(&lexer_save_state);
+    }
+
+    assert(token->kind == Token_Semicolon);
+  
+    // Build type name and identifier
+    typedef_datatype->identifier     = string_copy(introspection->arena, identifier);
+    typedef_datatype->data_type.name = string_copy(introspection->arena, type);
+  
+    // Reset other fields
+    typedef_datatype->data_type.is_c_array = false;
+    typedef_datatype->data_type.array_length = string_zero();
+    typedef_datatype->data_type.is_pointer = false;
+    typedef_datatype->data_type.indirection_level = 0;
+
+    for (u32 i = 0; i < typedef_datatype->data_type.name.count; i += 1)
+    {
+      if (typedef_datatype->data_type.name.cstring[i] == '*')
+      {
+        typedef_datatype->data_type.is_pointer = true;
+        typedef_datatype->data_type.indirection_level += 1;
+      }
+    }
+
+    scratch_end(&scratch);
     return;
   }
+
   typedef_datatype->identifier = array_get(&result.names, 0);
   
   lexer_eat_trivia(lexer);

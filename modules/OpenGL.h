@@ -2,6 +2,7 @@
 #define OPENGL_H
 
 #include "OpenGL/OpenGL_Constants.h"
+#include "OpenGL/cgen.generated/Opengl.h.inl"
 
 // @Section: Opengl entry point
 function b32  opengl_init(Window* window); /* Initializes opengl context */
@@ -13,9 +14,9 @@ function void window_set_vsync(b32 state); /* Enables vsync */
 // @Section: Opengl helpers
 function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
 function void*          _load_gl_function(const char *name);                                                                                                        /* Helper to load a single opengl function */
-function b32            _opengl_load_functions();   
 
 // @Section: Implementation
+#include "OpenGL/cgen.generated/Opengl.c.inl"
 
 function void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
@@ -109,17 +110,6 @@ _load_gl_function(const char *name)
     proc = (void *)GetProcAddress(opengl32_module, name);
   }
   return proc;
-}
-
-function b32
-_opengl_load_functions()
-{
-   #define GL_FUNC(ret, name, params) \
-     name = (PFN##name##PROC)_load_gl_function(#name); \
-     if (!name) return false;
-   # include "OpenGL/opengl_functions.inl"
-   #undef GL_FUNC
-  return true;
 }
 
 #if OS_WINDOWS
