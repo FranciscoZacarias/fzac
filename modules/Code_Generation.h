@@ -227,7 +227,7 @@ cgen_execute_commands(CGen_Context *ctx)
     String output_directory = string_zero();
     String name = string_substring(scratch.arena, file->name, name_start, name_end);
     output_directory = string_substring(scratch.arena, file->name, 0, (u64)slash_index + 1);
-    output_directory = string_join(scratch.arena, output_directory, S("cgen.generated"));
+    output_directory = string_join(scratch.arena, output_directory, S("generated"));
     if (!directory_exists(output_directory)) directory_create(output_directory);
     output_directory = string_join(scratch.arena, output_directory, (separator == '/') ? S("/") : S("\\"));
     
@@ -571,6 +571,9 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 function CGen_String
 _cgen_string_from_string(Arena *arena, String str)
 {
+  Scratch scratch = scratch_begin(0,0);
+  str = string_replace_backslash_n(scratch.arena, str);
+
   CGen_String result;
   result.data = string_copy(arena, str);
   result.arguments = array_make(CGen_String_Argument, 8);
@@ -613,7 +616,8 @@ _cgen_string_from_string(Arena *arena, String str)
       }
     }
   }
-  
+
+  scratch_end(&scratch);  
   return result;
 }
 
