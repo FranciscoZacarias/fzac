@@ -1,0 +1,27 @@
+
+
+@Table 
+OpenGL_Void_Function_Table (name args call_args)
+{
+  { glProgramUniform1i         `(GLuint program, GLint location, GLint v0)`                                                 `(program, location, v0)`                      }
+  { glProgramUniform1f         `(GLuint program, GLint location, GLfloat v0)`                                               `(program, location, v0)`                      }
+  { glProgramUniform2f         `(GLuint program, GLint location, GLfloat v0, GLfloat v1)`                                   `(program, location, v0, v1)`                  }
+  { glProgramUniform3f         `(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)`                       `(program, location, v0, v1, v2)`              }
+  { glProgramUniform4f         `(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)`           `(program, location, v0, v1, v2, v3)`          }
+  { glProgramUniformMatrix4fv  `(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)` `(program, location, count, transpose, value)` }
+  { glProgramUniformMatrix2fv  `(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)` `(program, location, count, transpose, value)` }
+}
+
+@Generator
+{
+  `This is just generates a string`
+
+  @foreach (OpenGL_Void_Function_Table) `typedef void (*PFN$(name)PROC)$(args);
+global PFN$(name)PROC __$(name) = NULL;
+function inline void\n$(name) $(args)
+{
+  __$(name) $(call_args);
+}\n\n`
+
+
+}

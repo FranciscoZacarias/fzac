@@ -34,6 +34,7 @@ typedef enum
   Token_Number,
 
   Token_String_Literal,
+  Token_String_Backtick,
   Token_Character_Literal,
 
   Token_Open_Parentheses,            /* ( */
@@ -45,6 +46,7 @@ typedef enum
   Token_Semicolon,                   /* ; */
   Token_Comma,                       /* , */
   Token_Dot,                         /* . */
+  Token_Backtick,                    /* ` */
   Token_Colon,                       /* : */
   Token_Plus,                        /* + */
   Token_Minus,                       /* - */
@@ -61,6 +63,7 @@ typedef enum
   Token_Caret,                       /* ^ */
   Token_Tilde,                       /* ~ */
   Token_Question,                    /* ? */
+  Token_At,                          /* @ */
   Token_Hash,                        /* # */
   Token_Double_Quote,                /* " */
   Token_Single_Quote,                /* ' */
@@ -130,6 +133,7 @@ enum META_ENUM_LINK(Emit_Structures)
   Emit_Character_Literals = (1 << 1), /* Emits a Token_Character_Literal like 'c', instead of 3 tokens like "'", "c", "'" */
   Emit_Line_Comments      = (1 << 2), /* Emits a line comment made made with '//' as a single token like: Token_Line_Comment "// This is a whole line comment" */
   Emit_Block_Comments     = (1 << 3), /* Emits a block comment made with made with /* */
+  Emit_String_Backtick    = (1 << 4), /* Emits a Token_String_Backtick like `This is a backtick string` instead of each individual token */
 
   Emit_All = Emit_String_Literals|Emit_Character_Literals|Emit_Line_Comments|Emit_Block_Comments,
 };
@@ -167,6 +171,7 @@ function Token* lexer_reserve_token_slot(Lexer* lexer); /* Add a new incoming to
 function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures);
 
 function b32    lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Attaches a file to the lexer for it to parse */
+function b32    lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string */
 function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
 function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
 function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
@@ -183,6 +188,7 @@ function void lexer_parse_single_character_token(Lexer* lexer, Token* token, Tok
 function void lexer_parse_identifier(Lexer* lexer, Token* token); /* Parses the next token as an identifier */
 function void lexer_parse_number(Lexer* lexer, Token* token); /* Parses the next token as a number */
 function void lexer_parse_string_literal(Lexer* lexer, Token* token); /* Parses a string literal that is in between double quotes */
+function void lexer_parse_string_backtick(Lexer* lexer, Token* token); /* Parses a backtick string that is in between backticks */
 function void lexer_parse_character_literal(Lexer* lexer, Token* token); /* Parses a character literal that is in between single ticks */
 function void lexer_parse_trivia(Lexer* lexer, Token* token); 
 function void lexer_parse_line_comment(Lexer* lexer, Token* token); /* Parses a line comment defined by double slash */
@@ -327,6 +333,23 @@ lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_
     arena_free(lexer->arena);
     return false;
   }
+
+  return true;
+}
+
+function b32
+lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures)
+{
+  if (source.count == 0) return false;
+  memory_zero_struct(lexer);
+
+  lexer->arena     = arena_alloc();
+  lexer->file_path = string_zero();
+  lexer->source    = string_copy(lexer->arena, source);
+  lexer->current_line_number     = 1;
+  lexer->current_character_index = 1;
+  lexer->trivia_flags            = trivia_flags;
+  lexer->emit_structures         = emit_structures;
 
   return true;
 }
@@ -559,6 +582,44 @@ lexer_parse_string_literal(Lexer* lexer, Token* token)
 }
 
 function void
+lexer_parse_string_backtick(Lexer* lexer, Token* token)
+{
+  // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
+
+  u32 scratch_position = 0;
+  lexer_eat_character(lexer);
+  lexer->scratch_buffer[scratch_position++] = '`';
+
+  for (;;)
+  {
+    s16 c_s16 = lexer_peek_character(lexer);
+    if (c_s16 == -1) break;
+    u8 c = (u8)c_s16;
+
+    lexer_eat_character(lexer);
+
+    if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = c;
+    if (c == '`') break;
+
+    if (c == '\\')
+    {
+      s16 esc = lexer_peek_character(lexer);
+      if (esc != -1)
+      {
+        lexer_eat_character(lexer);
+        if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = (u8)esc;
+      }
+    }
+  }
+
+  lexer->scratch_buffer[scratch_position] = '\0';
+  token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
+  token->kind  = Token_String_Backtick;
+  token->l1    = lexer->current_line_number;
+  token->c1    = lexer->current_character_index;
+}
+
+function void
 lexer_parse_character_literal(Lexer* lexer, Token* token)
 {
   u32 scratch_position = 0;
@@ -738,6 +799,20 @@ lexer_make_new_token(Lexer* lexer)
       case '\\':{ lexer_parse_single_character_token(lexer, token, Token_Backslash); }         break;
       case '~': { lexer_parse_single_character_token(lexer, token, Token_Tilde); }             break;
       case '?': { lexer_parse_single_character_token(lexer, token, Token_Question); }          break;
+      case '@': { lexer_parse_single_character_token(lexer, token, Token_At); }                break;
+
+      case '`':
+      {
+        if (has_flags(lexer->emit_structures, Emit_String_Backtick))
+        {
+          lexer_parse_string_backtick(lexer, token);
+        }
+        else
+        {
+          lexer_parse_single_character_token(lexer, token, Token_String_Backtick);
+        }
+      }
+      break;
 
       case '\'':
       {

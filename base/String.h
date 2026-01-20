@@ -55,6 +55,9 @@ function String string_new(u64 size, u8* str); /* Create a new String with given
 function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
 function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
 function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
+function String string_replace_first(Arena* arena, String str, String a, String b); /* Replaces string a with string c in string str */
+function String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
+function String string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement); /* Replaces a range starting at start up to length with replacement */
 function String string_slice(Arena* arena, String str, u64 start, u64 end); /* @TODO(fz): Maybe we should return String_View? Extract substring from start to end (exclusive, null-terminated). */
 function String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
 function String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
@@ -214,6 +217,70 @@ string_join(Arena* arena, String a, String b)
   memory_copy(result.cstring, a.cstring, a.count);
   memory_copy(result.cstring + a.count, b.cstring, b.count);
   result.cstring[result.count] = '\0';
+  return result;
+}
+
+function String
+string_replace_first(Arena* arena, String str, String a, String b)
+{
+  String result = str;
+  u64 index = 0;
+  
+  if (string_find_first(str, a, &index))
+  {
+    u64 new_size = str.count - a.count + b.count;
+    u8* new_str = push_array(arena, u8, new_size + 1);
+    
+    memory_copy(new_str, str.cstring, index);
+    memory_copy(new_str + index, b.cstring, b.count);
+    memory_copy(new_str + index + b.count, str.cstring + index + a.count, str.count - index - a.count);
+    
+    new_str[new_size] = 0;
+    result.count = new_size;
+    result.cstring = new_str;
+  }
+  
+  return result;
+}
+
+function String
+string_replace_all(Arena *arena, String str, String a, String b)
+{
+  String result = str;
+  u64 index = 0;
+  
+  while (string_find_first(result, a, &index))
+  {
+    u64 new_size = result.count - a.count + b.count;
+    u8* new_str = push_array(arena, u8, new_size + 1);
+    
+    memory_copy(new_str, result.cstring, index);
+    memory_copy(new_str + index, b.cstring, b.count);
+    memory_copy(new_str + index + b.count, result.cstring + index + a.count, result.count - index - a.count);
+    
+    new_str[new_size] = 0;
+    result.count = new_size;
+    result.cstring = new_str;
+  }
+  
+  return result;
+}
+
+function String
+string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement)
+{
+  u64 new_size = str.count - length + replacement.count;
+  u8* new_str  = push_array(arena, u8, new_size + 1);
+  
+  memory_copy(new_str, str.cstring, start);
+  memory_copy(new_str + start, replacement.cstring, replacement.count);
+  memory_copy(new_str + start + replacement.count, str.cstring + start + length, str.count - start - length);
+  
+  new_str[new_size] = 0;
+  String result;
+  result.count = new_size;
+  result.cstring = new_str;
+  
   return result;
 }
 

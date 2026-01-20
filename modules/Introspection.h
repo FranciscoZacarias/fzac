@@ -203,8 +203,8 @@ struct Intsp_Log
   String text;
 };
 
-typedef struct Introspection Introspection; /* Contains an introspection of a C program in my codebase. Note that reports are not exhaustive, they are only the ones caught on the lexing level. */
-struct Introspection
+typedef struct Intsp_Context Intsp_Context; /* Contains an introspection of a C program in my codebase. Note that reports are not exhaustive, they are only the ones caught on the lexing level. */
+struct Intsp_Context
 {
   Arena* arena;
 
@@ -220,34 +220,34 @@ struct Introspection
   Array(Intsp_Define) defines;
 };
 
-function Introspection intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
-function b32           intsp_report_introspection(Introspection* introspection, b32 verbose, String* out); /* Produces a report of the introspection. Reports true if no fatal errors were found. If there are fatal errors, the introspection will be incomplete but the report still has an ERROR log. */
-function void          intsp_report_functions(Introspection* introspection, b32 report_documentation, String* out);
-function void          intsp_report_enums(Introspection* introspection, String* out);
+function Intsp_Context intsp_run(String source_directory, b32 introspect_base_library); /* Parses a project directory. */
+function b32           intsp_report_introspection(Intsp_Context* introspection, b32 verbose, String* out); /* Produces a report of the introspection. Reports true if no fatal errors were found. If there are fatal errors, the introspection will be incomplete but the report still has an ERROR log. */
+function void          intsp_report_functions(Intsp_Context* introspection, b32 report_documentation, String* out);
+function void          intsp_report_enums(Intsp_Context* introspection, String* out);
 function String        intsp_data_type_to_string(Arena* arena, Intsp_Data_Type type); /* Convers a Intsp_Data_Type to a string */
 function String        intsp_function_signature_to_string(Arena* arena, Intsp_Function* f); /* Convers a Intsp_Function to a string */
 
 function u32  _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_members, u32 max_members); /* Parses the members of an enum. Anything after { and before }. Returns how many members were added */
-function void _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj); /* Parses enums */
-function void _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj); /* Parses typedefs that are not structs nor enums */
-function void _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
-function void _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
-function void _intsp_parse_preprocessor_macros(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj);
-function void _intsp_report(Introspection* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
+function void _intsp_parse_enum(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj); /* Parses enums */
+function void _intsp_parse_typedef(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj); /* Parses typedefs that are not structs nor enums */
+function void _intsp_parse_function(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj);
+function void _intsp_parse_global(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj);
+function void _intsp_parse_preprocessor_macros(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj);
+function void _intsp_report(Intsp_Context* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text); /* Adds a report to the introspection struct */
 function u64  _intsp_aggregate_hash(Intsp_Aggregate* obj);
-function Intsp_Aggregate*      _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent);
-function Intsp_Parse_Data_Type_Result _intsp_parse_datatype(Introspection* introspection, Lexer* lexer); /* Parses a data type from a view into a token array */
-function Intsp_Function*       _intsp_find_function(Introspection* introspection, String function_name);
-function Intsp_Enum*           _intsp_find_enum(Introspection* introspection, String enum_name);
-function Intsp_Aggregate*      _intsp_find_struct(Introspection* introspection, u64 hash);
-function Intsp_Typedef*        _intsp_find_typedef(Introspection* introspection, String typedef_name);
+function Intsp_Aggregate*      _intsp_parse_aggregate(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent);
+function Intsp_Parse_Data_Type_Result _intsp_parse_datatype(Intsp_Context* introspection, Lexer* lexer); /* Parses a data type from a view into a token array */
+function Intsp_Function*       _intsp_find_function(Intsp_Context* introspection, String function_name);
+function Intsp_Enum*           _intsp_find_enum(Intsp_Context* introspection, String enum_name);
+function Intsp_Aggregate*      _intsp_find_struct(Intsp_Context* introspection, u64 hash);
+function Intsp_Typedef*        _intsp_find_typedef(Intsp_Context* introspection, String typedef_name);
 
-function Introspection
+function Intsp_Context
 intsp_run(String source_directory, b32 introspect_base_library)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  Introspection result;
+  Intsp_Context result;
   memory_zero_struct(&result);
 
   result.arena = arena_alloc();
@@ -298,7 +298,7 @@ intsp_run(String source_directory, b32 introspect_base_library)
     intsp_file->path = string_copy(result.arena, file_being_lexed);
 
     s32 scope_depth = 0;
-    s32 line_start_column = 0;
+    s32 line_start_column = 1;
     
     for (;;)
     {
@@ -422,7 +422,7 @@ intsp_run(String source_directory, b32 introspect_base_library)
 }
 
 function b32
-intsp_report_introspection(Introspection* introspection, b32 verbose, String* out)
+intsp_report_introspection(Intsp_Context* introspection, b32 verbose, String* out)
 {
   String_Buffer buffer = {0};
   string_buffer_init(&buffer, &MallocAllocator, kilobytes(8));
@@ -455,7 +455,7 @@ intsp_report_introspection(Introspection* introspection, b32 verbose, String* ou
 
 
 function void
-intsp_report_functions(Introspection* introspection, b32 report_documentation, String* out)
+intsp_report_functions(Intsp_Context* introspection, b32 report_documentation, String* out)
 {
   String_Buffer buffer = {0};
   string_buffer_init(&buffer, &MallocAllocator, 1024);
@@ -483,7 +483,7 @@ intsp_report_functions(Introspection* introspection, b32 report_documentation, S
 }
 
 function void
-intsp_report_enums(Introspection* introspection, String* out)
+intsp_report_enums(Intsp_Context* introspection, String* out)
 {
   String_Buffer buffer = {0};
   string_buffer_init(&buffer, &MallocAllocator, 512);
@@ -562,7 +562,7 @@ intsp_function_signature_to_string(Arena* arena, Intsp_Function* f)
 }
 
 function Intsp_Enum*
-_intsp_find_enum(Introspection* introspection, String enum_name)
+_intsp_find_enum(Intsp_Context* introspection, String enum_name)
 {
   Intsp_Enum* result = NULL;
   for (u32 i = 0; i < introspection->enums.count; i += 1)
@@ -578,7 +578,7 @@ _intsp_find_enum(Introspection* introspection, String enum_name)
 }
 
 function Intsp_Function*
-_intsp_find_function(Introspection* introspection, String function_name)
+_intsp_find_function(Intsp_Context* introspection, String function_name)
 {
   Intsp_Function* result = NULL;
   for (u32 i = 0; i < introspection->functions.count; i += 1)
@@ -594,7 +594,7 @@ _intsp_find_function(Introspection* introspection, String function_name)
 }
 
 function Intsp_Aggregate*
-_intsp_find_struct(Introspection* introspection, u64 hash)
+_intsp_find_struct(Intsp_Context* introspection, u64 hash)
 {
   Intsp_Aggregate* result = NULL;
   for (u32 i = 0; i < introspection->aggregates.count; i += 1)
@@ -610,7 +610,7 @@ _intsp_find_struct(Introspection* introspection, u64 hash)
 }
 
 function Intsp_Typedef*
-_intsp_find_typedef(Introspection* introspection, String typedef_name)
+_intsp_find_typedef(Intsp_Context* introspection, String typedef_name)
 {
   Intsp_Typedef* result = NULL;
   for (u32 i = 0; i < introspection->typedefs.count; i += 1)
@@ -626,7 +626,7 @@ _intsp_find_typedef(Introspection* introspection, String typedef_name)
 }
 
 function void
-_intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
+_intsp_parse_global(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj)
 {
   Token* token = lexer_peek_token(lexer);
   assert(token->kind == Token_Identifier);
@@ -670,7 +670,7 @@ _intsp_parse_global(Lexer* lexer, Introspection* introspection, Intsp_File* file
 }
 
 function Intsp_Parse_Data_Type_Result
-_intsp_parse_datatype(Introspection* introspection, Lexer* lexer)
+_intsp_parse_datatype(Intsp_Context* introspection, Lexer* lexer)
 {
   Scratch scratch = scratch_begin(0, 0);
   Intsp_Parse_Data_Type_Result result;
@@ -1025,7 +1025,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
 }
 
 function void
-_intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
+_intsp_parse_typedef(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj)
 {
   Scratch scratch = scratch_begin(0,0);
   Token* token = lexer_peek_token(lexer);
@@ -1083,7 +1083,7 @@ _intsp_parse_typedef(Lexer* lexer, Introspection* introspection, Intsp_File* fil
 }
 
 function Intsp_Aggregate*
-_intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent)
+_intsp_parse_aggregate(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj, Intsp_Aggregate* parent)
 {
   if (introspection->fatal_error)
   {
@@ -1283,7 +1283,7 @@ _intsp_parse_aggregate(Lexer* lexer, Introspection* introspection, Intsp_File* f
 }
 
 function void
-_intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
+_intsp_parse_enum(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj)
 {
   Token* token = lexer_peek_token(lexer);
   assert(string_equals(token->value, S("enum"), true));
@@ -1373,7 +1373,7 @@ _intsp_parse_enum(Lexer* lexer, Introspection* introspection, Intsp_File* file_o
 }
 
 function void
-_intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
+_intsp_parse_function(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj)
 {
   Scratch scratch = scratch_begin(0,0);
 
@@ -1663,7 +1663,7 @@ _intsp_parse_function(Lexer* lexer, Introspection* introspection, Intsp_File* fi
 }
 
 function void
-_intsp_parse_preprocessor_macros(Lexer* lexer, Introspection* introspection, Intsp_File* file_obj)
+_intsp_parse_preprocessor_macros(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file_obj)
 {
   Token* token = lexer_peek_token(lexer);
   assert(token->kind == Token_Hash);
@@ -1823,7 +1823,7 @@ _intsp_parse_preprocessor_macros(Lexer* lexer, Introspection* introspection, Int
 }
 
 function void
-_intsp_report(Introspection* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text)
+_intsp_report(Intsp_Context* introspection, Intsp_Log_Severity severity, Intsp_File* file, u32 line, u32 col, String text)
 {
   if (introspection->logs.count >= introspection->logs.capacity)
   {

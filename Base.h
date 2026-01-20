@@ -16,7 +16,7 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h> // @TODO(fz): Implement memset, memmove, memcmp, memcpy
+#include <string.h>
 #include <stdio.h>
 #include <math.h>
 
