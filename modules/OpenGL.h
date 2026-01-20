@@ -3,18 +3,6 @@
 
 #include "OpenGL/OpenGL_Constants.h"
 
-// @Section: Define Opengl function pointers
-typedef const GLubyte* (*PFNglGetStringPROC)(GLenum name);
-typedef void (*GLDEBUGPROC)(GLenum source, GLenum type, GLuint id, GLenum severity,GLsizei length, const GLchar *message, const void *userParam);
-#define GL_FUNC(ret,name,params) typedef ret (* PFN##name##PROC) params;
-# include "OpenGL/OpenGL_Functions.inl"
-#undef GL_FUNC
-
-// @Section: Generate Opengl definitions
-#define GL_FUNC(ret,name,params) global PFN##name##PROC name = NULL;
-# include "OpenGL/OpenGL_Functions.inl"
-#undef GL_FUNC
-
 // @Section: Opengl entry point
 function b32  opengl_init(Window* window); /* Initializes opengl context */
 function void opengl_end(Window* window);  /* Deletes opengl context */

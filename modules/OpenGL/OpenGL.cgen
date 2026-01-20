@@ -77,7 +77,7 @@ OpenGL_Function_Table (return name args call_args)
 }
 
 
-@Generator
+@Generator(OpenGL.h)
 {
   `#ifndef OPENGL_FUNCTIONS_H
 #define OPENGL_FUNCTIONS_H

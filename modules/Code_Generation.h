@@ -70,6 +70,7 @@ struct CGen_Command
 struct CGen_Generator
 {
   Array(CGen_Command) commands; /* Commands specified in this generator */
+  String custom_file_name;
 };
 
 struct CGen_File
@@ -228,18 +229,24 @@ cgen_execute_commands(CGen_Context *ctx)
     u64 name_start = (u64)slash_index + 1;
     u64 name_end   = (dot_index > slash_index) ? (u64)dot_index : len;
 
-    String output_file = string_zero();
+    String output_directory = string_zero();
     String name = string_substring(scratch.arena, file->name, name_start, name_end);
-    output_file = string_substring(scratch.arena, file->name, 0, (u64)slash_index + 1);
-    output_file = string_join(scratch.arena, output_file, S("cgen.generated"));
-    if (!directory_exists(output_file)) directory_create(output_file);
-    output_file = string_join(scratch.arena, output_file, (separator == '/') ? S("/") : S("\\"));
-    output_file = string_join(scratch.arena, output_file, name);
-    output_file = string_join(scratch.arena, output_file, S(".gen.h"));
+    output_directory = string_substring(scratch.arena, file->name, 0, (u64)slash_index + 1);
+    output_directory = string_join(scratch.arena, output_directory, S("cgen.generated"));
+    if (!directory_exists(output_directory)) directory_create(output_directory);
+    output_directory = string_join(scratch.arena, output_directory, (separator == '/') ? S("/") : S("\\"));
+    
+    String output_file = string_join(scratch.arena, output_directory, name);
+    output_file = string_join(scratch.arena, output_file, S(".gen.inl"));
 
     for (u32 generator_index = 0; generator_index < file->generators.count; generator_index += 1)
     {
       CGen_Generator *generator = &file->generators.data[generator_index];
+      if (generator->custom_file_name.count > 0)
+      {
+        output_file = string_join(scratch.arena, output_directory, generator->custom_file_name);
+        output_file = string_join(scratch.arena, output_file, S(".inl"));
+      }
 
       for (u32 command_index = 0; command_index < generator->commands.count; command_index += 1)
       {
@@ -417,6 +424,7 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
   array_get_next(&file->generators, CGen_Generator, generator);
   memory_zero_struct(generator);
   generator->commands = array_make(CGen_Command, 16);
+  generator->custom_file_name = string_zero();
   
   Token *token = lexer_peek_token(lexer);
   if (!string_equals(token->value, S("Generator"), true))
@@ -426,6 +434,27 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
   
   lexer_eat_token(lexer);
   token = lexer_peek_token(lexer);
+
+  if (token->kind == Token_Open_Parentheses)
+  {
+    lexer_eat_token(lexer);
+    token = lexer_peek_token(lexer);
+    
+    for (;;)
+    {
+      if (token->kind == Token_Close_Parentheses)
+      {
+        break;
+      }
+
+      generator->custom_file_name = string_join(ctx->arena, generator->custom_file_name , token->value);
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+    }
+
+    lexer_eat_token(lexer);
+    token = lexer_peek_token(lexer);
+  }
     
   if (token->kind != Token_Open_Brace)
   {
