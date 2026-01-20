@@ -25,6 +25,7 @@
 
 #include "../Base.h"
 #include "Lexer.h"
+#include "Platform.h"
 
 #define _intsp_error(intsp, message) \
   intsp->fatal_error=true;\

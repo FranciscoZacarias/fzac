@@ -5,9 +5,8 @@ x - done
 w - work in progress
 ```
 
-- [ ] Code_Gen Module
-- [w] Introspection
-- [ ] Error (Base.h)
+- [x] Code_Gen Module
+- [x] Introspection
 - [ ] Logging (Base.h)
 - [x] Custom entry point
 - [x] Math

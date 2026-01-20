@@ -1,7 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "Platform.h"
+#include "Files.h"
 
 /*
   Example usage:
