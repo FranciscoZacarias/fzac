@@ -1,0 +1,32 @@
+# Format: <SettingName>: <Settingvalue>
+# Setting name must appear at start of line and there must be whitespace after the colon.
+# Multiple values can be comma separated or on subsequent lines.
+#
+# Valid settings for colour rules:
+# REGEX()   A regular expression. Colours entire match or first group.
+# WORD()	Matches a word (case sensitive)
+# WORDI()   Matches a word (case insensitive)
+# TEXT()	Match any text in the line (case sensitive)
+# TEXTI()	Match any text in the line (case insensitive)
+
+# DSL Syntax Highlighting
+
+Extensions: *.cgen
+
+Language.Comment:
+REGEX(//.*)
+
+Language.String:
+REGEX(`[^`]*`)
+
+Language.Keyword:
+REGEX(@[a-zA-Z_]+)
+
+Language.Function:
+REGEX(\\n)
+
+Language.Enum:
+REGEX(\b[A-Z][A-Za-z0-9_]*_Table\b)
+
+Language.Variable:
+REGEX(\$\(\s*[a-zA-Z0-9_]+\s*\))

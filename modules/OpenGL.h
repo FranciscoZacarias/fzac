@@ -5,18 +5,46 @@
 #include "OpenGL/generated/Opengl.h.inl"
 
 // @Section: Opengl entry point
-function b32  opengl_init(Window* window); /* Initializes opengl context */
-function void opengl_end(Window* window);  /* Deletes opengl context */
+function b32   opengl_init(Window* window); /* Initializes opengl context */
+function void  opengl_end(Window* window);  /* Deletes opengl context */
+#define opengl_check_errors() _opengl_check_error(S(__FILE__), __LINE__)
 
 // @Section: Settings
 function void window_set_vsync(b32 state); /* Enables vsync */
 
 // @Section: Opengl helpers
 function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
-function void*          _load_gl_function(const char *name);                                                                                                        /* Helper to load a single opengl function */
+function void           _opengl_check_error(String file, u32 line); /* Checks for opengl errors and terminates the program. */
+function void*          _load_gl_function(const char *name); /* Helper to load a single opengl function */
 
 // @Section: Implementation
 #include "OpenGL/generated/Opengl.c.inl"
+
+function void
+_opengl_check_error(String file, u32 line)
+{
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR)
+  {
+    const char *error_string = "Unknown";
+    switch (err)
+    {
+      case GL_INVALID_ENUM:                  error_string = "GL_INVALID_ENUM"; break;
+      case GL_INVALID_VALUE:                 error_string = "GL_INVALID_VALUE"; break;
+      case GL_INVALID_OPERATION:             error_string = "GL_INVALID_OPERATION"; break;
+      case GL_STACK_OVERFLOW:                error_string = "GL_STACK_OVERFLOW"; break;
+      case GL_STACK_UNDERFLOW:               error_string = "GL_STACK_UNDERFLOW"; break;
+      case GL_OUT_OF_MEMORY:                 error_string = "GL_OUT_OF_MEMORY"; break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+    }
+
+    Scratch scratch = scratch_begin(0,0);
+    String msg = Sf(scratch.arena, "OpenGL error 0x%X (%s) at "S_FMT":%u", err, error_string, S_ARG(file), line);
+    error_box(S("OpenGL Error"), msg, file, line);
+    scratch_end(&scratch);
+    assert(false);
+  }
+}
 
 function void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
