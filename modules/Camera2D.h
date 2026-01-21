@@ -54,5 +54,5 @@ _camera2d_update(Camera2D *camera, f32 window_width, f32 window_height)
   f32 half_height = (window_height / 2.0f) / camera->zoom;
 
   camera->projection = matrix4_ortho(-half_width, half_width, -half_height, half_height, camera->near_plane, camera->far_plane);
-  camera->view = matrix4_translate(-camera->position.x, -camera->position.y, 0.0f);
+  camera->view       = matrix4_translate(-camera->position.x, -camera->position.y, 0.0f);
 }
