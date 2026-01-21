@@ -493,5 +493,47 @@ _opengl_load_functions()
     return false;
   }
 
+  __glValidateProgramPipeline = (PFNglValidateProgramPipelinePROC)_load_gl_function("glValidateProgramPipeline"); 
+  if (!__glValidateProgramPipeline)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glValidateProgramPipeline"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGetProgramPipelineiv = (PFNglGetProgramPipelineivPROC)_load_gl_function("glGetProgramPipelineiv"); 
+  if (!__glGetProgramPipelineiv)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glGetProgramPipelineiv"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGetProgramPipelineInfoLog = (PFNglGetProgramPipelineInfoLogPROC)_load_gl_function("glGetProgramPipelineInfoLog"); 
+  if (!__glGetProgramPipelineInfoLog)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glGetProgramPipelineInfoLog"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glDepthMask = (PFNglDepthMaskPROC)_load_gl_function("glDepthMask"); 
+  if (!__glDepthMask)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glDepthMask"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glUniformMatrix4fv = (PFNglUniformMatrix4fvPROC)_load_gl_function("glUniformMatrix4fv"); 
+  if (!__glUniformMatrix4fv)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glUniformMatrix4fv"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glUniform1i = (PFNglUniform1iPROC)_load_gl_function("glUniform1i"); 
+  if (!__glUniform1i)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glUniform1i"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

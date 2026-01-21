@@ -65,6 +65,12 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glViewport                      `(GLint x, GLint y, GLsizei width, GLsizei height)`                                                                                          `(x, y, width, height)`                                                   }
   {  glBlendFunc                     `(GLenum sfactor, GLenum dfactor)`                                                                                                           `(sfactor, dfactor)`                                                      }
   {  glClear                         `(GLbitfield mask)`                                                                                                                          `(mask)`                                                                  }
+  {  glValidateProgramPipeline       `(GLuint pipeline)`                                                                                                                          `(pipeline)`                                                              }
+  {  glGetProgramPipelineiv          `(GLuint pipeline, GLenum pname, GLint *params)`                                                                                             `(pipeline, pname, params)`                                               }
+  {  glGetProgramPipelineInfoLog     `(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog)`                                                                       `(pipeline, bufSize, length, infoLog)`                                    }
+  {  glDepthMask                     `(GLboolean flag)`                                                                                                                           `(flag)`                                                                  }
+  {  glUniformMatrix4fv              `(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)`                                                                 `(location, count, transpose, value)`                                     }
+  {  glUniform1i                     `(GLint location, GLint v0)`                                                                                                                 `(location, v0)`                                                          }
 }
 
 @Table

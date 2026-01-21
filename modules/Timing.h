@@ -1,5 +1,5 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef TIMING_H
+#define TIMING_H
 
 typedef struct Timer Timer;
 struct Timer
@@ -166,4 +166,4 @@ timer_reset(Timer *timer)
 #endif
 
 
-#endif // TIME_H
+#endif // TIMING_H

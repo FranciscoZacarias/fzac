@@ -119,7 +119,7 @@ function Vector3 vector3_refract(Vector3 v, Vector3 n, f32 r); /* Computes the d
 
 // @Section: Vector4
 struct Vector4 { f32 x, y, z, w; };
-#define vector4(x,y,z,w) ((x),(y),(z),(w))
+#define vector4(x,y,z,w) (Vector4){(x),(y),(z),(w)}
 function Vector4 vector4_add(Vector4 v1, Vector4 v2); /* Adds two 4D vectors component-wise */
 function Vector4 vector4_sub(Vector4 v1, Vector4 v2); /* Subtracts the second 4D vector from the first component-wise */
 function f32     vector4_length(Vector4 v); /* Returns the Euclidean length (magnitude) of a 4D vector */

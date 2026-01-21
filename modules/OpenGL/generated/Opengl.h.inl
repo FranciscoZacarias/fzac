@@ -509,6 +509,54 @@ glClear (GLbitfield mask)
   __glClear (mask);
 }
 
+typedef void (*PFNglValidateProgramPipelinePROC)(GLuint pipeline);
+global PFNglValidateProgramPipelinePROC __glValidateProgramPipeline = NULL;
+function inline void
+glValidateProgramPipeline (GLuint pipeline)
+{
+  __glValidateProgramPipeline (pipeline);
+}
+
+typedef void (*PFNglGetProgramPipelineivPROC)(GLuint pipeline, GLenum pname, GLint *params);
+global PFNglGetProgramPipelineivPROC __glGetProgramPipelineiv = NULL;
+function inline void
+glGetProgramPipelineiv (GLuint pipeline, GLenum pname, GLint *params)
+{
+  __glGetProgramPipelineiv (pipeline, pname, params);
+}
+
+typedef void (*PFNglGetProgramPipelineInfoLogPROC)(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+global PFNglGetProgramPipelineInfoLogPROC __glGetProgramPipelineInfoLog = NULL;
+function inline void
+glGetProgramPipelineInfoLog (GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
+{
+  __glGetProgramPipelineInfoLog (pipeline, bufSize, length, infoLog);
+}
+
+typedef void (*PFNglDepthMaskPROC)(GLboolean flag);
+global PFNglDepthMaskPROC __glDepthMask = NULL;
+function inline void
+glDepthMask (GLboolean flag)
+{
+  __glDepthMask (flag);
+}
+
+typedef void (*PFNglUniformMatrix4fvPROC)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+global PFNglUniformMatrix4fvPROC __glUniformMatrix4fv = NULL;
+function inline void
+glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+{
+  __glUniformMatrix4fv (location, count, transpose, value);
+}
+
+typedef void (*PFNglUniform1iPROC)(GLint location, GLint v0);
+global PFNglUniform1iPROC __glUniform1i = NULL;
+function inline void
+glUniform1i (GLint location, GLint v0)
+{
+  __glUniform1i (location, v0);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
