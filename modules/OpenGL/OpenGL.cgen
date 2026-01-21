@@ -71,6 +71,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glDepthMask                     `(GLboolean flag)`                                                                                                                           `(flag)`                                                                  }
   {  glUniformMatrix4fv              `(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)`                                                                 `(location, count, transpose, value)`                                     }
   {  glUniform1i                     `(GLint location, GLint v0)`                                                                                                                 `(location, v0)`                                                          }
+  {  glDepthFunc                     `(GLenum func)`                                                                                                                              `(func)`                                                                  }
 }
 
 @Table

@@ -535,5 +535,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glDepthFunc = (PFNglDepthFuncPROC)_load_gl_function("glDepthFunc"); 
+  if (!__glDepthFunc)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glDepthFunc"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

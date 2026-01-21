@@ -557,6 +557,14 @@ glUniform1i (GLint location, GLint v0)
   __glUniform1i (location, v0);
 }
 
+typedef void (*PFNglDepthFuncPROC)(GLenum func);
+global PFNglDepthFuncPROC __glDepthFunc = NULL;
+function inline void
+glDepthFunc (GLenum func)
+{
+  __glDepthFunc (func);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
