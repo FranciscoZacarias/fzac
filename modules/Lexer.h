@@ -175,6 +175,7 @@ function b32    lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags
 function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
 function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
 function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
+function Token* lexer_peek_nth_token(Lexer* lexer, s32 nth); /* Returns the nth token. Nth must be smaller than MAX_LOOKAHEAD_TOKENS */
 function s16    lexer_peek_character(Lexer* lexer); /* Returns the next character without advancing the lexer */
 function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the nth character without advancing the lexer. 0 is current character, 1 is next character, etc... */
 function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a call to lexer_eat_token */
@@ -402,6 +403,21 @@ lexer_peek_token(Lexer* lexer)
   }
 
   return &lexer->incoming_tokens[lexer->incoming_tokens_head];
+}
+
+function Token*
+lexer_peek_nth_token(Lexer* lexer, s32 nth)
+{
+  assert(nth >= 0);
+  assert(nth < MAX_LOOKAHEAD_TOKENS);
+
+  while (lexer->incoming_tokens_count <= nth)
+  {
+    lexer_peek_token(lexer);
+  }
+
+  s32 index = lexer_token_index(lexer, nth);
+  return &lexer->incoming_tokens[index];
 }
 
 function void

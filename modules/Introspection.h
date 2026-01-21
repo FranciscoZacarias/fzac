@@ -36,7 +36,6 @@ typedef struct Intsp_Scratch_Info Intsp_Scratch_Info;
 struct Intsp_Scratch_Info
 {
   String name;
-  u32 line;
   u32 scope_depth;
   b32 ended;
 };
@@ -524,12 +523,12 @@ intsp_report_enums(Intsp_Context* introspection, String* out)
 }
 
 function void
-  intsp_report_scratch_arenas(Intsp_Context* introspection, String *out)
+intsp_report_scratch_arenas(Intsp_Context* introspection, String *out)
 {
   /*
-  We're looking for this pattern:
-  Scratch scratch = scratch_begin(0,0);
-  scratch_end(&scratch);
+    We're looking for this pattern:
+    Scratch scratch = scratch_begin(0,0);
+    scratch_end(&scratch);
   */
 
   Scratch scratch = scratch_begin(0,0); // scratch arena for message joins
@@ -568,7 +567,7 @@ function void
             Intsp_Scratch_Info *info = &scratches[s];
             if (!info->ended && info->scope_depth > scope_depth)
             {
-              temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Scratch "S_FMT" in function "S_FMT" created at line %llu leaves scope without scratch_end\n", S_ARG(info->name), S_ARG(f->identifier), info->line));
+              temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Scratch "S_FMT" in function "S_FMT" leaves scope without scratch_end\n", S_ARG(info->name), S_ARG(f->identifier)));
               info->ended = true;
             }
           }
@@ -592,7 +591,6 @@ function void
               {
                 Intsp_Scratch_Info *info = &scratches[scratch_count++];
                 info->name = name->value;
-                info->line = name->l0;
                 info->scope_depth = scope_depth;
                 info->ended = false;
               }
@@ -643,7 +641,7 @@ function void
               Intsp_Scratch_Info *info = &scratches[s];
               if (!info->ended)
               {
-                temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Early return before scratch_end for "S_FMT" in function "S_FMT" (line %u)\n", S_ARG(info->name), S_ARG(f->identifier), info->line));
+                temp_message = string_join(scratch.arena, temp_message, Sf(scratch.arena, "Early return before scratch_end for "S_FMT" in function "S_FMT"\n", S_ARG(info->name), S_ARG(f->identifier)));
               }
             }
           }
@@ -660,7 +658,7 @@ function void
       Intsp_Scratch_Info *info = &scratches[s];
       if (!info->ended)
       {
-        temp_message = string_join( scratch.arena, temp_message, Sf(scratch.arena, "Function exits without scratch_end for "S_FMT" in function "S_FMT" (line %u)\n", S_ARG(info->name), S_ARG(f->identifier), info->line) );
+        temp_message = string_join( scratch.arena, temp_message, Sf(scratch.arena, "Function exits without scratch_end for "S_FMT" in function "S_FMT"\n", S_ARG(info->name), S_ARG(f->identifier)));
       }
     }
 
@@ -821,18 +819,41 @@ _intsp_parse_global(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file
   lexer_eat_trivia(lexer);
   token = lexer_peek_token(lexer);
 
-  for (;;)
+  // Parse body
+  if (token->kind == Token_Equal)
   {
-    token = lexer_peek_token(lexer);
-    if (token->kind == Token_Line_Break) break;
-    if(token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
-    {
-      u64 start = 2;
-      u64 end   = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
-      String comment = string_slice(scratch.arena, token->value, start, end - start);
-      gvariable->documentation = string_trim(introspection->arena, comment);
-    }
     lexer_eat_token(lexer);
+
+    String body = string_zero();
+    for (;;)
+    {
+      token = lexer_peek_token(lexer);      
+      if (token->kind == Token_Semicolon)
+      {
+        break;
+      }
+      body = string_join(scratch.arena, body, token->value);
+      lexer_eat_token(lexer);
+    }
+    lexer_eat_token(lexer); // Eat Semicolon
+
+    gvariable->body = string_copy(introspection->arena, body);
+  }
+  else
+  {
+    for (;;)
+    {
+      token = lexer_peek_token(lexer);
+      if (token->kind == Token_Semicolon) break;
+      if (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
+      {
+        u64 start = 2;
+        u64 end   = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
+        String comment = string_slice(scratch.arena, token->value, start, end - start);
+        gvariable->documentation = string_trim(introspection->arena, comment);
+      }
+      lexer_eat_token(lexer);
+    }
   }
 
   scratch_end(&scratch);
