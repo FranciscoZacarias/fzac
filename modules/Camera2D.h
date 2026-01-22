@@ -1,58 +1,58 @@
-#ifndef CAMERA2D_H
-#define CAMERA2D_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
-typedef struct {
+typedef struct Camera2D Camera2D;
+struct Camera2D
+{
   Vector2 position;
   f32 zoom;
-  Matrix4 projection;
-  Matrix4 view;
+  Matrix3 view;
+  Matrix3 projection;
   f32 near_plane;
   f32 far_plane;
-} Camera2D;
+};
 
-function Camera2D camera2d_init(f32 window_width, f32 window_height);
-function void     camera2d_zoom(Camera2D *camera, f32 delta, f32 window_width, f32 window_height);
-function void     camera2d_move(Camera2D *camera, Vector2 delta, f32 window_width, f32 window_height);
-function void    _camera2d_update(Camera2D *camera, f32 window_width, f32 window_height);
+function Camera2D camera2d_init(u32 window_width, u32 window_height);
+function void  _camera2d_update(Camera2D* camera2d, u32 window_width, u32 window_height);
+function void   camera2d_zoom(Camera2D* camera2d, f32 delta, u32 window_width, u32 window_height);
+function void   camera2d_move(Camera2D* camera2d, Vector2 delta, u32 window_width, u32 window_height);
 
-#endif // CAMERA2D_H
+#endif // CAMERA_H
 
 function Camera2D
-camera2d_init(f32 window_width, f32 window_height)
+camera2d_init(u32 window_width, u32 window_height)
 {
-  Camera2D camera   = {0};
-  camera.position   = vector2(0.0f, 0.0f);
-  camera.zoom       = 2.0f;
-  camera.near_plane = -1.0f;
-  camera.far_plane  = 1.0f;
-  _camera2d_update(&camera, window_width, window_height);
-  return camera;
+  Camera2D camera2d;
+  memory_zero_struct(&camera2d);
+  camera2d.position   = vector2(0, 0);
+  camera2d.zoom       = 1.0f;
+  _camera2d_update(&camera2d, window_width, window_height);
+  return camera2d;
 }
 
 function void
-camera2d_zoom(Camera2D *camera, f32 delta, f32 window_width, f32 window_height)
+_camera2d_update(Camera2D* camera2d, u32 window_width, u32 window_height)
 {
-  f32 new_zoom = camera->zoom + delta;
-  if (!(new_zoom < 0.1 || new_zoom > camera->far_plane))
+  f32 half_width  = (window_width  * 0.5f) / camera2d->zoom;
+  f32 half_height = (window_height * 0.5f) / camera2d->zoom;
+  camera2d->projection = matrix3_ortho(-half_width, half_width, half_height, -half_height);
+  camera2d->view       = matrix3_translate(vector2(-camera2d->position.x, -camera2d->position.y));
+}
+
+function void
+camera2d_move(Camera2D* camera2d, Vector2 delta, u32 window_width, u32 window_height)
+{
+  camera2d->position = vector2_add(camera2d->position, delta);
+  _camera2d_update(camera2d, window_width, window_height);
+}
+
+function void
+camera2d_zoom(Camera2D* camera2d, f32 delta, u32 window_width, u32 window_height)
+{
+  f32 new_zoom = camera2d->zoom + delta;
+  if (new_zoom > 0.01f)
   {
-    camera->zoom = new_zoom;
+    camera2d->zoom = new_zoom;
   }
-  _camera2d_update(camera, window_width, window_height);
-}
-
-function void 
-camera2d_move(Camera2D *camera, Vector2 delta, f32 window_width, f32 window_height)
-{
-  camera->position = vector2_add(camera->position, delta);
-  _camera2d_update(camera, window_width, window_height);
-}
-
-function void
-_camera2d_update(Camera2D *camera, f32 window_width, f32 window_height)
-{
-  f32 half_width  = (window_width / 2.0f) / camera->zoom;
-  f32 half_height = (window_height / 2.0f) / camera->zoom;
-
-  camera->projection = matrix4_ortho(-half_width, half_width, -half_height, half_height, camera->near_plane, camera->far_plane);
-  camera->view       = matrix4_translate(-camera->position.x, -camera->position.y, 0.0f);
+  _camera2d_update(camera2d, window_width, window_height);
 }

@@ -51,11 +51,12 @@
 
 // @Section: Math types
 
-typedef struct Vector2    Vector2;    /* */
-typedef struct Vector3    Vector3;    /* */
-typedef struct Vector4    Vector4;    /* */
-typedef struct Matrix4    Matrix4;    /* Matrix type (OpenGL style 4x4 - right handed, column major) */
-typedef struct Quaternion Quaternion; /* */
+typedef struct Vector2    Vector2;
+typedef struct Vector3    Vector3;
+typedef struct Vector4    Vector4;
+typedef struct Matrix3    Matrix3;
+typedef struct Matrix4    Matrix4;
+typedef struct Quaternion Quaternion;
 
 // @Section: Vector2
 struct Vector2 { f32 x, y; };
@@ -136,6 +137,28 @@ function Vector4 vector4_lerp(Vector4 v1, Vector4 v2, f32 amount); /* Linearly i
 function Vector4 vector4_move_towards(Vector4 v, Vector4 target, f32 maxDistance); /* Moves a 4D vector toward a target by a maximum distance */
 function Vector4 vector4_invert(Vector4 v); /* Inverts each component of a 4D vector (1/x, 1/y, 1/z, 1/w) */
 function b32     vector4_equals(Vector4 p, Vector4 q); /* Returns true if two 4D vectors are equal component-wise */
+
+// @Section: Matrix3
+struct Matrix3
+{
+  f32 m0, m3, m6,
+  m1, m4, m7,
+  m2, m5, m8;
+};
+#define matrix3(diagonal)   \
+  (Matrix3){                \
+  (diagonal), 0.0f, 0.0f, \
+  0.0f, (diagonal), 0.0f, \
+  0.0f, 0.0f, (diagonal)  }
+#define matrix3_identity() matrix3(1.0f)
+
+function Matrix3 matrix3_transpose(Matrix3 m); /* Transposes a 3x3 matrix */
+function Matrix3 matrix3_multiply(Matrix3 a, Matrix3 b); /* Multiplies two 3x3 matrices (a * b) */
+function Vector3 matrix3_multiply_vector3(Matrix3 m, Vector3 v); /* Multiplies a 3x3 matrix by a 3D vector */
+function Matrix3 matrix3_translate(Vector2 translation); /* Creates a translation matrix for a 2D vector */
+function Matrix3 matrix3_rotate(f32 radians); /* Creates a rotation matrix (around origin) by given radians */
+function Matrix3 matrix3_scale(Vector2 scale); /* Creates a scaling matrix for a 2D vector */
+function Matrix3 matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top); /* Creates a 2D orthographic projection matrix */
 
 // @Section: Matrix4
 struct Matrix4
@@ -1023,6 +1046,91 @@ vector4_equals(Vector4 p, Vector4 q)
                ((fabsf(p.z - q.z)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.z), fabsf(q.z))))) &&
                ((fabsf(p.w - q.w)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.w), fabsf(q.w)))));
   return result;
+}
+
+function Matrix3
+matrix3_transpose(Matrix3 m)
+{
+  Matrix3 r;
+  r.m0 = m.m0; r.m3 = m.m1; r.m6 = m.m2;
+  r.m1 = m.m3; r.m4 = m.m4; r.m7 = m.m5;
+  r.m2 = m.m6; r.m5 = m.m7; r.m8 = m.m8;
+  return r;
+}
+
+function Matrix3
+matrix3_multiply(Matrix3 a, Matrix3 b)
+{
+  Matrix3 r;
+  r.m0 = a.m0*b.m0 + a.m3*b.m1 + a.m6*b.m2;
+  r.m3 = a.m0*b.m3 + a.m3*b.m4 + a.m6*b.m5;
+  r.m6 = a.m0*b.m6 + a.m3*b.m7 + a.m6*b.m8;
+
+  r.m1 = a.m1*b.m0 + a.m4*b.m1 + a.m7*b.m2;
+  r.m4 = a.m1*b.m3 + a.m4*b.m4 + a.m7*b.m5;
+  r.m7 = a.m1*b.m6 + a.m4*b.m7 + a.m7*b.m8;
+
+  r.m2 = a.m2*b.m0 + a.m5*b.m1 + a.m8*b.m2;
+  r.m5 = a.m2*b.m3 + a.m5*b.m4 + a.m8*b.m5;
+  r.m8 = a.m2*b.m6 + a.m5*b.m7 + a.m8*b.m8;
+  return r;
+}
+
+function Vector3
+matrix3_multiply_vector3(Matrix3 m, Vector3 v)
+{
+  Vector3 r;
+  r.x = m.m0*v.x + m.m3*v.y + m.m6*v.z;
+  r.y = m.m1*v.x + m.m4*v.y + m.m7*v.z;
+  r.z = m.m2*v.x + m.m5*v.y + m.m8*v.z;
+  return r;
+}
+
+function Matrix3
+matrix3_translate(Vector2 t)
+{
+  Matrix3 m = matrix3_identity();
+  m.m6 = t.x;
+  m.m7 = t.y;
+  return m;
+}
+
+function Matrix3
+matrix3_rotate(f32 radians)
+{
+  f32 c = cosf(radians);
+  f32 s = sinf(radians);
+
+  Matrix3 m = matrix3_identity();
+  m.m0 =  c; m.m3 = -s;
+  m.m1 =  s; m.m4 =  c;
+  return m;
+}
+
+function Matrix3
+matrix3_scale(Vector2 s)
+{
+  Matrix3 m = matrix3_identity();
+  m.m0 = s.x;
+  m.m4 = s.y;
+  return m;
+}
+
+function Matrix3
+matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top)
+{
+  Matrix3 m = matrix3_identity();
+
+  f32 sx = 2.0f / (right - left);
+  f32 sy = 2.0f / (top - bottom);
+  f32 tx = -(right + left) / (right - left);
+  f32 ty = -(top + bottom) / (top - bottom);
+
+  m.m0 = sx;  m.m3 = 0.0f; m.m6 = tx;
+  m.m1 = 0.0f; m.m4 = sy; m.m7 = ty;
+  m.m2 = 0.0f; m.m5 = 0.0f; m.m8 = 1.0f;
+
+  return m;
 }
 
 function f32
