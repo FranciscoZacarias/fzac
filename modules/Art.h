@@ -3,27 +3,27 @@
 
 // @Section: RGBA vector colors (linear 0–1)
 
-#define COLOR_CLEAR        vector4(0.0f, 0.0f, 0.0f, 0.0f)
+#define COLOR_CLEAR(alpha)       vector4(0.0f, 0.0f, 0.0f, 0.0f, (alpha))
 
-#define COLOR_WHITE        vector4(1.0f, 1.0f, 1.0f, 1.0f)
-#define COLOR_BLACK        vector4(0.0f, 0.0f, 0.0f, 1.0f)
-#define COLOR_GRAY         vector4(0.5f, 0.5f, 0.5f, 1.0f)
-#define COLOR_DARK_GRAY    vector4(0.25f, 0.25f, 0.25f, 1.0f)
-#define COLOR_LIGHT_GRAY   vector4(0.75f, 0.75f, 0.75f, 1.0f)
+#define COLOR_WHITE(alpha)       vector4(1.0f, 1.0f, 1.0f, (f32)(alpha))
+#define COLOR_BLACK(alpha)       vector4(0.0f, 0.0f, 0.0f, (f32)(alpha))
+#define COLOR_GRAY(alpha)        vector4(0.5f, 0.5f, 0.5f, (f32)(alpha))
+#define COLOR_DARK_GRAY(alpha)   vector4(0.25f, 0.25f, 0.25f, (f32)(alpha))
+#define COLOR_LIGHT_GRAY(alpha)  vector4(0.75f, 0.75f, 0.75f, (f32)(alpha))
 
-#define COLOR_RED          vector4(1.0f, 0.0f, 0.0f, 1.0f)
-#define COLOR_GREEN        vector4(0.0f, 1.0f, 0.0f, 1.0f)
-#define COLOR_BLUE         vector4(0.0f, 0.0f, 1.0f, 1.0f)
+#define COLOR_RED(alpha)         vector4(1.0f, 0.0f, 0.0f, (f32)(alpha))
+#define COLOR_GREEN(alpha)       vector4(0.0f, 1.0f, 0.0f, (f32)(alpha))
+#define COLOR_BLUE(alpha)        vector4(0.0f, 0.0f, 1.0f, (f32)(alpha))
 
-#define COLOR_YELLOW       vector4(1.0f, 1.0f, 0.0f, 1.0f)
-#define COLOR_CYAN         vector4(0.0f, 1.0f, 1.0f, 1.0f)
-#define COLOR_MAGENTA      vector4(1.0f, 0.0f, 1.0f, 1.0f)
+#define COLOR_YELLOW(alpha)      vector4(1.0f, 1.0f, 0.0f, (f32)(alpha))
+#define COLOR_CYAN(alpha)        vector4(0.0f, 1.0f, 1.0f, (f32)(alpha))
+#define COLOR_MAGENTA(alpha)     vector4(1.0f, 0.0f, 1.0f, (f32)(alpha))
 
-#define COLOR_ORANGE       vector4(1.0f, 0.5f, 0.0f, 1.0f)
-#define COLOR_PURPLE       vector4(0.5f, 0.0f, 0.5f, 1.0f)
-#define COLOR_PINK         vector4(1.0f, 0.75f, 0.8f, 1.0f)
+#define COLOR_ORANGE(alpha)      vector4(1.0f, 0.5f, 0.0f, (f32)(alpha))
+#define COLOR_PURPLE(alpha)      vector4(0.5f, 0.0f, 0.5f, (f32)(alpha))
+#define COLOR_PINK(alpha)        vector4(1.0f, 0.75f, 0.8f, (f32)(alpha))
 
-#define COLOR_BROWN        vector4(0.6f, 0.4f, 0.2f, 1.0f)
+#define COLOR_BROWN(alpha)       vector4(0.6f, 0.4f, 0.2f, (f32)(alpha))
 
 // @Section: Hex color strings (#RRGGBB)
 

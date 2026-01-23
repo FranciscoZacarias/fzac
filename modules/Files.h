@@ -19,7 +19,7 @@ function b32 directory_create(String path);
 function b32 is_directory(String path);
 function b32 directory_exists(String path);
 
-function String fullpath_from_relative_path(Arena* arena, String relative_path);
+function String full_path_from_relative_path(Arena* arena, String relative_path);
 
 #if OS_WINDOWS
 
@@ -397,7 +397,7 @@ directory_create(String path)
 }
 
 function String
-fullpath_from_relative_path(Arena* arena, String relative_path)
+full_path_from_relative_path(Arena* arena, String relative_path)
 {
   String result = {0};
 

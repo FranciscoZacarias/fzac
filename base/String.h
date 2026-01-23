@@ -59,7 +59,6 @@ function String string_replace_first(Arena* arena, String str, String a, String 
 function String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
 function String string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement); /* Replaces a range starting at start up to length with replacement */
 function String string_replace_backslash_n(Arena *arena, String str); /* Replaces the string "\n" with the characater \n */
-function String string_slice(Arena* arena, String str, u64 start, u64 end); /* @TODO(fz): Maybe we should return String_View? Extract substring from start to end (exclusive, null-terminated). */
 function String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
 function String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
 function b32    string_contains(String str, String substring); /* Check if str contains substring. */
@@ -310,22 +309,6 @@ string_replace_backslash_n(Arena *arena, String in)
   result.count   = destination_count;
   result.cstring = destination;
 
-  return result;
-}
-
-function String
-string_slice(Arena* arena, String str, u64 start, u64 end)
-{
-  if (start > str.count) start = str.count;
-  if (end > str.count)   end   = str.count;
-  if (start > end)      start = end;
-  
-  u64 count = end - start;
-  String result;
-  result.count = count;
-  result.cstring = push_array(arena, u8, count + 1);
-  memory_copy(result.cstring, str.cstring + start, count);
-  result.cstring[count] = '\0';
   return result;
 }
 

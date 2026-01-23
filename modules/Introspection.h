@@ -849,7 +849,7 @@ _intsp_parse_global(Lexer* lexer, Intsp_Context* introspection, Intsp_File* file
       {
         u64 start = 2;
         u64 end   = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
-        String comment = string_slice(scratch.arena, token->value, start, end - start);
+        String comment = string_substring(scratch.arena, token->value, start, end - start);
         gvariable->documentation = string_trim(introspection->arena, comment);
       }
       lexer_eat_token(lexer);
@@ -1200,7 +1200,7 @@ _intsp_parse_enum_members(Arena* arena, Lexer* lexer, Intsp_Enum_Member* temp_me
       u64 start = 2;
       u64 end   = token->value.count - ((token->kind == Token_Comment_Block) ? 2 : 0);
 
-      String comment = string_slice(arena, token->value, start, end - start);
+      String comment = string_substring(arena, token->value, start, end - start);
       member->documentation = string_trim(arena, comment);
 
       lexer_eat_token(lexer);
