@@ -396,47 +396,56 @@ directory_create(String path)
   return false;
 }
 
-function String
-full_path_from_relative_path(Arena* arena, String relative_path)
+String full_path_from_relative_path(Arena* arena, String relative_path)
 {
   String result = {0};
-
   if(relative_path.count == 0 || relative_path.cstring == 0)
   {
     return result;
   }
-
-  // Get required buffer size (includes null terminator)
-  DWORD required_size = GetFullPathNameA(
-    (char*)relative_path.cstring,
-    0,
-    0,
-    0
-  );
-
+  
+  // Get executable's full path
+  char exe_path[MAX_PATH];
+  DWORD exe_len = GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+  if(exe_len == 0)
+  {
+    return result;
+  }
+  
+  // Find last backslash to get directory only
+  char* last_slash = exe_path + exe_len - 1;
+  while(last_slash > exe_path && *last_slash != '\\' && *last_slash != '/')
+  {
+    last_slash--;
+  }
+  *(last_slash + 1) = '\0';  // Keep the backslash
+  
+  // Combine exe directory with relative path
+  size_t exe_dir_len = strlen(exe_path);
+  size_t combined_len = exe_dir_len + relative_path.count + 1;
+  char* combined = push_array(arena, char, combined_len);
+  memcpy(combined, exe_path, exe_dir_len);
+  memcpy(combined + exe_dir_len, relative_path.cstring, relative_path.count);
+  combined[combined_len - 1] = '\0';
+  
+  // NOW resolve the path (this handles .. and . properly)
+  DWORD required_size = GetFullPathNameA(combined, 0, 0, 0);
   if(required_size == 0)
   {
+    printf("GetFullPathNameA failed (first call)\n");
     return result;
   }
-
+  
   u8* buffer = push_array(arena, u8, required_size);
-
-  DWORD written = GetFullPathNameA(
-    (char*)relative_path.cstring,
-    required_size,
-    (char*)buffer,
-    0
-  );
-
+  DWORD written = GetFullPathNameA(combined, required_size, (char*)buffer, 0);
   if(written == 0)
   {
+    printf("GetFullPathNameA failed (second call)\n");
     return result;
   }
-
-  // written does NOT include the null terminator
+  
   result.count = (u64)written;
   result.cstring = buffer;
-
   return result;
 }
 
