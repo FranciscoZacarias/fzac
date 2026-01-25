@@ -98,7 +98,7 @@ string_buffer_to_string(Arena* arena, String_Buffer *buffer)
 
   if (buffer == 0 || buffer->count == 0) return result;
 
-  u8* data = push_array(arena, u8, buffer->count + 1);
+  u8* data = arena_push(arena, u8, buffer->count + 1);
   memory_copy(data, buffer->data, buffer->count);
   data[buffer->count] = 0;
 

@@ -601,7 +601,7 @@ _cgen_string_from_string(Arena *arena, String str)
       if (found_close)
       {
         u32 name_length = name_end - name_start;
-        u8 *name_str = push_array(arena, u8, name_length + 1);
+        u8 *name_str = arena_push(arena, u8, name_length + 1);
         memory_copy(name_str, str.cstring + name_start, name_length);
         name_str[name_length] = 0;
         

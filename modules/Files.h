@@ -35,7 +35,7 @@ utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
   if (utf8 == 0 || utf8_size <= 0) return NULL;
   s32 required = MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,(char*)utf8,(s32)utf8_size,0,0);
   if (required <= 0) return NULL;
-  wchar_t* wstr = push_array(arena, wchar_t, (u64)required + 1);
+  wchar_t* wstr = arena_push(arena, wchar_t, (u64)required + 1);
   MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,(char*)utf8,(s32)utf8_size,wstr,required);
   wstr[required] = '\0';
   return wstr;
@@ -235,7 +235,7 @@ file_load(Arena* arena, String path)
   if(file == INVALID_HANDLE_VALUE) return result;
 
   DWORD file_size = GetFileSize(file, 0);
-  u8* buffer = push_array(arena, u8, file_size + 1); // +1 for null terminator
+  u8* buffer = arena_push(arena, u8, file_size + 1); // +1 for null terminator
   DWORD read = 0;
   if(ReadFile(file, buffer, file_size, &read, 0) && read == file_size)
   {
@@ -423,7 +423,7 @@ String full_path_from_relative_path(Arena* arena, String relative_path)
   // Combine exe directory with relative path
   size_t exe_dir_len = strlen(exe_path);
   size_t combined_len = exe_dir_len + relative_path.count + 1;
-  char* combined = push_array(arena, char, combined_len);
+  char* combined = arena_push(arena, char, combined_len);
   memcpy(combined, exe_path, exe_dir_len);
   memcpy(combined + exe_dir_len, relative_path.cstring, relative_path.count);
   combined[combined_len - 1] = '\0';
@@ -436,7 +436,7 @@ String full_path_from_relative_path(Arena* arena, String relative_path)
     return result;
   }
   
-  u8* buffer = push_array(arena, u8, required_size);
+  u8* buffer = arena_push(arena, u8, required_size);
   DWORD written = GetFullPathNameA(combined, required_size, (char*)buffer, 0);
   if(written == 0)
   {

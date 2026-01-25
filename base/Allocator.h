@@ -63,15 +63,15 @@ struct Arena
 function Arena* arena_alloc(); /* Allocates an arena with the default reserve and commit size */
 function Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
 
-function void* arena_push(Arena* arena, u64 size); /* Pushes data into the arena */
-function void* arena_push_no_zero(Arena* arena, u64 size); /* Pushes data into the arena without zeroing the memory */
+#define        arena_push(arena, type, count)         (type*) _arena_push((arena), sizeof(type)*(count))
+#define        arena_push_no_zero(arena, type, count) (type*) _arena_push_no_zero((arena), sizeof(type)*(count))
 function void  arena_pop(Arena* arena, u64 size); /* Moves the arena pointer back by <size> bytes */
 function void  arena_pop_to(Arena* arena, u64 pos); /* Moves the arena pointer to the specific <pos> position */
 function void  arena_clear(Arena* arena); /* Resets the arena position */
 function void  arena_free(Arena* arena); /* Frees the arena's memory */
 
-#define push_array(arena, type, count)         (type*) arena_push((arena), sizeof(type)*(count))
-#define push_array_no_zero(arena, type, count) (type*) arena_push_no_zero((arena), sizeof(type)*(count))
+function void* _arena_push(Arena* arena, u64 size); /* Pushes data into the arena */
+function void* _arena_push_no_zero(Arena* arena, u64 size); /* Pushes data into the arena without zeroing the memory */
 
 typedef struct Scratch Scratch;
 struct Scratch
@@ -130,15 +130,15 @@ arena_alloc_sized(u64 reserve, u64 commit)
 }
 
 function void*
-arena_push(Arena* arena, u64 size)
+_arena_push(Arena* arena, u64 size)
 {
-  void* result =  arena_push_no_zero(arena, size);
+  void* result = _arena_push_no_zero(arena, size);
   memory_zero(result, size);
   return result;
 }
 
 function void*
-arena_push_no_zero(Arena* arena, u64 size)
+_arena_push_no_zero(Arena* arena, u64 size)
 {
   void* result = NULL;
 
