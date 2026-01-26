@@ -172,6 +172,8 @@ function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia
 
 function b32    lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Attaches a file to the lexer for it to parse */
 function b32    lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string */
+function b32    lexer_init_from_string_with_arena(Lexer* lexer, Arena* arena, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string and a given arena by the caller */
+function void   lexer_free(Lexer* lexer); /* Frees the lexer */
 function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
 function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
 function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
@@ -353,6 +355,30 @@ lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, E
   lexer->emit_structures         = emit_structures;
 
   return true;
+}
+
+function b32
+lexer_init_from_string_with_arena(Lexer* lexer, Arena* arena, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures)
+{
+  if (source.count == 0) return false;
+  memory_zero_struct(lexer);
+
+  lexer->arena     = arena;
+  lexer->file_path = string_zero();
+  lexer->source    = string_copy(lexer->arena, source);
+  lexer->current_line_number     = 1;
+  lexer->current_character_index = 1;
+  lexer->trivia_flags            = trivia_flags;
+  lexer->emit_structures         = emit_structures;
+
+  return true;
+}
+
+function void
+lexer_free(Lexer* lexer)
+{
+  arena_free(lexer->arena);
+  lexer = NULL;
 }
 
 function s16
