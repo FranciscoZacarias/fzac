@@ -3,7 +3,7 @@
 
 // @Section: RGBA vector colors (linear 0–1)
 
-#define COLOR_CLEAR(alpha)       vector4(0.0f, 0.0f, 0.0f, 0.0f, (alpha))
+#define COLOR_CLEAR()            vector4(0.0f, 0.0f, 0.0f, 0.0f)
 
 #define COLOR_WHITE(alpha)       vector4(1.0f, 1.0f, 1.0f, (f32)(alpha))
 #define COLOR_BLACK(alpha)       vector4(0.0f, 0.0f, 0.0f, (f32)(alpha))
@@ -24,6 +24,30 @@
 #define COLOR_PINK(alpha)        vector4(1.0f, 0.75f, 0.8f, (f32)(alpha))
 
 #define COLOR_BROWN(alpha)       vector4(0.6f, 0.4f, 0.2f, (f32)(alpha))
+
+// @Section: Packed colors (Alpha 1)
+
+#define COLOR_PACKED_CLEAR      0x00000000u
+
+#define COLOR_PACKED_WHITE      0xFFFFFFFFu
+#define COLOR_PACKED_BLACK      0xFF000000u
+#define COLOR_PACKED_GRAY       0xFF7F7F7Fu
+#define COLOR_PACKED_DARK_GRAY  0xFF3F3F3Fu
+#define COLOR_PACKED_LIGHT_GRAY 0xFFBFBFBFu
+
+#define COLOR_PACKED_RED        0xFF0000FFu
+#define COLOR_PACKED_GREEN      0xFF00FF00u
+#define COLOR_PACKED_BLUE       0xFFFF0000u
+
+#define COLOR_PACKED_YELLOW     0xFF00FFFFu
+#define COLOR_PACKED_CYAN       0xFFFFFF00u
+#define COLOR_PACKED_MAGENTA    0xFFFF00FFu
+
+#define COLOR_PACKED_ORANGE     0xFF007FFFu
+#define COLOR_PACKED_PURPLE     0xFF7F007Fu
+#define COLOR_PACKED_PINK       0xFFCCBFFFu
+
+#define COLOR_PACKED_BROWN      0xFF336699u
 
 // @Section: Hex color strings (#RRGGBB)
 
@@ -46,6 +70,7 @@
 #define COLOR_HEX_PINK         "#FFC0CB"
 
 #define COLOR_HEX_BROWN        "#996633"
+
 
 // @Section: Helper functions
 
