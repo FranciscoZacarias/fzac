@@ -75,7 +75,8 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glGenTextures                   `(GLsizei n, GLuint *textures)`                                                                                                              `(n, textures)`                                                           }
   {  glBindTexture                   `(GLenum target, GLuint texture)`                                                                                                            `(target, texture)` }
   {  glTexImage2D                    `(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)` `(target, level, internalformat, width, height, border, format, type, pixels)` }
-  {  glTexParameteri                 `(GLenum target, GLenum pname, GLint param)`                                                                                                  `(target, pname, param)` }
+  {  glTexParameteri                 `(GLenum target, GLenum pname, GLint param)`                                                                                                 `(target, pname, param)` }
+  {  glPixelStorei                   `(GLenum pname, GLint param)`                                                                                                                `(pname, param)` }
 }
 
 @Table

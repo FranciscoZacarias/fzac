@@ -597,6 +597,14 @@ glTexParameteri (GLenum target, GLenum pname, GLint param)
   __glTexParameteri (target, pname, param);
 }
 
+typedef void (*PFNglPixelStoreiPROC)(GLenum pname, GLint param);
+global PFNglPixelStoreiPROC __glPixelStorei = NULL;
+function inline void
+glPixelStorei (GLenum pname, GLint param)
+{
+  __glPixelStorei (pname, param);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint

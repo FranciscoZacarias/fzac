@@ -570,5 +570,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glPixelStorei = (PFNglPixelStoreiPROC)_load_gl_function("glPixelStorei"); 
+  if (!__glPixelStorei)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glPixelStorei"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }
