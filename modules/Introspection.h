@@ -51,7 +51,9 @@ struct Intsp_Context
 };
 
 function Intsp_Context intsp_run(String source_directory, b32 introspect_base_library);
-function Token* intsp_peek_token(Lexer *lexer, Intsp_File* file);
+
+function void   _intsp_skip_line(Lexer *lexer, Intsp_File *file);
+function Token* _intsp_peek_token(Lexer *lexer, Intsp_File* file);
 
 function Intsp_Context
 intsp_run(String source_directory, b32 introspect_base_library)
@@ -116,11 +118,16 @@ intsp_run(String source_directory, b32 introspect_base_library)
     
     for (;;)
     {
-      Token *token = intsp_peek_token(&lexer, intsp_file);
+      Token *token = _intsp_peek_token(&lexer, intsp_file);
 
       if (token->kind == Token_End_Of_File)
       {
         break;
+      }
+
+      if (token->kind == Token_Hash)
+      {
+        _intsp_skip_line(&lexer, intsp_file);
       }
 
       lexer_eat_token(&lexer);
@@ -130,8 +137,22 @@ intsp_run(String source_directory, b32 introspect_base_library)
   return result;
 }
 
+function void
+_intsp_skip_line(Lexer *lexer, Intsp_File *file)
+{
+  for (;;)
+  {
+    Token *token = _intsp_peek_token(lexer, file);
+    lexer_eat_token(lexer);
+    if (token->kind == Token_Line_Break)
+    {
+      break;
+    }
+  }
+}
+
 function Token*
-intsp_peek_token(Lexer *lexer, Intsp_File* file)
+_intsp_peek_token(Lexer *lexer, Intsp_File *file)
 {
   for (;;)
   {
