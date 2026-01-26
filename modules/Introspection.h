@@ -125,10 +125,12 @@ intsp_run(String source_directory, b32 introspect_base_library)
         break;
       }
 
-      if (token->kind == Token_Hash)
+      while (token->kind == Token_Hash)
       {
         _intsp_skip_line(&lexer, intsp_file);
       }
+
+      token = _intsp_peek_token(&lexer, intsp_file);
 
       lexer_eat_token(&lexer);
     }
@@ -137,16 +139,37 @@ intsp_run(String source_directory, b32 introspect_base_library)
   return result;
 }
 
+function String
+_intsp_parse_scope(Lexer *lexer, Intsp_File *file)
+{
+  Token *token = _intsp_peek_token(&lexer, file);
+  assert(token->kind == Token_Open_Brace);
+  
+}
+
 function void
 _intsp_skip_line(Lexer *lexer, Intsp_File *file)
 {
+  b32 multi_line = false;
   for (;;)
   {
     Token *token = _intsp_peek_token(lexer, file);
     lexer_eat_token(lexer);
+
+    if (token->kind == Token_Backslash)
+    {
+      multi_line = true;
+    }
     if (token->kind == Token_Line_Break)
     {
-      break;
+      if (multi_line)
+      {
+        multi_line = false;
+      }
+      else
+      {
+        break;
+      }
     }
   }
 }
