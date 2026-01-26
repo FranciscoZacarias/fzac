@@ -72,6 +72,10 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glUniformMatrix4fv              `(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)`                                                                 `(location, count, transpose, value)`                                     }
   {  glUniform1i                     `(GLint location, GLint v0)`                                                                                                                 `(location, v0)`                                                          }
   {  glDepthFunc                     `(GLenum func)`                                                                                                                              `(func)`                                                                  }
+  {  glGenTextures                   `(GLsizei n, GLuint *textures)`                                                                                                              `(n, textures)`                                                           }
+  {  glBindTexture                   `(GLenum target, GLuint texture)`                                                                                                            `(target, texture)` }
+  {  glTexImage2D                    `(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)` `(target, level, internalformat, width, height, border, format, type, pixels)` }
+  {  glTexParameteri                 `(GLenum target, GLenum pname, GLint param)`                                                                                                  `(target, pname, param)` }
 }
 
 @Table

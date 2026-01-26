@@ -227,7 +227,7 @@ file_load(Arena* arena, String path)
 {
   String result = {0};
 
-  Scratch scratch = scratch_begin(0,0);
+  Scratch scratch = scratch_begin(&arena,1);
   wchar_t* wpath = utf8_to_wide(scratch.arena, path.cstring, path.count);
   HANDLE file = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   scratch_end(&scratch);

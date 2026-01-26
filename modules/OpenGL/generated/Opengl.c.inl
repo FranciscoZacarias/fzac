@@ -542,5 +542,33 @@ _opengl_load_functions()
     return false;
   }
 
+  __glGenTextures = (PFNglGenTexturesPROC)_load_gl_function("glGenTextures"); 
+  if (!__glGenTextures)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glGenTextures"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glBindTexture = (PFNglBindTexturePROC)_load_gl_function("glBindTexture"); 
+  if (!__glBindTexture)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glBindTexture"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glTexImage2D = (PFNglTexImage2DPROC)_load_gl_function("glTexImage2D"); 
+  if (!__glTexImage2D)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glTexImage2D"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glTexParameteri = (PFNglTexParameteriPROC)_load_gl_function("glTexParameteri"); 
+  if (!__glTexParameteri)
+  {
+    error_box(S("OpenGL"), S("Unable to load opengl function: glTexParameteri"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

@@ -565,6 +565,38 @@ glDepthFunc (GLenum func)
   __glDepthFunc (func);
 }
 
+typedef void (*PFNglGenTexturesPROC)(GLsizei n, GLuint *textures);
+global PFNglGenTexturesPROC __glGenTextures = NULL;
+function inline void
+glGenTextures (GLsizei n, GLuint *textures)
+{
+  __glGenTextures (n, textures);
+}
+
+typedef void (*PFNglBindTexturePROC)(GLenum target, GLuint texture);
+global PFNglBindTexturePROC __glBindTexture = NULL;
+function inline void
+glBindTexture (GLenum target, GLuint texture)
+{
+  __glBindTexture (target, texture);
+}
+
+typedef void (*PFNglTexImage2DPROC)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
+global PFNglTexImage2DPROC __glTexImage2D = NULL;
+function inline void
+glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)
+{
+  __glTexImage2D (target, level, internalformat, width, height, border, format, type, pixels);
+}
+
+typedef void (*PFNglTexParameteriPROC)(GLenum target, GLenum pname, GLint param);
+global PFNglTexParameteriPROC __glTexParameteri = NULL;
+function inline void
+glTexParameteri (GLenum target, GLenum pname, GLint param)
+{
+  __glTexParameteri (target, pname, param);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
