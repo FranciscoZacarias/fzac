@@ -1,7 +1,55 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-/* @File: Array implementation backed by stdlib allocators. Not in Data_Structures because it's included before everything, as it is a more fundamental type. */
+/* @File: Array implementation backed by stdlib allocator and one with arena allocator.
+Not in Data_Structures because it's included before everything, as it is a more fundamental type. */
+
+// @Section: Arena backed array 
+
+#define ArenaArray(T, name) \
+  Arena *name##_arena;      \
+  T *name;                  \
+  u32 name##_count;         \
+  u32 name##_capacity
+
+#define arena_array_init(ctx, T, name, initial_cap)                     \
+  statement(                                                            \
+    (ctx)->name##_arena = arena_alloc();                                \
+    (ctx)->name = arena_push((ctx)->name##_arena, T, (initial_cap));    \
+    (ctx)->name##_count = 0;                                            \
+    (ctx)->name##_capacity = (initial_cap);                             \
+  )
+
+#define arena_array_ensure(ctx, T, name, scratch)                             \
+  statement(                                                                  \
+    if ((ctx)->name##_count + 1 >= (ctx)->name##_capacity)                    \
+    {                                                                         \
+      u32 new_cap = (ctx)->name##_capacity ? (ctx)->name##_capacity * 2 : 2;  \
+      T *tmp = arena_push(scratch.arena, T, (ctx)->name##_count);             \
+      memory_copy(tmp, (ctx)->name, sizeof(T) * (ctx)->name##_count);         \
+      arena_clear((ctx)->name##_arena);                                       \
+     (ctx)->name = arena_push((ctx)->name##_arena, T, new_cap);               \
+     (ctx)->name##_capacity = new_cap;                                        \
+      memory_copy((ctx)->name, tmp, sizeof(T) * (ctx)->name##_count);         \
+    }                                                                         \
+  )
+
+#define arena_array_push(ctx, T, name, value)        \
+  statement(                                         \
+    arena_array_ensure(ctx, T, name);                \
+    (ctx)->name[(ctx)->name##_count++] = (value);    \
+  )
+
+#define arena_array_get_next(ctx, T, name, out_ptr, scratch) \
+  statement(                                                 \
+    arena_array_ensure(ctx, T, name, scratch);               \
+    (out_ptr) = &((ctx)->name[(ctx)->name##_count++]);       \
+  )
+
+#define arena_array_reset(ctx, name) \
+  ((ctx)->name##_count = 0)
+
+// @Section: Stdlib backed Array
 
 #define Array(T) T##_Array
 

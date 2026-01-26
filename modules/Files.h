@@ -396,7 +396,8 @@ directory_create(String path)
   return false;
 }
 
-String full_path_from_relative_path(Arena* arena, String relative_path)
+function String
+full_path_from_relative_path(Arena* arena, String relative_path)
 {
   String result = {0};
   if(relative_path.count == 0 || relative_path.cstring == 0)

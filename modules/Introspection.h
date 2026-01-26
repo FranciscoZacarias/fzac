@@ -9,21 +9,22 @@
           This is only meant to work on a codebase that follows my programming style. */
 
 #define INITIAL_FILES_CAPACITY 8 // @TODO(Fz) Increase 
+#define INITIAL_CODE_TAGS_CAPACITY 4
 
-typedef u32 Code_Tag_Kind;
-enum
+typedef enum
 {
   Code_Tag_None = 0,
   Code_Tag_Todo,
   Code_Tag_File,
   Code_Tag_Leak,
   Code_Tag_Speed,
-};
+} Code_Tag_Kind;
 
 typedef struct Intsp_Code_Tag Intsp_Code_Tag;
 Make_Array_Type(Intsp_Code_Tag);
 
 typedef struct Intsp_File Intsp_File;
+Make_Array_Type(Intsp_File);
 struct Intsp_File
 {
   String path;
@@ -46,28 +47,22 @@ struct Intsp_Context
 {
   Arena* arena;
 
-  Intsp_File* files;
-  u32 files_count;
-  u32 files_capacity;
+  Array(Intsp_File) files;
 };
 
-function Intsp_Context* intsp_run(Arena* arena, String source_directory, b32 introspect_base_library);
-function Token* intsp_peek_token(Lexer* lexer, Intsp_File* file);
+function Intsp_Context intsp_run(String source_directory, b32 introspect_base_library);
+function Token* intsp_peek_token(Lexer *lexer, Intsp_File* file);
 
-
-function Intsp_Context*
-intsp_run(Arena* arena, String source_directory, b32 introspect_base_library)
+function Intsp_Context
+intsp_run(String source_directory, b32 introspect_base_library)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  Intsp_Context* result = arena_push(arena, Intsp_Context, 1);
+  Intsp_Context result;
   memory_zero_struct(&result);
 
-  result->arena = arena_alloc();
-
-  result->files_capacity = INITIAL_FILES_CAPACITY;
-  result->files_count = 0;
-  result->files = arena_push(result->arena, Intsp_File, result->files_capacity);
+  result.arena = arena_alloc();
+  result.files = array_make(Intsp_File, INITIAL_FILES_CAPACITY);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
@@ -112,27 +107,23 @@ intsp_run(Arena* arena, String source_directory, b32 introspect_base_library)
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Line_Break|Trivia_Whitespace|Trivia_Tab, Emit_Character_Literals|Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
 
-    // @TODO(fz): Extract this as something like arena_backed_array_realloc
-    if (result->files_count+1 >= result->files_capacity)
-    {
-      u32 new_capacity = result->files_capacity ? result->files_capacity * 2 : 2;
-      Intsp_File *tmp = arena_push(scratch.arena, Intsp_File, result->files_count);
-      memory_copy(tmp, result->files, sizeof(Intsp_File) * result->files_count);
-      arena_clear(result->arena);
-      result->files = arena_push(result->arena, Intsp_File, new_capacity);
-      result->files_capacity = new_capacity;
-      memory_copy(result->files, tmp, sizeof(Intsp_File) * result->files_count);
-    }
+    Intsp_File* intsp_file;
+    array_get_next(&result.files, Intsp_File, intsp_file);
 
-    Intsp_File* intsp_file = &result->files[result->files_count++];
     intsp_file->arena     = arena_alloc();
-    intsp_file->code_tags = array_make(Intsp_Code_Tag, 8);
+    intsp_file->path      = string_copy(intsp_file->arena, file_being_lexed);
+    intsp_file->code_tags = array_make(Intsp_Code_Tag, INITIAL_CODE_TAGS_CAPACITY);
     
     for (;;)
     {
-      Token* token = lexer_peek_token(&lexer);
+      Token *token = intsp_peek_token(&lexer, intsp_file);
 
+      if (token->kind == Token_End_Of_File)
+      {
+        break;
+      }
 
+      lexer_eat_token(&lexer);
     }
   }
 
@@ -140,11 +131,17 @@ intsp_run(Arena* arena, String source_directory, b32 introspect_base_library)
 }
 
 function Token*
-intsp_peek_token(Lexer* lexer, Intsp_File* file)
+intsp_peek_token(Lexer *lexer, Intsp_File* file)
 {
-  Token* token = lexer_peek_token(lexer);
-  while (token->kind == Token_Comment_Block || token->kind == Token_Comment_Line)
+  for (;;)
   {
+    Token *token = lexer_peek_token(lexer);
+
+    if (token->kind != Token_Comment_Block && token->kind != Token_Comment_Line)
+    {
+      return token;
+    }
+
     Scratch scratch = scratch_begin(0,0);
 
     Lexer comment_lexer;
@@ -152,58 +149,112 @@ intsp_peek_token(Lexer* lexer, Intsp_File* file)
 
     for (;;)
     {
-      Token* comment_token = lexer_peek_token(&comment_lexer);
-      if (comment_token->kind == Token_End_Of_File)
+      Token* ct = lexer_peek_token(&comment_lexer);
+
+      if (ct->kind == Token_End_Of_File)
       {
         break;
       }
-      if (comment_token->kind == Token_At)
+
+      if (ct->kind == Token_At)
       {
         lexer_eat_token(&comment_lexer);
-        comment_token = lexer_peek_token(&comment_lexer);
+
+        Token* ident = lexer_peek_token(&comment_lexer);
+        if (ident->kind != Token_Identifier)
+        {
+          lexer_eat_token(&comment_lexer);
+          continue;
+        }
 
         Code_Tag_Kind tag = Code_Tag_None;
 
-        if (token->kind == Token_Identifier)
+        if (string_equals(ident->value, S("File"),  false)) { tag = Code_Tag_File;  }
+        if (string_equals(ident->value, S("Leak"),  false)) { tag = Code_Tag_Leak;  }
+        if (string_equals(ident->value, S("Speed"), false)) { tag = Code_Tag_Speed; }
+        if (string_equals(ident->value, S("Todo"),  false)) { tag = Code_Tag_Todo;  }
+
+        lexer_eat_token(&comment_lexer);
+
+        if (tag == Code_Tag_None)
         {
-          if (string_equals(token->value, S("Todo"), false))       { tag = Code_Tag_None; }
-          else if (string_equals(token->value, S("File"), false))  { tag = Code_Tag_File; }
-          else if (string_equals(token->value, S("Leak"), false))  { tag = Code_Tag_Leak; }
-          else if (string_equals(token->value, S("Speed"), false)) { tag = Code_Tag_Speed; }
+          continue;
+        }
 
-          if (tag != Code_Tag_None)
+        Token* t = lexer_peek_token(&comment_lexer);
+        if (t->kind != Token_Open_Parentheses)
+        {
+          continue;
+        }
+
+        while (t->kind != Token_Close_Parentheses && t->kind != Token_End_Of_File)
+        {
+          lexer_eat_token(&comment_lexer);
+          t = lexer_peek_token(&comment_lexer);
+        }
+
+        if (t->kind == Token_Close_Parentheses)
+        {
+          lexer_eat_token(&comment_lexer);
+        }
+
+        t = lexer_peek_token(&comment_lexer);
+        if (t->kind != Token_Colon)
+        {
+          continue;
+        }
+
+        lexer_eat_token(&comment_lexer);
+
+        u64 start = comment_lexer.current_character_index;
+        u64 end   = token->value.count;
+
+        if (token->kind == Token_Comment_Block && end >= 2)
+        {
+          end -= 2; // "*/"
+        }
+
+        if (tag == Code_Tag_File)
+        {
+          String text  = {0};
+          text.cstring = token->value.cstring + start;
+          text.count   = end - start;
+          file->documentation = string_copy(file->arena, text);          
+        }
+        else
+        {
+          String text = {0};
+          text.cstring = token->value.cstring + start;
+          text.count = 0;
+          if (start < end)
           {
-            Intsp_Code_Tag* slot;
-            array_get_next(&file->code_tags, Intsp_Code_Tag, slot);
-            slot->kind = tag;
-            slot->file = file;
-            slot->line = token->l0;
+            text.count = end - start;
+          }
 
-            while (comment_token->kind != Token_Colon)
-            {
-              lexer_peek_token(&comment_lexer);
-              comment_token = lexer_peek_token(&comment_lexer);
-            }
+          Intsp_Code_Tag *slot;
+          array_get_next(&file->code_tags, Intsp_Code_Tag, slot);
 
-            String comment_text;
-            comment_text.cstring += comment_lexer.current_character_index;
-            comment_text.count    = comment_token->value.count - comment_lexer.current_character_index;
-
-            if (comment_token->kind == Token_Comment_Block)
-            {
-              comment_text.count -= 2; // Remove '*/'
-            }
-
-            slot->text = string_copy(file->arena, comment_text);
+          slot->kind = tag;
+          slot->file = file;
+          slot->line = token->l0;
+          if (text.count > 0) 
+          {
+            slot->text = string_copy(file->arena, text);
           }
         }
+
+        break; // one tag per comment is enough
       }
+
+      lexer_eat_token(&comment_lexer);
     }
 
     scratch_end(&scratch);
+
+    // Skip the comment in the real lexer
     lexer_eat_token(lexer);
-    token = lexer_peek_token(lexer);
   }
 }
+
 
 #endif // INTROSPECTION_H
