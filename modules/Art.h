@@ -3,7 +3,7 @@
 
 // @Section: RGBA vector colors (linear 0–1)
 
-#define COLOR_CLEAR()            vector4(0.0f, 0.0f, 0.0f, 0.0f)
+#define COLOR_CLEAR              vector4(0.0f, 0.0f, 0.0f, 0.0f)
 
 #define COLOR_WHITE(alpha)       vector4(1.0f, 1.0f, 1.0f, (f32)(alpha))
 #define COLOR_BLACK(alpha)       vector4(0.0f, 0.0f, 0.0f, (f32)(alpha))
