@@ -83,6 +83,9 @@ struct Scratch
 function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Saves the current position. */
 function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
+// Helper to push data into an arena backed array
+#define ARENA_ARRAY_PUSH(ptr, count, cap) &(ptr)[(count)++]
+
 // @Section: Implementation
 
 function Arena*
