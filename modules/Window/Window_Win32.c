@@ -312,6 +312,10 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
       RECT rect;
       if (GetClientRect(hwnd, &rect))
       {
+        
+        Window_Event* event = _event_push(events);
+        event->kind = Event_Window;
+
         window->width  = (u32)(rect.right - rect.left);
         window->height = (u32)(rect.bottom - rect.top);
       }

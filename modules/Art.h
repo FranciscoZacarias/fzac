@@ -77,6 +77,9 @@
 function u32     color_pack(Vector4 color); /* Packs a Vector4 RGBA color into an unsigned 32 bit integer */
 function Vector4 color_unpack(u32 color); /* Unpacks a unsigned 32 bit integer into an RGBA Vector4 */
 
+function Vector3 hsv_to_rgb(f32 h, f32 s, f32 v);
+function Vector4 rainbow_color(f32 delta_time, f32 speed, f32 alpha);
+
 // @Section: Implementation
 
 function u32
@@ -98,6 +101,40 @@ color_unpack(u32 color)
   result.z = (f32)((color >> 16) & 0xFF) * (1.0f / 255.0f);
   result.w = (f32)((color >> 24) & 0xFF) * (1.0f / 255.0f);
   return result;
+}
+
+function Vector3
+hsv_to_rgb(f32 h, f32 s, f32 v)
+{
+  f32 r = 0, g = 0, b = 0;
+
+  f32 i = floorf(h * 6.0f);
+  f32 f = h * 6.0f - i;
+  f32 p = v * (1.0f - s);
+  f32 q = v * (1.0f - f * s);
+  f32 t = v * (1.0f - (1.0f - f) * s);
+
+  switch ((s32)i % 6)
+  {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+
+  return vector3(r, g, b);
+}
+
+function Vector4
+rainbow_color(f32 delta_time, f32 speed, f32 alpha)
+{
+  local_persist f32 hue = 0.0f;
+  hue += speed * delta_time;
+  if (hue >= 1.0f) hue -= 1.0f;
+  Vector3 rgb = hsv_to_rgb(hue, 1.0f, 1.0f);
+  return vector4(rgb.x, rgb.y, rgb.z, alpha);
 }
 
 #endif // ART_H
