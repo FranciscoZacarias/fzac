@@ -4,6 +4,14 @@
 #include "../Base.h"
 #include "Lexer.h"
 
+#define CGEN_FILES_CAPACITY 64
+#define CGEN_TABLES_CAPACITY 16
+#define CGEN_GENERATORS_CAPACITY 16
+#define CGEN_COLUMNS_CAPACITY 32
+#define CGEN_ROWS_CAPACITY 128
+#define CGEN_COMMANDS_CAPACITY 32
+#define CGEN_STRING_ARGUMENTS_CAPACITY 16
+
 #define _cgen_error(message) \
   error_box(S("Code Generator Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break(); \
@@ -32,7 +40,6 @@ struct CGen_String
   u64 arguments_count;
   u64 arguments_capacity;
 };
-
 
 struct CGen_Table_Row
 {
@@ -121,7 +128,7 @@ cgen_run(String source_directory)
 
   result.arena = arena_alloc();
   result.files_count = 0;
-  result.files_capacity = 64;
+  result.files_capacity = CGEN_FILES_CAPACITY;
   result.files = arena_push(result.arena, CGen_File, result.files_capacity);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
@@ -158,6 +165,12 @@ cgen_run(String source_directory)
     memory_zero_struct(cgen_file);
 
     cgen_file->name = string_copy(result.arena, file_being_lexed);
+    cgen_file->tables_count = 0;
+    cgen_file->tables_capacity = CGEN_TABLES_CAPACITY;
+    cgen_file->tables = arena_push(result.arena, CGen_Table, cgen_file->tables_capacity);
+    cgen_file->generators_count = 0;
+    cgen_file->generators_capacity = CGEN_GENERATORS_CAPACITY;
+    cgen_file->generators = arena_push(result.arena, CGen_Generator, cgen_file->generators_capacity);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed,
@@ -209,7 +222,7 @@ cgen_run(String source_directory)
 }
 
 function void
-cgen_execute_commands(CGen_Context *ctx)
+  cgen_execute_commands(CGen_Context *ctx)
 {
   Scratch scratch = scratch_begin(0,0);
   
@@ -277,26 +290,26 @@ cgen_execute_commands(CGen_Context *ctx)
 
         switch (command->kind)
         {
-          case CGen_Command_Kind_String:
-          {
-            string_buffer_push(&buffer, (const char*)command->string.data.cstring);
-          }
+        case CGen_Command_Kind_String:
+        {
+          string_buffer_push(&buffer, (const char*)command->string.data.cstring);
+        }
           break;
 
-          case CGen_Command_Kind_Foreach:
+        case CGen_Command_Kind_Foreach:
+        {
+          for (u32 row_index = 0; row_index < command->table->rows_count; row_index += 1)
           {
-            for (u32 row_index = 0; row_index < command->table->rows_count; row_index += 1)
-            {
-              String final_string = _cgen_string_replace_arguments(scratch.arena, command->string, command->table, row_index);
-              string_buffer_push(&buffer, (const char*)final_string.cstring);
-            }
-            break;
+            String final_string = _cgen_string_replace_arguments(scratch.arena, command->string, command->table, row_index);
+            string_buffer_push(&buffer, (const char*)final_string.cstring);
           }
+          break;
+        }
 
-          default:
-          {
-            _cgen_error(Sf(scratch.arena, "Unhandled CGen_Command_Kind: %u\n", command->kind));
-          }
+        default:
+        {
+          _cgen_error(Sf(scratch.arena, "Unhandled CGen_Command_Kind: %u\n", command->kind));
+        }
           break;
         }
       }
@@ -326,13 +339,13 @@ function void
     ARENA_ARRAY_PUSH(file->tables, file->tables_count, file->tables_capacity);
   memory_zero_struct(result);
 
-  result->columns = NULL;
   result->columns_count = 0;
-  result->columns_capacity = 0;
+  result->columns_capacity = CGEN_COLUMNS_CAPACITY;
+  result->columns = arena_push(ctx->arena, String, result->columns_capacity);
 
-  result->rows = NULL;
   result->rows_count = 0;
-  result->rows_capacity = 0;
+  result->rows_capacity = CGEN_ROWS_CAPACITY;
+  result->rows = arena_push(ctx->arena, CGen_Table_Row, result->rows_capacity);
 
   Token *token = lexer_peek_token(lexer);
   if (!string_equals(token->value, S("Table"), true))
@@ -404,9 +417,9 @@ function void
       ARENA_ARRAY_PUSH(result->rows, result->rows_count, result->rows_capacity);
     memory_zero_struct(row);
 
-    row->entries = NULL;
     row->entries_count = 0;
-    row->entries_capacity = 0;
+    row->entries_capacity = CGEN_COLUMNS_CAPACITY;
+    row->entries = arena_push(ctx->arena, String, row->entries_capacity);
 
     for (;;)
     {
@@ -460,9 +473,9 @@ function void
     ARENA_ARRAY_PUSH(file->generators, file->generators_count, file->generators_capacity);
   memory_zero_struct(generator);
 
-  generator->commands = NULL;
   generator->commands_count = 0;
-  generator->commands_capacity = 0;
+  generator->commands_capacity = CGEN_COMMANDS_CAPACITY;
+  generator->commands = arena_push(ctx->arena, CGen_Command, generator->commands_capacity);
   generator->custom_file_name = string_zero();
 
   Token *token = lexer_peek_token(lexer);
@@ -621,9 +634,9 @@ function CGen_String
   result.data = string_copy(arena, str);
 
   // arena-backed arguments array
-  result.arguments = NULL;
   result.arguments_count = 0;
-  result.arguments_capacity = 0;
+  result.arguments_capacity = CGEN_STRING_ARGUMENTS_CAPACITY;
+  result.arguments = arena_push(arena, CGen_String_Argument, result.arguments_capacity);
 
   for (u32 i = 0; i < str.count; i += 1)
   {
@@ -672,7 +685,7 @@ function CGen_String
 }
 
 function String
-_cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index)
+  _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index)
 {
   Scratch scratch = scratch_begin(&arena, 1);
   
@@ -717,12 +730,12 @@ _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *t
 }
 
 function b32
-_cgen_token_is_acceptable_row_value(Token *token)
+  _cgen_token_is_acceptable_row_value(Token *token)
 {
   b32 result = false;
   if (token->kind == Token_Identifier      ||
-      token->kind == Token_Number          ||
-      token->kind == Token_String_Backtick)
+    token->kind == Token_Number          ||
+    token->kind == Token_String_Backtick)
   {
     result = true;
   }

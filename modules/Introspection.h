@@ -12,8 +12,8 @@
   error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break()
 
-#define INITIAL_FILES_CAPACITY 8 // @TODO(Fz) Increase 
-#define INITIAL_CODE_TAGS_CAPACITY 4
+#define INITIAL_FILES_CAPACITY 32
+#define INITIAL_CODE_TAGS_CAPACITY 8
 #define INITIAL_STRUCT_CAPACITY 64
 
 typedef enum

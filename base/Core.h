@@ -33,11 +33,12 @@
 
 /* === asserts === */
 #if DEBUG
-# define assert_break(condition) (*(volatile int*)0 = 0)
-# define assert(condition) statement(if (!(condition)){ assert_break(condition); })
+# define assert_break() (*(volatile int*)0 = 0)
+# define assert(condition) statement(if (!(condition)){ assert_break(); })
 # define assert_no_reentry() statement(local_persist b32 __triggered__ = 0; assert(__triggered__ == 0); __triggered__ = 1;) 
 # define assert_unreachable() assert_break(0)
 # define static_assert(condition,label) typedef u8 glue(label,__LINE__) [(condition)?1:-1]
+# define assert_expr(condition) ((condition) ? 0 : (assert_break(), 0))
 
 /* === breakpoints === */
 # if COMPILER_MSVC
@@ -49,11 +50,12 @@
 # endif
 
 #else
-# define assert_break(condition)
+# define assert_break()
 # define assert(condition)
 # define assert_no_reentry()
 # define assert_unreachable()
 # define static_assert(condition,label)
+# define assert_expr(condition) (0)
 # define breakpoint()
 #endif
 
