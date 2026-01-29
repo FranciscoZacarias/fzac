@@ -84,9 +84,14 @@ function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Sa
 function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
 // Helper to push data into an arena backed array
-//#define ARENA_ARRAY_PUSH(ptr, count, cap) &(ptr)[(count)++]
-#define ARENA_ARRAY_PUSH(ptr, count, cap) (assert_expr((count) < (cap)), &(ptr)[(count)++])
-
+#define arena_array_push(ptr, count, cap) (assert_expr((count) < (cap)), &(ptr)[(count)++])
+#define arena_array_init(arena, name, type, capacity)  \
+  statement(                                           \
+    assert((arena) != NULL);                           \
+    name##_count = 0;                                  \
+    name##_capacity = (capacity);                      \
+    name = arena_push((arena), type, name##_capacity); \
+  )
 
 // @Section: Implementation
 

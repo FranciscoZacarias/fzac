@@ -12,9 +12,12 @@
   error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break()
 
-#define INITIAL_FILES_CAPACITY 32
-#define INITIAL_CODE_TAGS_CAPACITY 8
-#define INITIAL_STRUCT_CAPACITY 64
+#define INTSP_MAX_MEMBERS_CAPACITY 32
+#define INTSP_FILES_CAPACITY 32
+#define INTSP_CODE_TAGS_CAPACITY 8
+#define INTSP_STRUCT_CAPACITY 64
+#define INTSP_ENUM_MEMBERS_CAPACITY 64
+#define INTSP_NESTED_AGGREGATE_CAPACITY 8
 
 typedef enum
 {
@@ -31,7 +34,6 @@ typedef enum
   Aggregate_Struct,
   Aggregate_Union,
 } Aggregate_Kind;
-
 
 typedef struct Intsp_Source_Location Intsp_Source_Location;
 typedef struct Intsp_Context Intsp_Context;
@@ -110,7 +112,6 @@ struct Intsp_Typedef
   Intsp_Source_Location location;
 };
 
-
 struct Intsp_File
 {
   String path;
@@ -144,8 +145,6 @@ struct Intsp_Code_Tag
 
 struct Intsp_Context 
 {
-  Arena* arena;
-
   Arena *files_arena;
   Intsp_File *files;
   u32 files_count;
@@ -171,13 +170,8 @@ intsp_run(String source_directory, b32 introspect_base_library)
   Intsp_Context result;
   memory_zero_struct(&result);
 
-  result.arena = arena_alloc();
-
-  // files array
-  result.files_arena    = arena_alloc();
-  result.files_capacity = INITIAL_FILES_CAPACITY;
-  result.files_count    = 0;
-  result.files          = arena_push(result.files_arena, Intsp_File, result.files_capacity);
+  result.files_arena = arena_alloc();
+  arena_array_init(result.files_arena, result.files, Intsp_File, INTSP_FILES_CAPACITY);
 
   String_List files = file_get_files_in_path(scratch.arena, source_directory, true);
   for (String_Node* next = files.first; next != NULL; next = next->next)
@@ -187,62 +181,57 @@ intsp_run(String source_directory, b32 introspect_base_library)
     if (!is_file(file_being_lexed)) continue;
 
     if(string_contains(file_being_lexed, S("\\Extern\\"))         ||
-      string_contains(file_being_lexed, S("\\.git\\"))           ||
-      string_contains(file_being_lexed, S("\\.svn\\"))           ||
-      string_contains(file_being_lexed, S("\\.idea\\"))          ||
-      string_contains(file_being_lexed, S("\\.vs\\"))            ||
-      string_contains(file_being_lexed, S("\\.vscode\\"))        ||
-      string_contains(file_being_lexed, S("\\cgen.generated\\")) ||
-      string_contains(file_being_lexed, S("\\.code\\")))
+       string_contains(file_being_lexed, S("\\.git\\"))           ||
+       string_contains(file_being_lexed, S("\\.svn\\"))           ||
+       string_contains(file_being_lexed, S("\\.idea\\"))          ||
+       string_contains(file_being_lexed, S("\\.vs\\"))            ||
+       string_contains(file_being_lexed, S("\\.vscode\\"))        ||
+       string_contains(file_being_lexed, S("\\cgen.generated\\")) ||
+       string_contains(file_being_lexed, S("\\.code\\")))
     {
       continue;
     }
 
     if (!introspect_base_library && string_contains(file_being_lexed, S("fzac")))
+    {
       continue;
+    }
 
     if (string_contains(file_being_lexed, S("metaprogram.c")))
+    {
       continue;
+    }
 
     String_View extension = file_get_extension(file_being_lexed);
     String ext = string_new(extension.count, extension.string);
-
-    if (!(string_equals(ext, S("c"), true) || string_equals(ext, S("h"), true))) continue;
+    if (!(string_equals(ext, S("c"), true) || string_equals(ext, S("h"), true)))
+    {
+      continue;
+    }
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Line_Break|Trivia_Whitespace|Trivia_Tab, Emit_Character_Literals|Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
 
-    // ---- push file ----
-    Intsp_File *intsp_file = ARENA_ARRAY_PUSH(result.files, result.files_count, result.files_capacity);
-
+    Intsp_File *intsp_file = arena_array_push(result.files, result.files_count, result.files_capacity);
     intsp_file->arena = arena_alloc();
     intsp_file->path  = string_copy(intsp_file->arena, file_being_lexed);
 
-    // code_tags
-    intsp_file->code_tags_arena    = arena_alloc();
-    intsp_file->code_tags_capacity = INITIAL_CODE_TAGS_CAPACITY;
-    intsp_file->code_tags_count    = 0;
-    intsp_file->code_tags =
-      arena_push(intsp_file->code_tags_arena, Intsp_Code_Tag, intsp_file->code_tags_capacity);
+    intsp_file->code_tags_arena = arena_alloc();
+    arena_array_init(intsp_file->code_tags_arena, intsp_file->code_tags, Intsp_Code_Tag, INTSP_CODE_TAGS_CAPACITY);
 
-    // aggregates
-    intsp_file->aggregates_arena    = arena_alloc();
-    intsp_file->aggregates_capacity = INITIAL_STRUCT_CAPACITY;
-    intsp_file->aggregates_count    = 0;
-    intsp_file->aggregates =
-      arena_push(intsp_file->aggregates_arena, Intsp_Aggregate, intsp_file->aggregates_capacity);
+    intsp_file->aggregates_arena = arena_alloc();
+    arena_array_init(intsp_file->aggregates_arena, intsp_file->aggregates, Intsp_Aggregate, INTSP_STRUCT_CAPACITY);
 
-    // typedefs
-    intsp_file->typedefs_arena    = arena_alloc();
-    intsp_file->typedefs_capacity = INITIAL_STRUCT_CAPACITY;
-    intsp_file->typedefs_count    = 0;
-    intsp_file->typedefs =
-      arena_push(intsp_file->typedefs_arena, Intsp_Typedef, intsp_file->typedefs_capacity);
+    intsp_file->typedefs_arena = arena_alloc();
+    arena_array_init(intsp_file->typedefs_arena, intsp_file->typedefs, Intsp_Typedef, INTSP_STRUCT_CAPACITY);
 
     for (;;)
     {
       Token *token = _intsp_peek_token(&lexer, intsp_file);
-      if (token->kind == Token_End_Of_File) break;
+      if (token->kind == Token_End_Of_File)
+      {
+        break;
+      }
 
       if (token->kind == Token_Hash)
       {
@@ -257,18 +246,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
         if (is_struct || is_union)
         {
-          Intsp_Aggregate *aggregate =
-            ARENA_ARRAY_PUSH(intsp_file->aggregates,
-              intsp_file->aggregates_count,
-              intsp_file->aggregates_capacity);
-
+          Intsp_Aggregate *aggregate = arena_array_push(intsp_file->aggregates, intsp_file->aggregates_count, intsp_file->aggregates_capacity);
           aggregate->members_arena    = arena_alloc();
-          aggregate->members_capacity = 128;
-          aggregate->members_count    = 0;
-          aggregate->members =
-            arena_push(aggregate->members_arena,
-              Intsp_Aggregate_Member,
-              aggregate->members_capacity);
+          arena_array_init(aggregate->members_arena, aggregate->members, Intsp_Aggregate_Member, INTSP_MAX_MEMBERS_CAPACITY);
 
           aggregate->kind = is_struct ? Aggregate_Struct : Aggregate_Union;
           aggregate->location.file = intsp_file;
@@ -312,25 +292,15 @@ intsp_run(String source_directory, b32 introspect_base_library)
 }
 
 function void
-  _intsp_parse_typedef(Lexer *lexer, Intsp_File *file)
+_intsp_parse_typedef(Lexer *lexer, Intsp_File *file)
 {
   Token *token = _intsp_peek_token(lexer, file);
 
-  Intsp_Typedef *typedef_item =
-    ARENA_ARRAY_PUSH(file->typedefs,
-      file->typedefs_count,
-      file->typedefs_capacity);
-
+  Intsp_Typedef *typedef_item = arena_array_push(file->typedefs, file->typedefs_count, file->typedefs_capacity);
   typedef_item->documentation = string_zero();
 
-  // init enum_members arena array
-  typedef_item->enum_members_arena    = arena_alloc();
-  typedef_item->enum_members_capacity = 64;
-  typedef_item->enum_members_count    = 0;
-  typedef_item->enum_members =
-    arena_push(typedef_item->enum_members_arena,
-      Intsp_Enum_Member,
-      typedef_item->enum_members_capacity);
+  typedef_item->enum_members_arena = arena_alloc();
+  arena_array_init(typedef_item->enum_members_arena, typedef_item->enum_members, Intsp_Enum_Member, INTSP_ENUM_MEMBERS_CAPACITY);
 
   typedef_item->location.file = file;
   typedef_item->location.line = token->l0;
@@ -340,7 +310,6 @@ function void
   _intsp_skip_spaces(lexer, file);
   token = _intsp_peek_token(lexer, file);
 
-  // ---- struct forward ----
   if (token->kind == Token_Identifier && string_equals(token->value, S("struct"), true))
   {
     typedef_item->kind = Typedef_Struct_Forward;
@@ -369,13 +338,14 @@ function void
 
     String doc = _intsp_get_next_comment_or_line_break(lexer, file);
     if (doc.count > 0)
+    {
       typedef_item->documentation = string_copy(file->arena, doc);
+    }
 
     _intsp_skip_spaces(lexer, file);
     return;
   }
 
-  // ---- enum ----
   if (token->kind == Token_Identifier && string_equals(token->value, S("enum"), true))
   {
     typedef_item->kind = Typedef_Enum;
@@ -393,10 +363,7 @@ function void
     {
       if (token->kind == Token_Identifier)
       {
-        Intsp_Enum_Member *enum_member =
-          ARENA_ARRAY_PUSH(typedef_item->enum_members,
-            typedef_item->enum_members_count,
-            typedef_item->enum_members_capacity);
+        Intsp_Enum_Member *enum_member = arena_array_push(typedef_item->enum_members, typedef_item->enum_members_count, typedef_item->enum_members_capacity);
 
         enum_member->name  = string_copy(file->arena, token->value);
         enum_member->value = string_zero();
@@ -412,9 +379,7 @@ function void
           token = _intsp_peek_token(lexer, file);
 
           String_List value_tokens = string_list_new();
-          while (token->kind != Token_Comma &&
-            token->kind != Token_Close_Brace &&
-            token->kind != Token_End_Of_File)
+          while (token->kind != Token_Comma && token->kind != Token_Close_Brace && token->kind != Token_End_Of_File)
           {
             string_list_push(file->arena, &value_tokens, token->value);
             lexer_eat_token(lexer);
@@ -458,7 +423,6 @@ function void
     return;
   }
 
-  // ---- alias / function pointer ----
   String_List type_tokens = string_list_new();
   String_List name_tokens = string_list_new();
   b32 is_function_pointer = false;
@@ -470,7 +434,9 @@ function void
     {
       paren_depth++;
       if (paren_depth == 1 && type_tokens.node_count > 0)
+      {
         is_function_pointer = true;
+      }
     }
     else if (token->kind == Token_Close_Parentheses)
     {
@@ -526,7 +492,9 @@ function void
 
     String doc = _intsp_get_next_comment_or_line_break(lexer, file);
     if (doc.count > 0)
+    {
       typedef_item->documentation = string_copy(file->arena, doc);
+    }
   }
 }
 
@@ -550,55 +518,33 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       lexer_eat_token(lexer);
       _intsp_skip_spaces(lexer, file);
 
-      Intsp_Aggregate_Member *member =
-        ARENA_ARRAY_PUSH(aggregate->members,
-                         aggregate->members_count,
-                         aggregate->members_capacity);
+      Intsp_Aggregate_Member *member = arena_array_push(aggregate->members,aggregate->members_count, aggregate->members_capacity);
 
       member->type  = string_zero();
       member->is_bit = false;
 
-      // nested struct/union arrays
-      member->nested_structs_arena    = arena_alloc();
-      member->nested_structs_capacity = 16;
-      member->nested_structs_count    = 0;
-      member->nested_structs =
-        arena_push(member->nested_structs_arena, Intsp_Aggregate, member->nested_structs_capacity);
+      member->nested_structs_arena = arena_alloc();
+      arena_array_init(member->nested_structs_arena, member->nested_structs, Intsp_Aggregate, INTSP_NESTED_AGGREGATE_CAPACITY);
 
-      member->nested_unions_arena    = arena_alloc();
-      member->nested_unions_capacity = 16;
-      member->nested_unions_count    = 0;
-      member->nested_unions =
-        arena_push(member->nested_unions_arena, Intsp_Aggregate, member->nested_unions_capacity);
+      member->nested_unions_arena = arena_alloc();
+      arena_array_init(member->nested_unions_arena, member->nested_unions, Intsp_Aggregate, INTSP_NESTED_AGGREGATE_CAPACITY);
 
       Intsp_Aggregate *nested_aggregate;
-
       if (is_nested_struct)
       {
-        nested_aggregate =
-          ARENA_ARRAY_PUSH(member->nested_structs,
-                           member->nested_structs_count,
-                           member->nested_structs_capacity);
+        nested_aggregate = arena_array_push(member->nested_structs,member->nested_structs_count, member->nested_structs_capacity);
+        nested_aggregate->kind = Aggregate_Struct;
+        nested_aggregate->name = S("_nameless_struct_");
       }
       else
       {
-        nested_aggregate =
-          ARENA_ARRAY_PUSH(member->nested_unions,
-                           member->nested_unions_count,
-                           member->nested_unions_capacity);
+        nested_aggregate = arena_array_push(member->nested_unions, member->nested_unions_count, member->nested_unions_capacity);
+        nested_aggregate->kind = Aggregate_Union;
+        nested_aggregate->name = S("_nameless_union_");
       }
 
-      nested_aggregate->kind = is_nested_struct ? Aggregate_Struct : Aggregate_Union;
-      nested_aggregate->name = S("_nameless");
-
-      // members for nested aggregate
       nested_aggregate->members_arena    = arena_alloc();
-      nested_aggregate->members_capacity = 64;
-      nested_aggregate->members_count    = 0;
-      nested_aggregate->members =
-        arena_push(nested_aggregate->members_arena,
-                   Intsp_Aggregate_Member,
-                   nested_aggregate->members_capacity);
+      arena_array_init(nested_aggregate->members_arena,nested_aggregate->members, Intsp_Aggregate_Member, INTSP_MAX_MEMBERS_CAPACITY);
 
       _intsp_parse_struct_members(lexer, file, nested_aggregate);
 
@@ -630,11 +576,7 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       continue;
     }
 
-    Intsp_Aggregate_Member *member =
-      ARENA_ARRAY_PUSH(aggregate->members,
-                       aggregate->members_count,
-                       aggregate->members_capacity);
-
+    Intsp_Aggregate_Member *member = arena_array_push(aggregate->members, aggregate->members_count, aggregate->members_capacity);
     member->is_bit = false;
 
     String_List type_tokens = string_list_new();
@@ -663,13 +605,17 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       }
 
       if (token->kind == Token_Comma && paren_depth == 0)
+      {
         break;
+      }
 
       if (token->kind == Token_Open_Parentheses)
       {
         paren_depth++;
         if (paren_depth == 1 && type_tokens.node_count > 0)
+        {
           is_function_pointer = true;
+        }
       }
       else if (token->kind == Token_Close_Parentheses)
       {
@@ -733,18 +679,14 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
         _intsp_skip_spaces(lexer, file);
         token = _intsp_peek_token(lexer, file);
 
-        Intsp_Aggregate_Member *extra_member =
-          ARENA_ARRAY_PUSH(aggregate->members,
-                           aggregate->members_count,
-                           aggregate->members_capacity);
-
+        Intsp_Aggregate_Member *extra_member = arena_array_push(aggregate->members, aggregate->members_count, aggregate->members_capacity);
         extra_member->type = string_copy(file->arena, member->type);
         extra_member->is_bit = false;
 
         String_List extra_name_tokens = string_list_new();
 
-        while (token->kind != Token_Comma &&
-               token->kind != Token_Semicolon &&
+        while (token->kind != Token_Comma       &&
+               token->kind != Token_Semicolon   &&
                token->kind != Token_End_Of_File &&
                token->kind != Token_Colon)
         {
@@ -780,26 +722,6 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       token = _intsp_peek_token(lexer, file);
     }
   }
-}
-
-
-function void
-_intsp_eat_scope(Lexer *lexer, Intsp_File *file)
-{
-  Token *t = _intsp_peek_token(lexer, file);
-  assert(t->kind == Token_Open_Brace);
-  lexer_eat_token(lexer);
-
-  s32 depth = 1;
-  for (;;)
-  {
-    t = _intsp_peek_token(lexer, file);
-    if (t->kind == Token_Open_Brace)  depth++;
-    if (t->kind == Token_Close_Brace) depth--;
-    if (depth == 0) break;
-    lexer_eat_token(lexer);
-  }
-  lexer_eat_token(lexer); // Eat Token_Close_Brace
 }
 
 function void
@@ -859,7 +781,7 @@ _intsp_expect_kind(Token *token, Token_Kind expected_kind)
 }
 
 function Token*
-  _intsp_peek_token(Lexer *lexer, Intsp_File *file)
+_intsp_peek_token(Lexer *lexer, Intsp_File *file)
 {
   for (;;)
   {
@@ -956,10 +878,7 @@ function Token*
           text.count = (start < end) ? (end - start) : 0;
 
           // arena-backed array push
-          Intsp_Code_Tag *slot =
-            ARENA_ARRAY_PUSH(file->code_tags,
-              file->code_tags_count,
-              file->code_tags_capacity);
+          Intsp_Code_Tag *slot = arena_array_push(file->code_tags, file->code_tags_count, file->code_tags_capacity);
 
           slot->kind = tag;
           slot->file = file;
@@ -977,8 +896,6 @@ function Token*
     }
 
     scratch_end(&scratch);
-
-    // Skip the comment in the real lexer
     lexer_eat_token(lexer);
   }
 }
