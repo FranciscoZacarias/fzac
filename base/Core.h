@@ -105,7 +105,16 @@
 #define toggle_flag(flags, flag) ((flags) ^= (flag))
 
 /* === Control flow === */
-#define defer_loop(begin, end) for(u32 _defer_loop_internal_index_ = ((begin), 0); !_defer_loop_internal_index_; _defer_loop_internal_index_ += 1, (end))
+#define DEFER_LOOP_ID2(a, b) a##b
+#define DEFER_LOOP_ID(a, b) DEFER_LOOP_ID2(a, b)
+#define defer_loop_impl(begin, end, id)                                  \
+  for(u32 DEFER_LOOP_ID(_defer_loop_internal_index_, id) = ((begin), 0); \
+      !DEFER_LOOP_ID(_defer_loop_internal_index_, id);                   \
+      DEFER_LOOP_ID(_defer_loop_internal_index_, id) += 1, (end))
+
+#define defer_loop(begin, end)                                           \
+  defer_loop_impl(begin, end, __COUNTER__)
+
 
 /* === Data types === */
 typedef unsigned char u8;
