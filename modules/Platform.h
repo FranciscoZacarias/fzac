@@ -5,7 +5,7 @@
 function void console_attach(); /* Opens application terminal */
 
 // @Section: Errors
-function void error_box(String title, String content, String file, u32 line);
+function void message_box(String title, String content, String file, u32 line);
 
 #if OS_WINDOWS
 # include "Platform/Platform_Win32.c"

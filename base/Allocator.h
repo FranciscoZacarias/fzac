@@ -84,7 +84,6 @@ function Scratch arena_temp_begin(Arena* arena); /* Starts a temporary arena. Sa
 function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and pops to the position saved in arena_temp_begin */
 
 // Helper to push data into an arena backed array
-#define arena_array_push(ptr, count, cap) (assert_expr((count) < (cap)), &(ptr)[(count)++])
 #define arena_array_init(arena, name, type, capacity)  \
   statement(                                           \
     assert((arena) != NULL);                           \
@@ -92,6 +91,20 @@ function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and 
     name##_capacity = (capacity);                      \
     name = arena_push((arena), type, name##_capacity); \
   )
+
+#define arena_array_push(out_ptr, ptr, count, cap)       \
+  statement(                                             \
+    if ((count) >= (cap))                                \
+    {                                                    \
+      message_box(S("Arena Array Overflow"),             \
+                Sf(get_temporary_storage(), "arena_array_push capacity of %u exceeded", (cap)), \
+                S(__FILE__),                             \
+                __LINE__);                               \
+      assert(false);                                     \
+    }                                                    \
+    (out_ptr) = &(ptr)[(count)++];                       \
+  )
+
 
 // @Section: Implementation
 

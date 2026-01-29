@@ -13,7 +13,7 @@
 #define CGEN_STRING_ARGUMENTS_CAPACITY 16
 
 #define _cgen_error(message) \
-  error_box(S("Code Generator Error!"), message, S(__FILE__), __LINE__); \
+  message_box(S("Code Generator Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break(); \
   assert(0)
 
@@ -150,7 +150,8 @@ cgen_run(String source_directory)
     String ext = string_new(extension.count, extension.string);
     if (!string_equals(ext, S("cgen"), true)) continue;
 
-    CGen_File *cgen_file =  arena_array_push(result.files, result.files_count, result.files_capacity);
+    CGen_File *cgen_file;
+    arena_array_push(cgen_file, result.files, result.files_count, result.files_capacity);
     memory_zero_struct(cgen_file);
 
     cgen_file->name = string_copy(result.arena, file_being_lexed);
@@ -316,7 +317,8 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  CGen_Table *result = arena_array_push(file->tables, file->tables_count, file->tables_capacity);
+  CGen_Table *result;
+  arena_array_push(result, file->tables, file->tables_count, file->tables_capacity);
   memory_zero_struct(result);
 
   arena_array_init(ctx->arena, result->columns, String, CGEN_COLUMNS_CAPACITY);
@@ -353,7 +355,8 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
       _cgen_error(Sf(scratch.arena, "Expected column name identifier, got: "S_FMT"\n", S_ARG(token->value)));
     }
 
-    String *column = arena_array_push(result->columns, result->columns_count, result->columns_capacity);
+    String *column;
+    arena_array_push(column, result->columns, result->columns_count, result->columns_capacity);
     *column = string_copy(ctx->arena, token->value);
 
     lexer_eat_token(lexer);
@@ -388,7 +391,8 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
     lexer_eat_token(lexer);
     token = lexer_peek_token(lexer);
 
-    CGen_Table_Row *row = arena_array_push(result->rows, result->rows_count, result->rows_capacity);
+    CGen_Table_Row *row;
+    arena_array_push(row, result->rows, result->rows_count, result->rows_capacity);
     memory_zero_struct(row);
 
     arena_array_init(ctx->arena, row->entries, String, CGEN_COLUMNS_CAPACITY);
@@ -402,8 +406,8 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 
       if (_cgen_token_is_acceptable_row_value(token))
       {
-        String *entry =
-          arena_array_push(row->entries, row->entries_count, row->entries_capacity);
+        String *entry;
+        arena_array_push(entry, row->entries, row->entries_count, row->entries_capacity);
         *entry = string_copy(ctx->arena, token->value);
       }
       else
@@ -442,7 +446,8 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  CGen_Generator *generator = arena_array_push(file->generators, file->generators_count, file->generators_capacity);
+  CGen_Generator *generator;
+  arena_array_push(generator, file->generators, file->generators_count, file->generators_capacity);
   memory_zero_struct(generator);
   arena_array_init(ctx->arena, generator->commands, CGen_Command, CGEN_COMMANDS_CAPACITY);
 
@@ -547,7 +552,8 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
           _cgen_error(Sf(scratch.arena, "Table '"S_FMT"' not found in file\n", S_ARG(table_name)));
         }
 
-        CGen_Command *command = arena_array_push(generator->commands, generator->commands_count, generator->commands_capacity);
+        CGen_Command *command;
+        arena_array_push(command, generator->commands, generator->commands_count, generator->commands_capacity);
 
         command->kind = CGen_Command_Kind_Foreach;
         command->table = found_table;
@@ -563,7 +569,8 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
     }
     else if (token->kind == Token_String_Backtick)
     {
-      CGen_Command *command = arena_array_push(generator->commands, generator->commands_count, generator->commands_capacity);
+      CGen_Command *command;
+      arena_array_push(command, generator->commands, generator->commands_count, generator->commands_capacity);
 
       command->kind = CGen_Command_Kind_String;
       command->table = NULL;
@@ -629,7 +636,8 @@ _cgen_string_from_string(Arena *arena, String str)
         memory_copy(name_str, str.cstring + name_start, name_length);
         name_str[name_length] = 0;
 
-        CGen_String_Argument *arg = arena_array_push(result.arguments, result.arguments_count, result.arguments_capacity);
+        CGen_String_Argument *arg;
+        arena_array_push(arg, result.arguments, result.arguments_count, result.arguments_capacity);
 
         arg->name.count = name_length;
         arg->name.cstring = name_str;

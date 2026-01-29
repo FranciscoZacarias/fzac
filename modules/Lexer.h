@@ -431,6 +431,7 @@ lexer_peek_token(Lexer* lexer)
   return &lexer->incoming_tokens[lexer->incoming_tokens_head];
 }
 
+#if 0
 function Token*
 lexer_peek_nth_token(Lexer* lexer, s32 nth)
 {
@@ -445,6 +446,28 @@ lexer_peek_nth_token(Lexer* lexer, s32 nth)
   s32 index = lexer_token_index(lexer, nth);
   return &lexer->incoming_tokens[index];
 }
+#else
+function Token*
+lexer_peek_nth_token(Lexer* lexer, s32 nth)
+{
+  assert(nth >= 0);
+  assert(nth < MAX_LOOKAHEAD_TOKENS);
+
+  while (lexer->incoming_tokens_count <= nth)
+  {
+    // Reserve slot at the tail
+    Token* token = lexer_reserve_token_slot(lexer);
+
+    // Fill it
+    lexer_make_new_token(lexer);
+
+    lexer->incoming_tokens_count += 1;
+  }
+
+  s32 index = lexer_token_index(lexer, nth);
+  return &lexer->incoming_tokens[index];
+}
+#endif
 
 function void
 lexer_eat_character(Lexer* lexer)

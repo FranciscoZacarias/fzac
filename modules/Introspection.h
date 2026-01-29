@@ -9,13 +9,14 @@
           This is only meant to work on a codebase that follows my programming style. */
 
 #define _intsp_error(message) \
-  error_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
+  message_box(S("Introspection Error!"), message, S(__FILE__), __LINE__); \
   raddbg_break()
 
 #define INTSP_MAX_MEMBERS_CAPACITY 32
 #define INTSP_FILES_CAPACITY 32
 #define INTSP_CODE_TAGS_CAPACITY 8
-#define INTSP_STRUCT_CAPACITY 64
+#define INTSP_STRUCT_CAPACITY 32
+#define INTSP_FUNCTION_CAPACITY 128
 #define INTSP_ENUM_MEMBERS_CAPACITY 64
 #define INTSP_NESTED_AGGREGATE_CAPACITY 8
 
@@ -96,7 +97,6 @@ struct Intsp_Enum_Member
 };
 
 typedef struct Intsp_Typedef Intsp_Typedef;
-
 struct Intsp_Typedef
 {
   Typedef_Kind kind;
@@ -110,6 +110,29 @@ struct Intsp_Typedef
   u32 enum_members_capacity;
 
   Intsp_Source_Location location;
+};
+
+typedef struct Intsp_Function_Argument Intsp_Function_Argument;
+struct Intsp_Function_Argument
+{
+  String type;
+  String name;
+};
+
+typedef struct Intsp_Function Intsp_Function;
+struct Intsp_Function
+{
+  String name;
+  String type;
+  String body;
+  String documentation;
+
+  Intsp_Function_Argument *arguments;
+  u32 arguments_count;
+  u32 arguments_capacity;
+
+  Intsp_Source_Location forward_declare_location;
+  Intsp_Source_Location implementation_location;
 };
 
 struct Intsp_File
@@ -133,6 +156,11 @@ struct Intsp_File
   Intsp_Typedef *typedefs;
   u32 typedefs_count;
   u32 typedefs_capacity;
+
+  Arena *functions_arena;
+  Intsp_Function *functions;
+  u32 functions_count;
+  u32 functions_capacity;
 };
 
 struct Intsp_Code_Tag
@@ -160,6 +188,7 @@ function Token* _intsp_peek_token(Lexer *lexer, Intsp_File* file);
 function void   _intsp_expect_kind(Token *token, Token_Kind expected_kind);
 function void   _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *aggregate);
 function void   _intsp_parse_typedef(Lexer *lexer, Intsp_File *file);
+function void   _intsp_parse_function(Intsp_Context *ctx, Lexer *lexer, Intsp_File *file);
 function String _intsp_get_next_comment_or_line_break(Lexer *lexer, Intsp_File *file);
 
 function Intsp_Context
@@ -212,7 +241,8 @@ intsp_run(String source_directory, b32 introspect_base_library)
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Line_Break|Trivia_Whitespace|Trivia_Tab, Emit_Character_Literals|Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
 
-    Intsp_File *intsp_file = arena_array_push(result.files, result.files_count, result.files_capacity);
+    Intsp_File *intsp_file;
+    arena_array_push(intsp_file, result.files, result.files_count, result.files_capacity);
     intsp_file->arena = arena_alloc();
     intsp_file->path  = string_copy(intsp_file->arena, file_being_lexed);
 
@@ -224,6 +254,9 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
     intsp_file->typedefs_arena = arena_alloc();
     arena_array_init(intsp_file->typedefs_arena, intsp_file->typedefs, Intsp_Typedef, INTSP_STRUCT_CAPACITY);
+
+    intsp_file->functions_arena = arena_alloc();
+    arena_array_init(intsp_file->functions_arena, intsp_file->functions, Intsp_Function, INTSP_FUNCTION_CAPACITY);
 
     for (;;)
     {
@@ -246,8 +279,10 @@ intsp_run(String source_directory, b32 introspect_base_library)
 
         if (is_struct || is_union)
         {
-          Intsp_Aggregate *aggregate = arena_array_push(intsp_file->aggregates, intsp_file->aggregates_count, intsp_file->aggregates_capacity);
-          aggregate->members_arena    = arena_alloc();
+          Intsp_Aggregate *aggregate;
+          arena_array_push(aggregate, intsp_file->aggregates, intsp_file->aggregates_count, intsp_file->aggregates_capacity);
+
+          aggregate->members_arena = arena_alloc();
           arena_array_init(aggregate->members_arena, aggregate->members, Intsp_Aggregate_Member, INTSP_MAX_MEMBERS_CAPACITY);
 
           aggregate->kind = is_struct ? Aggregate_Struct : Aggregate_Union;
@@ -276,6 +311,10 @@ intsp_run(String source_directory, b32 introspect_base_library)
         {
           _intsp_parse_typedef(&lexer, intsp_file);
         }
+        else if (string_equals(token->value, S("function"), true))
+        {
+          _intsp_parse_function(&result, &lexer, intsp_file);
+        }
         else
         {
           _intsp_skip_line(&lexer, intsp_file);
@@ -292,11 +331,281 @@ intsp_run(String source_directory, b32 introspect_base_library)
 }
 
 function void
+_intsp_parse_function(Intsp_Context *ctx, Lexer *lexer, Intsp_File *file)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  
+  Token *token = _intsp_peek_token(lexer, file);
+  if (!string_equals(token->value, S("function"), true))
+  {
+    _intsp_error(S("Parsing a function expects first token to be 'function'."));
+  }
+  
+  lexer_eat_token(lexer);
+  _intsp_skip_spaces(lexer, file);
+  
+  String_List return_type_list = string_list_new();
+  string_list_push(scratch.arena, &return_type_list, S("function"));
+  
+  String function_name = string_zero();
+  u32 name_line = 0;
+  
+  for (;;)
+  {
+    token = _intsp_peek_token(lexer, file);
+    if (token->kind == Token_Identifier)
+    {
+      Token *next = lexer_peek_nth_token(lexer, 1);
+      if (next->kind == Token_Open_Parentheses)
+      {
+        function_name = string_copy(file->arena, token->value);
+        name_line = token->l0;
+        lexer_eat_token(lexer);
+        break;
+      }
+    }
+    
+    string_list_push(scratch.arena, &return_type_list, S(" "));
+    string_list_push(scratch.arena, &return_type_list, token->value);
+    lexer_eat_token(lexer);
+    _intsp_skip_spaces(lexer, file);
+  }
+  
+  token = _intsp_peek_token(lexer, file);
+  if (token->kind != Token_Open_Parentheses)
+  {
+    _intsp_error(Sf(scratch.arena, "Expected '(' after function name, got: "S_FMT"\n", S_ARG(token->value)));
+  }
+  
+  lexer_eat_token(lexer);
+  _intsp_skip_spaces(lexer, file);
+  token = _intsp_peek_token(lexer, file);
+  
+  Intsp_Function_Argument *arguments = NULL;
+  u32 arguments_count = 0;
+  u32 arguments_capacity = 0;
+  Arena *args_arena = NULL;
+  
+  if (token->kind != Token_Close_Parentheses)
+  {
+    args_arena = arena_alloc();
+    arena_array_init(args_arena, arguments, Intsp_Function_Argument, 16);
+
+    for (;;)
+    {
+      token = _intsp_peek_token(lexer, file);
+      if (token->kind == Token_Close_Parentheses) break;
+
+      // Check for var args
+      if (token->kind == Token_Dot)
+      {
+        Token *t1 = lexer_peek_nth_token(lexer, 1);
+        Token *t2 = lexer_peek_nth_token(lexer, 2);
+
+        if (t1->kind == Token_Dot && t2->kind == Token_Dot)
+        {
+          lexer_eat_token(lexer);
+          lexer_eat_token(lexer);
+          lexer_eat_token(lexer);
+
+          Intsp_Function_Argument *arg;
+          arena_array_push(arg, arguments, arguments_count, arguments_capacity);
+
+          arg->type = S("__va_args__");
+          arg->name = S("...");
+
+          token = _intsp_peek_token(lexer, file);
+          if (token->kind == Token_Comma)
+          {
+            lexer_eat_token(lexer);
+            _intsp_skip_spaces(lexer, file);
+          }
+
+          continue;
+        }
+      }
+
+      String_List arg_tokens = string_list_new();
+      Token *arg_name_token = NULL;
+
+      s32 paren_depth   = 0;
+      s32 bracket_depth = 0;
+
+      for (;;)
+      {
+        token = _intsp_peek_token(lexer, file);
+
+        if (token->kind == Token_Comma || token->kind == Token_Close_Parentheses)
+        {
+          break;
+        }
+
+        if (token->kind == Token_Open_Parentheses)  paren_depth++;
+        if (token->kind == Token_Close_Parentheses) paren_depth--;
+        if (token->kind == Token_Open_Bracket)      bracket_depth++;
+        if (token->kind == Token_Close_Bracket)     bracket_depth--;
+
+        if (token->kind == Token_Identifier && paren_depth == 0 && bracket_depth == 0)
+        {
+          arg_name_token = token;
+        }
+
+        string_list_push(scratch.arena, &arg_tokens, token->value);
+        string_list_push(scratch.arena, &arg_tokens, S(" "));
+
+        lexer_eat_token(lexer);
+        _intsp_skip_spaces(lexer, file);
+      }
+
+      string_list_remove_last(&arg_tokens);
+
+      String arg_name = string_zero();
+      if (arg_tokens.first != NULL)
+      {
+        arg_name = string_list_remove_last(&arg_tokens);
+      }
+
+      String arg_type = string_list_join(file->arena, &arg_tokens);
+      arg_type = string_trim(file->arena, arg_type);
+
+      Intsp_Function_Argument *arg;
+      arena_array_push(arg, arguments, arguments_count, arguments_capacity);
+
+      arg->type = arg_type;
+      arg->name = arg_name;
+
+      token = _intsp_peek_token(lexer, file);
+      if (token->kind == Token_Comma)
+      {
+        lexer_eat_token(lexer);
+        _intsp_skip_spaces(lexer, file);
+      }
+    }
+  }
+  
+  token = _intsp_peek_token(lexer, file);
+  if (token->kind != Token_Close_Parentheses)
+  {
+    _intsp_error(Sf(scratch.arena, "Expected ')' after function arguments, got: "S_FMT"\n", S_ARG(token->value)));
+  }
+  
+  lexer_eat_token(lexer);
+  _intsp_skip_spaces(lexer, file);
+  token = _intsp_peek_token(lexer, file);
+  
+  // check if forward declare or implementation
+  b32 is_forward_declare = (token->kind == Token_Semicolon);
+  b32 is_implementation = (token->kind == Token_Open_Brace);
+  
+  if (!is_forward_declare && !is_implementation)
+  {
+    _intsp_error(Sf(scratch.arena, "Expected ';' or '{' after function signature, got: "S_FMT"\n", S_ARG(token->value)));
+  }
+  
+  Intsp_Function *func = NULL;
+  for (u32 files_index = 0; files_index < ctx->files_count; files_index += 1)
+  {
+    Intsp_File *it_file = &ctx->files[files_index];
+    for (u32 func_in_file_idex = 0; func_in_file_idex < it_file->functions_count; func_in_file_idex++)
+    {
+      if (string_equals(it_file->functions[func_in_file_idex].name, function_name, false))
+      {
+        func = &it_file->functions[func_in_file_idex];
+        break;
+      }
+    }
+  }
+  
+  // create new function if doesn't exist
+  if (func == NULL)
+  {
+    arena_array_push(func, file->functions, file->functions_count, file->functions_capacity);
+    memory_zero_struct(func);
+    func->name = function_name;
+    func->type = string_list_join(file->arena, &return_type_list);
+    func->arguments = arguments;
+    func->arguments_count = arguments_count;
+    func->arguments_capacity = arguments_capacity;
+  }
+  
+  if (is_forward_declare)
+  {
+    func->forward_declare_location.file = file;
+    func->forward_declare_location.line = name_line;
+    
+    u32 semicolon_line = token->l0;
+    lexer_eat_token(lexer);
+    
+    // check for documentation comment on same line - use lexer_peek_token to see comments
+    token = lexer_peek_token(lexer);
+    if (token->l0 == (s32)semicolon_line && (token->kind == Token_Comment_Line || token->kind == Token_Comment_Block))
+    {
+      func->documentation = string_copy(file->arena, token->value);
+      lexer_eat_token(lexer);
+    }
+  }
+  else // is_implementation
+  {
+    func->implementation_location.file = file;
+    func->implementation_location.line = name_line;
+    
+    // collect body
+    String_List body_list = string_list_new();
+    
+    if (token->kind != Token_Open_Brace)
+    {
+      _intsp_error(Sf(scratch.arena, "Expected '{' for function body, got: "S_FMT"\n", S_ARG(token->value)));
+    }
+    
+    lexer_eat_token(lexer);
+    
+    u32 brace_depth = 1;
+    while (brace_depth > 0)
+    {
+      token = _intsp_peek_token(lexer, file);
+      
+      if (token->kind == Token_End_Of_File)
+      {
+        _intsp_error(S("Unexpected EOF in function body"));
+      }
+      
+      if (token->kind == Token_Open_Brace)
+      {
+        brace_depth++;
+      }
+      else if (token->kind == Token_Close_Brace)
+      {
+        brace_depth--;
+        if (brace_depth == 0)
+          break;
+      }
+      
+      string_list_push(scratch.arena, &body_list, token->value);
+      
+      lexer_eat_token(lexer);
+    }
+    
+    func->body = string_list_join(file->arena, &body_list);
+    
+    token = _intsp_peek_token(lexer, file);
+    if (token->kind != Token_Close_Brace)
+    {
+      _intsp_error(Sf(scratch.arena, "Expected '}' to close function body, got: "S_FMT"\n", S_ARG(token->value)));
+    }
+    
+    lexer_eat_token(lexer);
+  }
+  
+  scratch_end(&scratch);
+}
+
+function void
 _intsp_parse_typedef(Lexer *lexer, Intsp_File *file)
 {
   Token *token = _intsp_peek_token(lexer, file);
 
-  Intsp_Typedef *typedef_item = arena_array_push(file->typedefs, file->typedefs_count, file->typedefs_capacity);
+  Intsp_Typedef *typedef_item;
+  arena_array_push(typedef_item, file->typedefs, file->typedefs_count, file->typedefs_capacity);
   typedef_item->documentation = string_zero();
 
   typedef_item->enum_members_arena = arena_alloc();
@@ -363,7 +672,8 @@ _intsp_parse_typedef(Lexer *lexer, Intsp_File *file)
     {
       if (token->kind == Token_Identifier)
       {
-        Intsp_Enum_Member *enum_member = arena_array_push(typedef_item->enum_members, typedef_item->enum_members_count, typedef_item->enum_members_capacity);
+        Intsp_Enum_Member *enum_member;
+        arena_array_push(enum_member, typedef_item->enum_members, typedef_item->enum_members_count, typedef_item->enum_members_capacity);
 
         enum_member->name  = string_copy(file->arena, token->value);
         enum_member->value = string_zero();
@@ -518,7 +828,8 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       lexer_eat_token(lexer);
       _intsp_skip_spaces(lexer, file);
 
-      Intsp_Aggregate_Member *member = arena_array_push(aggregate->members,aggregate->members_count, aggregate->members_capacity);
+      Intsp_Aggregate_Member *member;
+      arena_array_push(member, aggregate->members,aggregate->members_count, aggregate->members_capacity);
 
       member->type  = string_zero();
       member->is_bit = false;
@@ -532,13 +843,13 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       Intsp_Aggregate *nested_aggregate;
       if (is_nested_struct)
       {
-        nested_aggregate = arena_array_push(member->nested_structs,member->nested_structs_count, member->nested_structs_capacity);
+        arena_array_push(nested_aggregate, member->nested_structs,member->nested_structs_count, member->nested_structs_capacity);
         nested_aggregate->kind = Aggregate_Struct;
         nested_aggregate->name = S("_nameless_struct_");
       }
       else
       {
-        nested_aggregate = arena_array_push(member->nested_unions, member->nested_unions_count, member->nested_unions_capacity);
+        arena_array_push(nested_aggregate, member->nested_unions, member->nested_unions_count, member->nested_unions_capacity);
         nested_aggregate->kind = Aggregate_Union;
         nested_aggregate->name = S("_nameless_union_");
       }
@@ -576,7 +887,8 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
       continue;
     }
 
-    Intsp_Aggregate_Member *member = arena_array_push(aggregate->members, aggregate->members_count, aggregate->members_capacity);
+    Intsp_Aggregate_Member *member;
+    arena_array_push(member, aggregate->members, aggregate->members_count, aggregate->members_capacity);
     member->is_bit = false;
 
     String_List type_tokens = string_list_new();
@@ -679,7 +991,8 @@ _intsp_parse_struct_members(Lexer *lexer, Intsp_File *file, Intsp_Aggregate *agg
         _intsp_skip_spaces(lexer, file);
         token = _intsp_peek_token(lexer, file);
 
-        Intsp_Aggregate_Member *extra_member = arena_array_push(aggregate->members, aggregate->members_count, aggregate->members_capacity);
+        Intsp_Aggregate_Member *extra_member;
+        arena_array_push(extra_member, aggregate->members, aggregate->members_count, aggregate->members_capacity);
         extra_member->type = string_copy(file->arena, member->type);
         extra_member->is_bit = false;
 
@@ -878,7 +1191,8 @@ _intsp_peek_token(Lexer *lexer, Intsp_File *file)
           text.count = (start < end) ? (end - start) : 0;
 
           // arena-backed array push
-          Intsp_Code_Tag *slot = arena_array_push(file->code_tags, file->code_tags_count, file->code_tags_capacity);
+          Intsp_Code_Tag *slot;
+          arena_array_push(slot, file->code_tags, file->code_tags_count, file->code_tags_capacity);
 
           slot->kind = tag;
           slot->file = file;

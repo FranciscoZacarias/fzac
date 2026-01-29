@@ -40,7 +40,7 @@ _opengl_check_error(String file, u32 line)
 
     Scratch scratch = scratch_begin(0,0);
     String msg = Sf(scratch.arena, "OpenGL error 0x%X (%s) at "S_FMT":%u", err, error_string, S_ARG(file), line);
-    error_box(S("OpenGL Error"), msg, file, line);
+    message_box(S("OpenGL Error"), msg, file, line);
     scratch_end(&scratch);
     assert(false);
   }

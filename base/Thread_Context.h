@@ -27,13 +27,15 @@ function void   clear_temporary_storage();
 function Arena* 
 get_temporary_storage()
 {
-  return MainThreadContext.temporary_storage;
+  Thread_Context *ctx = thread_context_get_equipped();
+  return ctx->temporary_storage;
 }
 
 function void   
 clear_temporary_storage()
 {
-  arena_clear(MainThreadContext.temporary_storage);
+  Thread_Context *ctx = thread_context_get_equipped();
+  arena_clear(ctx->temporary_storage);
 }
 
 function void
