@@ -18,7 +18,7 @@
   }
 */
 
-#define MAX_LEXER_SCRATCH_BUFFER_SIZE 512
+#define MAX_LEXER_SCRATCH_BUFFER_SIZE 1024
 #define MAX_LOOKAHEAD_TOKENS 8
 
 // @TODO(fz): Fix static asserts

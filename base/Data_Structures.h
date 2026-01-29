@@ -17,6 +17,7 @@ struct String_Buffer
 
 function void string_buffer_init(String_Buffer *buffer, Allocator *allocator, u64 initial_capacity); /* Initializes the buffer */
 function void string_buffer_push(String_Buffer *buffer, const char *fmt, ...); /* Adds data to the buffer */
+function void string_buffer_push_literal(String_Buffer *buffer, const char *text); /* Pushes a literal string that is not treated as a fmt string. */
 function void string_buffer_free(String_Buffer *buffer); /* Frees the buffer */
 function String string_buffer_to_string(Arena* arena, String_Buffer *buffer); /* Copies the contents of buffer into a string */
 
@@ -77,6 +78,31 @@ string_buffer_push(String_Buffer *buffer, const char* fmt, ...)
     buffer->capacity = new_capacity;
   }
 }
+
+function void
+string_buffer_push_literal(String_Buffer *buffer, const char *text)
+{
+  u64 len = strlen(text);
+
+  if (buffer->count + len > buffer->capacity)
+  {
+    u64 new_capacity = buffer->capacity ? buffer->capacity : 64;
+    while (new_capacity < buffer->count + len) new_capacity *= 2;
+
+    u8 *new_data = (u8*)buffer->allocator->alloc_no_zero(new_capacity, buffer->allocator->context);
+    if (buffer->data)
+    {
+      memory_copy(new_data, buffer->data, buffer->count);
+      buffer->allocator->free(buffer->capacity, buffer->data, buffer->allocator->context);
+    }
+    buffer->data = new_data;
+    buffer->capacity = new_capacity;
+  }
+
+  memory_copy(buffer->data + buffer->count, text, len);
+  buffer->count += len;
+}
+
 
 function void
 string_buffer_free(String_Buffer *buffer)

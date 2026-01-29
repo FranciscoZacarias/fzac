@@ -2,7 +2,7 @@
 #define OPENGL_H
 
 #include "OpenGL/OpenGL_Constants.h"
-#include "OpenGL/generated/Opengl.h.inl"
+#include "OpenGL/generated/Opengl.generated.h"
 
 // @Section: Opengl entry point
 function b32   opengl_init(Window* window); /* Initializes opengl context */
@@ -18,7 +18,7 @@ function void           _opengl_check_error(String file, u32 line); /* Checks fo
 function void*          _load_gl_function(const char *name); /* Helper to load a single opengl function */
 
 // @Section: Implementation
-#include "OpenGL/generated/Opengl.c.inl"
+#include "OpenGL/generated/Opengl.generated.c"
 
 function void
 _opengl_check_error(String file, u32 line)

@@ -214,7 +214,7 @@ intsp_run(String source_directory, b32 introspect_base_library)
        string_contains(file_being_lexed, S("\\.idea\\"))          ||
        string_contains(file_being_lexed, S("\\.vs\\"))            ||
        string_contains(file_being_lexed, S("\\.vscode\\"))        ||
-       string_contains(file_being_lexed, S("\\cgen.generated\\")) ||
+       string_contains(file_being_lexed, S("\\generated\\")) ||
        string_contains(file_being_lexed, S("\\.code\\")))
     {
       continue;

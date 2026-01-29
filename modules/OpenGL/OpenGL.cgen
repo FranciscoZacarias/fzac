@@ -92,7 +92,7 @@ OpenGL_Function_Table (return name args call_args)
   {  GLenum           glGetError                      `(void)`                                                                   `()`                                }
 }
 
-@Generator(Opengl.h)
+@Generator(Opengl.generated.h)
 {
 
   `#ifndef OPENGL_FUNCTIONS_H
@@ -121,7 +121,7 @@ $(name) $(args)
   `#endif // OPENGL_FUNCTIONS_H`
 }
 
-@Generator(Opengl.c)
+@Generator(Opengl.generated.c)
 {
   `function b32\n_opengl_load_functions()\n{\n`
 

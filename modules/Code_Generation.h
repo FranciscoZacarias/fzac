@@ -10,7 +10,7 @@
 #define CGEN_COLUMNS_CAPACITY 32
 #define CGEN_ROWS_CAPACITY 128
 #define CGEN_COMMANDS_CAPACITY 32
-#define CGEN_STRING_ARGUMENTS_CAPACITY 16
+#define CGEN_STRING_ARGUMENTS_CAPACITY 32
 
 #define _cgen_error(message) \
   message_box(S("Code Generator Error!"), message, S(__FILE__), __LINE__); \
@@ -250,20 +250,19 @@ cgen_execute_commands(CGen_Context *ctx)
     output_directory = string_join(scratch.arena, output_directory, (separator == '/') ? S("/") : S("\\"));
     
     String output_file = string_join(scratch.arena, output_directory, name);
-    output_file        = string_join(scratch.arena, output_file, S(".gen.inl"));
+    output_file        = string_join(scratch.arena, output_file, S(".generated.inl"));
 
     for (u32 generator_index = 0; generator_index < file->generators_count; generator_index += 1)
     {
       CGen_Generator *generator = &file->generators[generator_index];
 
       String_Buffer buffer; // Where the file data will be written to 
-      string_buffer_init(&buffer, &MallocAllocator, kilobytes(16));
+      string_buffer_init(&buffer, &MallocAllocator, kilobytes(32));
       string_buffer_push(&buffer, "/* Generated code */\n\n");
 
       if (generator->custom_file_name.count > 0)
       {
         output_file = string_join(scratch.arena, output_directory, generator->custom_file_name);
-        output_file = string_join(scratch.arena, output_file, S(".inl"));
       }
 
       for (u32 command_index = 0; command_index < generator->commands_count; command_index += 1)
@@ -274,7 +273,7 @@ cgen_execute_commands(CGen_Context *ctx)
         {
           case CGen_Command_Kind_String:
           {
-            string_buffer_push(&buffer, (const char*)command->string.data.cstring);
+            string_buffer_push_literal(&buffer, (const char*)command->string.data.cstring);
           }
           break;
 
