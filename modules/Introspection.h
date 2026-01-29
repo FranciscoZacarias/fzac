@@ -179,7 +179,6 @@ struct Intsp_Context
   u32 files_capacity;
 };
 
-
 function Intsp_Context intsp_run(String source_directory, b32 introspect_base_library);
 
 function void   _intsp_skip_line(Lexer *lexer, Intsp_File *file);

@@ -58,6 +58,9 @@ typedef struct Matrix3    Matrix3;
 typedef struct Matrix4    Matrix4;
 typedef struct Quaternion Quaternion;
 
+// @Section: f32
+function f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
+
 // @Section: Vector2
 struct Vector2 { f32 x, y; };
 #define vector2(x,y) (Vector2){(x),(y)}
@@ -224,8 +227,16 @@ function Vector3    quaternion_to_euler(Quaternion q); /* Converts a quaternion 
 function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
 
-
 // @Section: Implementation
+
+function f32
+f32_remap(f32 value, f32 min, f32 max)
+{
+  value = clamp(value, 0.0f, 1.0f);
+  f32 remaped = min + (max - min) * value;
+  return remaped;
+}
+
 function Vector2
 vector2_add(Vector2 v1, Vector2 v2)
 {

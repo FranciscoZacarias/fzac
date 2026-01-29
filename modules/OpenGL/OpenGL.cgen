@@ -77,6 +77,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glTexImage2D                    `(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)` `(target, level, internalformat, width, height, border, format, type, pixels)` }
   {  glTexParameteri                 `(GLenum target, GLenum pname, GLint param)`                                                                                                 `(target, pname, param)` }
   {  glPixelStorei                   `(GLenum pname, GLint param)`                                                                                                                `(pname, param)` }
+  {  glGenerateMipmap                `(GLenum target)`                                                                                                                            `(target)` }
 }
 
 @Table
@@ -128,7 +129,7 @@ $(name) $(args)
   `  __$(name) = (PFN$(name)PROC)_load_gl_function("$(name)"); 
   if (!$(name))
   {
-    error_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
+    message_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
     return false;
   }\n\n`
 
@@ -136,7 +137,7 @@ $(name) $(args)
   `  __$(name) = (PFN$(name)PROC)_load_gl_function("$(name)"); 
   if (!__$(name))
   {
-    error_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
+    message_box(S("OpenGL"), S("Unable to load opengl function: $(name)"), S("OpenGL.cgen"), 0);
     return false;
   }\n\n`
 

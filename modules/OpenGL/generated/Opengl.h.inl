@@ -605,6 +605,14 @@ glPixelStorei (GLenum pname, GLint param)
   __glPixelStorei (pname, param);
 }
 
+typedef void (*PFNglGenerateMipmapPROC)(GLenum target);
+global PFNglGenerateMipmapPROC __glGenerateMipmap = NULL;
+function inline void
+glGenerateMipmap (GLenum target)
+{
+  __glGenerateMipmap (target);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
