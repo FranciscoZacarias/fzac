@@ -105,9 +105,7 @@ function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and 
     (out_ptr) = &(ptr)[(count)++];                       \
   )
 
-
 // @Section: Implementation
-
 function Arena*
 arena_alloc()
 {
