@@ -456,7 +456,7 @@ lexer_peek_nth_token(Lexer* lexer, s32 nth)
   while (lexer->incoming_tokens_count <= nth)
   {
     // Reserve slot at the tail
-    Token* token = lexer_reserve_token_slot(lexer);
+    lexer_reserve_token_slot(lexer);
 
     // Fill it
     lexer_make_new_token(lexer);
