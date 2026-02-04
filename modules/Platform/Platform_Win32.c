@@ -1,17 +1,23 @@
 function void
-console_attach()
+  console_attach()
 {
-  if (!AllocConsole())
+  b32 attached = AttachConsole(ATTACH_PARENT_PROCESS);
+
+  if (!attached)
   {
-    // @TODO(fz): Handle error
-    return;
+    AllocConsole();
   }
 
-  FILE* fp;
+  FILE *fp;
+
   freopen_s(&fp, "CONOUT$", "w", stdout);
   freopen_s(&fp, "CONOUT$", "w", stderr);
   freopen_s(&fp, "CONIN$",  "r", stdin);
 
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
+
+  // Enable ANSI escape sequences
   HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
   if (handle != INVALID_HANDLE_VALUE)
   {
@@ -22,6 +28,7 @@ console_attach()
     }
   }
 }
+
 
 function void
 message_box(String title, String content, String file, u32 line)

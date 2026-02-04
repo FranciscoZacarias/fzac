@@ -135,6 +135,52 @@ typedef s64 b64;
 #define true  1
 #define false 0
 
-/* === Data structures === */
+/* === Section: Utils === */
+#undef min
+#undef max
+#undef abs
+#define min(A,B) (((A) < (B)) ? (A) : (B))
+#define max(A,B) (((A) > (B)) ? (A) : (B))
+#define abs(val) (((val) < 0) ? -(val) : (val))
+
+#define clamp_top(A,X) min(A,X)
+#define clamp_bot(X,B) max(X,B)
+#define clamp(val,lo,hi) (((val) < (lo)) ? (lo) : (((val) > (hi)) ? (hi) : (val)))
+
+#define to_degrees(r) ((r) * (180.0f / PI32))
+#define to_radians(d) ((d) * (PI32 / 180.0f))
+
+/* === Constants === */
+#define U8_MIN      (u8) 0x00
+#define U8_MAX      (u8) 0xFF
+#define U16_MIN     (u16) 0x0000
+#define U16_MAX     (u16) 0xFFFF
+#define U32_MIN     (u32) 0x00000000
+#define U32_MAX     (u32) 0xFFFFFFFF
+#define U64_MIN     (u64) 0x0000000000000000ULL
+#define U64_MAX     (u64) 0xFFFFFFFFFFFFFFFFULL
+
+#define S8_MIN      (s8) (-0x7F - 1)
+#define S8_MAX      (s8) 0x7F
+#define S16_MIN     (s16) (-0x7FFF - 1)
+#define S16_MAX     (s16) 0x7FFF
+#define S32_MIN     (s32) (-0x7FFFFFFF - 1)
+#define S32_MAX     (s32) 0x7FFFFFFF
+#define S64_MIN     (s64) (-0x7FFFFFFFFFFFFFFFLL - 1)
+#define S64_MAX     (s64) 0x7FFFFFFFFFFFFFFFLL
+
+#define F32_MIN     (f32) -3.402823466e+38f
+#define F32_MAX     (f32)  3.402823466e+38f
+#define F32_EPSILON (f32)  1.192092896e-07f
+
+#define F64_MIN     (f64) -1.7976931348623158e+308
+#define F64_MAX     (f64)  1.7976931348623158e+308
+#define F64_EPSILON (f64)  2.2204460492503131e-16
+
+#define TAU32 (f32) 6.283185
+#define TAU64 (f64) 6.28318530717958648
+
+#define PI32 (f32) 3.1415927
+#define PI64 (f64) 3.141592653589793
 
 #endif // CORE_H

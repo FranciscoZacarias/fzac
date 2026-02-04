@@ -34,11 +34,12 @@
 
 #include "base\Context_Cracking.h"
 #include "base\Core.h" 
-#include "base\Math.h"
 
 #include "base\Memory.h"
 #include "base\Allocator.h"
+
 #include "base\String.h"
+#include "base\Math.h"
 
 #include "base\Data_Structures.h"
 #include "base\Thread_Context.h"
