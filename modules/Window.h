@@ -187,8 +187,6 @@ struct Input_State
   Keyboard_State keyboard_previous;
   Mouse_State    mouse_current;
   Mouse_State    mouse_previous;
-  b8 ignore_next_mouse_move;
-  b8 is_cursor_locked;
 };
 
 function void _input_init(); /* Initializes input state (clears previous + current states) */

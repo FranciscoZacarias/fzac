@@ -553,9 +553,6 @@ _input_init()
 {
   assert_no_reentry();
   memory_zero_struct(&WindowContext.input);
-
-  WindowContext.input.ignore_next_mouse_move = false;
-  WindowContext.input.is_cursor_locked       = false;
 }
 
 function void
