@@ -29,6 +29,18 @@ function V2u32 v2u32_min(V2u32 a, V2u32 b);
 function V2u32 v2u32_max(V2u32 a, V2u32 b);
 function V2u32 v2u32_clamp(V2u32 v, V2u32 min, V2u32 max);
 
+typedef struct V2s32 V2s32;
+struct V2s32 { s32 x, y; };
+#define v2s32(x,y) (V2s32){(x),(y)}
+#define v2s32_zero() v2s32(0,0)
+function V2s32 v2s32_add(V2s32 a, V2s32 b);
+function V2s32 v2s32_sub(V2s32 a, V2s32 b);
+function V2s32 v2s32_mul(V2s32 a, V2s32 b);
+function V2s32 v2s32_scale(V2s32 v, s32 s);
+function V2s32 v2s32_min(V2s32 a, V2s32 b);
+function V2s32 v2s32_max(V2s32 a, V2s32 b);
+function V2s32 v2s32_clamp(V2s32 v, V2s32 min, V2s32 max);
+
 // Vector 3 types
 // --------------
 typedef struct V3f32 V3f32;
@@ -54,6 +66,18 @@ function V3u32 v3u32_scale(V3u32 v, u32 s);
 function V3u32 v3u32_min(V3u32 a, V3u32 b);
 function V3u32 v3u32_max(V3u32 a, V3u32 b);
 function V3u32 v3u32_clamp(V3u32 v, V3u32 min, V3u32 max);
+
+typedef struct V3s32 V3s32;
+struct V3s32 { s32 x, y, z; };
+#define v3s32(x,y,z) (V3s32){(x),(y),(z)}
+#define v3s32_zero() v3s32(0,0,0)
+function V3s32 v3s32_add(V3s32 a, V3s32 b);
+function V3s32 v3s32_sub(V3s32 a, V3s32 b);
+function V3s32 v3s32_mul(V3s32 a, V3s32 b);
+function V3s32 v3s32_scale(V3s32 v, s32 s);
+function V3s32 v3s32_min(V3s32 a, V3s32 b);
+function V3s32 v3s32_max(V3s32 a, V3s32 b);
+function V3s32 v3s32_clamp(V3s32 v, V3s32 min, V3s32 max);
 
 // Vector4 types
 // -------------
@@ -81,4 +105,16 @@ function V4u32 v4u32_scale(V4u32 v, u32 s);
 function V4u32 v4u32_min(V4u32 a, V4u32 b);
 function V4u32 v4u32_max(V4u32 a, V4u32 b);
 function V4u32 v4u32_clamp(V4u32 v, V4u32 min, V4u32 max);
+
+typedef struct V4s32 V4s32;
+struct V4s32 { s32 x, y, z, w; };
+#define v4s32(x,y,z,w) (V4s32){(x),(y),(z),(w)}
+#define v4s32_zero() v4s32(0,0,0,0)
+function V4s32 v4s32_add(V4s32 a, V4s32 b);
+function V4s32 v4s32_sub(V4s32 a, V4s32 b);
+function V4s32 v4s32_mul(V4s32 a, V4s32 b);
+function V4s32 v4s32_scale(V4s32 v, s32 s);
+function V4s32 v4s32_min(V4s32 a, V4s32 b);
+function V4s32 v4s32_max(V4s32 a, V4s32 b);
+function V4s32 v4s32_clamp(V4s32 v, V4s32 min, V4s32 max);
 #endif // MATH_GENERATED_H

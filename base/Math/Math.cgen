@@ -3,6 +3,7 @@
 {
   { f32 F32 }
   { u32 U32 }
+  { s32 S32 }
 }
 
 @Generator(Math.generated.h)
