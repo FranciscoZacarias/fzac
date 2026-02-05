@@ -553,6 +553,9 @@ _input_init()
 {
   assert_no_reentry();
   memory_zero_struct(&WindowContext.input);
+  
+  WindowContext.input.mouse_previous.screen_space.x = -1.0f;
+  WindowContext.input.mouse_previous.screen_space.y = -1.0f;
 }
 
 function void

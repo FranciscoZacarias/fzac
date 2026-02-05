@@ -3,27 +3,27 @@
 
 // @Section: RGBA vector colors (linear 0–1)
 
-#define COLOR_CLEAR              vector4(0.0f, 0.0f, 0.0f, 0.0f)
+#define COLOR_CLEAR              v4f32(0.0f, 0.0f, 0.0f, 0.0f)
 
-#define COLOR_WHITE(alpha)       vector4(1.0f, 1.0f, 1.0f, (f32)(alpha))
-#define COLOR_BLACK(alpha)       vector4(0.0f, 0.0f, 0.0f, (f32)(alpha))
-#define COLOR_GRAY(alpha)        vector4(0.5f, 0.5f, 0.5f, (f32)(alpha))
-#define COLOR_DARK_GRAY(alpha)   vector4(0.25f, 0.25f, 0.25f, (f32)(alpha))
-#define COLOR_LIGHT_GRAY(alpha)  vector4(0.75f, 0.75f, 0.75f, (f32)(alpha))
+#define COLOR_WHITE(alpha)       v4f32(1.0f, 1.0f, 1.0f, (f32)(alpha))
+#define COLOR_BLACK(alpha)       v4f32(0.0f, 0.0f, 0.0f, (f32)(alpha))
+#define COLOR_GRAY(alpha)        v4f32(0.5f, 0.5f, 0.5f, (f32)(alpha))
+#define COLOR_DARK_GRAY(alpha)   v4f32(0.25f, 0.25f, 0.25f, (f32)(alpha))
+#define COLOR_LIGHT_GRAY(alpha)  v4f32(0.75f, 0.75f, 0.75f, (f32)(alpha))
 
-#define COLOR_RED(alpha)         vector4(1.0f, 0.0f, 0.0f, (f32)(alpha))
-#define COLOR_GREEN(alpha)       vector4(0.0f, 1.0f, 0.0f, (f32)(alpha))
-#define COLOR_BLUE(alpha)        vector4(0.0f, 0.0f, 1.0f, (f32)(alpha))
+#define COLOR_RED(alpha)         v4f32(1.0f, 0.0f, 0.0f, (f32)(alpha))
+#define COLOR_GREEN(alpha)       v4f32(0.0f, 1.0f, 0.0f, (f32)(alpha))
+#define COLOR_BLUE(alpha)        v4f32(0.0f, 0.0f, 1.0f, (f32)(alpha))
 
-#define COLOR_YELLOW(alpha)      vector4(1.0f, 1.0f, 0.0f, (f32)(alpha))
-#define COLOR_CYAN(alpha)        vector4(0.0f, 1.0f, 1.0f, (f32)(alpha))
-#define COLOR_MAGENTA(alpha)     vector4(1.0f, 0.0f, 1.0f, (f32)(alpha))
+#define COLOR_YELLOW(alpha)      v4f32(1.0f, 1.0f, 0.0f, (f32)(alpha))
+#define COLOR_CYAN(alpha)        v4f32(0.0f, 1.0f, 1.0f, (f32)(alpha))
+#define COLOR_MAGENTA(alpha)     v4f32(1.0f, 0.0f, 1.0f, (f32)(alpha))
 
-#define COLOR_ORANGE(alpha)      vector4(1.0f, 0.5f, 0.0f, (f32)(alpha))
-#define COLOR_PURPLE(alpha)      vector4(0.5f, 0.0f, 0.5f, (f32)(alpha))
-#define COLOR_PINK(alpha)        vector4(1.0f, 0.75f, 0.8f, (f32)(alpha))
+#define COLOR_ORANGE(alpha)      v4f32(1.0f, 0.5f, 0.0f, (f32)(alpha))
+#define COLOR_PURPLE(alpha)      v4f32(0.5f, 0.0f, 0.5f, (f32)(alpha))
+#define COLOR_PINK(alpha)        v4f32(1.0f, 0.75f, 0.8f, (f32)(alpha))
 
-#define COLOR_BROWN(alpha)       vector4(0.6f, 0.4f, 0.2f, (f32)(alpha))
+#define COLOR_BROWN(alpha)       v4f32(0.6f, 0.4f, 0.2f, (f32)(alpha))
 
 // @Section: Packed colors (Alpha 1)
 
@@ -74,16 +74,16 @@
 
 // @Section: Helper functions
 
-function u32     color_pack(Vector4 color); /* Packs a Vector4 RGBA color into an unsigned 32 bit integer */
-function Vector4 color_unpack(u32 color); /* Unpacks a unsigned 32 bit integer into an RGBA Vector4 */
+function u32     color_pack(V4f32 color); /* Packs a V4f32 RGBA color into an unsigned 32 bit integer */
+function V4f32 color_unpack(u32 color); /* Unpacks a unsigned 32 bit integer into an RGBA V4f32 */
 
-function Vector3 hsv_to_rgb(f32 h, f32 s, f32 v);
-function Vector4 rainbow_color(f32 delta_time, f32 speed, f32 alpha);
+function V3f32 hsv_to_rgb(f32 h, f32 s, f32 v);
+function V4f32 rainbow_color(f32 delta_time, f32 speed, f32 alpha);
 
 // @Section: Implementation
 
 function u32
-color_pack(Vector4 color)
+color_pack(V4f32 color)
 {
   u8 r = (u8)(color.x * 255.0f);
   u8 g = (u8)(color.y * 255.0f);
@@ -92,10 +92,10 @@ color_pack(Vector4 color)
   return (a << 24) | (b << 16) | (g << 8) | r;
 }
 
-function Vector4
+function V4f32
 color_unpack(u32 color)
 {
-  Vector4 result;
+  V4f32 result;
   result.x = (f32)((color >>  0) & 0xFF) * (1.0f / 255.0f);
   result.y = (f32)((color >>  8) & 0xFF) * (1.0f / 255.0f);
   result.z = (f32)((color >> 16) & 0xFF) * (1.0f / 255.0f);
@@ -103,7 +103,7 @@ color_unpack(u32 color)
   return result;
 }
 
-function Vector3
+function V3f32
 hsv_to_rgb(f32 h, f32 s, f32 v)
 {
   f32 r = 0, g = 0, b = 0;
@@ -124,17 +124,17 @@ hsv_to_rgb(f32 h, f32 s, f32 v)
     case 5: r = v; g = p; b = q; break;
   }
 
-  return vector3(r, g, b);
+  return v3f32(r, g, b);
 }
 
-function Vector4
+function V4f32
 rainbow_color(f32 delta_time, f32 speed, f32 alpha)
 {
   local_persist f32 hue = 0.0f;
   hue += speed * delta_time;
   if (hue >= 1.0f) hue -= 1.0f;
-  Vector3 rgb = hsv_to_rgb(hue, 1.0f, 1.0f);
-  return vector4(rgb.x, rgb.y, rgb.z, alpha);
+  V3f32 rgb = hsv_to_rgb(hue, 1.0f, 1.0f);
+  return v4f32(rgb.x, rgb.y, rgb.z, alpha);
 }
 
 #endif // ART_H

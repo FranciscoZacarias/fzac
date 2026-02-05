@@ -9,8 +9,8 @@
 #define CGEN_GENERATORS_CAPACITY 16
 #define CGEN_COLUMNS_CAPACITY 32
 #define CGEN_ROWS_CAPACITY 128
-#define CGEN_COMMANDS_CAPACITY 32
-#define CGEN_STRING_ARGUMENTS_CAPACITY 32
+#define CGEN_COMMANDS_CAPACITY 128
+#define CGEN_STRING_ARGUMENTS_CAPACITY 128
 
 #define _cgen_error(message) \
   message_box(S("Code Generator Error!"), message, S(__FILE__), __LINE__); \

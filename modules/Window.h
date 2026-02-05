@@ -174,8 +174,8 @@ struct Keyboard_State
 typedef struct Mouse_State Mouse_State;
 struct Mouse_State
 {
-  Vector2 screen_space;
-  Vector2 delta;
+  V2f32 screen_space;
+  V2f32 delta;
   s32 wheel_delta; 
   b8 buttons[Mouse_Button_Count];
 };
@@ -205,6 +205,7 @@ function b32 input_was_button_down(Mouse_Button button); /* True if the given mo
 function b32 input_is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
 
 function void _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed); /* Internal: Processes a key press/release and updates keyboard state */
+function void _input_process_mouse_move(s32 x, s32 y);
 function void _input_process_mouse_button(Mouse_Button button, b32 is_pressed); /* Internal: Processes mouse button press/release and updates mouse state */
 
 // @Section: Events

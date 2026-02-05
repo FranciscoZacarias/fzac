@@ -39,7 +39,7 @@
 #include "base\Allocator.h"
 
 #include "base\String.h"
-#include "base\Math.h"
+#include "base\Math\Math.h"
 
 #include "base\Data_Structures.h"
 #include "base\Thread_Context.h"
