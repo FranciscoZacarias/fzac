@@ -348,8 +348,8 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
       s32 x = GET_X_LPARAM(lparam);
       s32 y = GET_Y_LPARAM(lparam);
-      WindowContext.input.mouse_current.screen_space.x = (f32)x; 
-      WindowContext.input.mouse_current.screen_space.y = (f32)y;
+      WindowContext.input.mouse_current.screen_space.x = x; 
+      WindowContext.input.mouse_current.screen_space.y = y;
       return 0;
     }
     break;
@@ -554,8 +554,8 @@ _input_init()
   assert_no_reentry();
   memory_zero_struct(&WindowContext.input);
   
-  WindowContext.input.mouse_previous.screen_space.x = -1.0f;
-  WindowContext.input.mouse_previous.screen_space.y = -1.0f;
+  WindowContext.input.mouse_previous.screen_space.x = -1;
+  WindowContext.input.mouse_previous.screen_space.y = -1;
 }
 
 function void

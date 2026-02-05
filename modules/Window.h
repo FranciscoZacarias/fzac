@@ -174,8 +174,8 @@ struct Keyboard_State
 typedef struct Mouse_State Mouse_State;
 struct Mouse_State
 {
-  V2f32 screen_space;
-  V2f32 delta;
+  V2s32 screen_space;
+  V2s32 delta;
   s32 wheel_delta; 
   b8 buttons[Mouse_Button_Count];
 };
