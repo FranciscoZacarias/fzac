@@ -65,6 +65,7 @@ function String string_to_lower(Arena* arena, String str); /* Returns the same s
 function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
 function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
+function String string_from_format_va(Arena *arena, char const *fmt, va_list args); /* Creates a string from var args */
 function b32    string_equals(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
 function u64    string_hash(String str); /* Hashes a string into a u64 */
@@ -456,20 +457,23 @@ string_equals(String a, String b, b32 case_sensitive)
 function String
 string_from_format(Arena* arena, char const* fmt, ...)
 {
+  Scratch scratch = scratch_begin(0,0);
   String result = {0};
 
   va_list args;
   va_start(args, fmt);
 
   // Try to format into a fixed buffer first
-  char temp[8192];
-  int len = vsnprintf(temp, sizeof(temp), fmt, args);
+  int count = kilobytes(8);
+  char *temp = arena_push(scratch.arena, char, count);
+  int len = vsnprintf(temp, count, fmt, args);
   va_end(args);
 
   if (len <= 0)
   {
     result.cstring = arena_push(arena, u8, 1);
     result.cstring[0] = '\0';
+    scratch_end(&scratch);
     return result;
   }
 
@@ -478,6 +482,50 @@ string_from_format(Arena* arena, char const* fmt, ...)
   memory_copy(result.cstring, (u8*)temp, result.count);
   result.cstring[result.count] = '\0';
 
+  scratch_end(&scratch);
+  return result;
+}
+
+function String
+string_from_format_va(Arena *arena, char const *fmt, va_list args)
+{
+  Scratch scratch = scratch_begin(0,0);
+  String result = {0};
+
+  va_list args_copy;
+  va_copy(args_copy, args);
+
+  int count = kilobytes(8);
+  char *temp = arena_push(scratch.arena, char, count);
+
+  int len = vsnprintf(temp, count, fmt, args_copy);
+  va_end(args_copy);
+
+  if (len <= 0)
+  {
+    result.cstring = arena_push(arena, u8, 1);
+    result.cstring[0] = 0;
+    scratch_end(&scratch);
+    return result;
+  }
+
+  // If buffer too small, re-run exactly sized
+  if (len >= count)
+  {
+    temp = arena_push(scratch.arena, char, len + 1);
+
+    va_list args_copy2;
+    va_copy(args_copy2, args);
+    vsnprintf(temp, len + 1, fmt, args_copy2);
+    va_end(args_copy2);
+  }
+
+  result.count = (u64)len;
+  result.cstring = arena_push(arena, u8, result.count + 1);
+  memory_copy(result.cstring, (u8*)temp, result.count);
+  result.cstring[result.count] = 0;
+
+  scratch_end(&scratch);
   return result;
 }
 
