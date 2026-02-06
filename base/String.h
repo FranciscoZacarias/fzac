@@ -455,35 +455,13 @@ string_equals(String a, String b, b32 case_sensitive)
 }
 
 function String
-string_from_format(Arena* arena, char const* fmt, ...)
+string_from_format(Arena *arena, char const *fmt, ...)
 {
-  Scratch scratch = scratch_begin(0,0);
-  String result = {0};
-
   va_list args;
   va_start(args, fmt);
-
-  // Try to format into a fixed buffer first
-  int count = kilobytes(8);
-  char *temp = arena_push(scratch.arena, char, count);
-  int len = vsnprintf(temp, count, fmt, args);
+  String s = string_from_format_va(arena, fmt, args);
   va_end(args);
-
-  if (len <= 0)
-  {
-    result.cstring = arena_push(arena, u8, 1);
-    result.cstring[0] = '\0';
-    scratch_end(&scratch);
-    return result;
-  }
-
-  result.count = (u64)len;
-  result.cstring = arena_push(arena, u8, result.count + 1);
-  memory_copy(result.cstring, (u8*)temp, result.count);
-  result.cstring[result.count] = '\0';
-
-  scratch_end(&scratch);
-  return result;
+  return s;
 }
 
 function String
