@@ -34,6 +34,9 @@ function b32   v2f32_equals(V2f32 p, V2f32 q); /* Returns true if two 2D vectors
 function V2f32 v2f32_refract(V2f32 v, V2f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
 function V2f32 v2f32_snap45(V2f32 v); /* Snaps v to the closest 45 degree angle */
 
+// @Section: V2u32
+function String v2u32_to_string(Arena *arena, V2u32 v);
+
 // @Section: V3f32
 function V3f32 v3f32_cross(V3f32 v1, V3f32 v2); /* Computes the cross product of two 3D vectors */
 function f32   v3f32_length(V3f32 v); /* Returns the Euclidean length (magnitude) of a 3D vector */
@@ -353,6 +356,13 @@ v2f32_snap45(V2f32 v)
   v.y *= scale;
     
   return v;
+}
+
+function String
+v2u32_to_string(Arena *arena, V2u32 v)
+{
+  String result = Sf(arena, "%u, %u", v.x, v.y); 
+  return result;
 }
 
 function V3f32
