@@ -379,9 +379,9 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
       Window_Event* event = _event_push(events);
       event->kind = Event_Keyboard;
 
-      event->modifiers.shift_down = input_is_key_down(Keyboard_Key_SHIFT);
-      event->modifiers.ctrl_down  = input_is_key_down(Keyboard_Key_CONTROL);
-      event->modifiers.alt_down   = input_is_key_down(Keyboard_Key_LEFT_MENU) || input_is_key_down(Keyboard_Key_RIGHT_MENU);
+      event->modifiers.shift_pressed = input_is_key_pressed(Keyboard_Key_SHIFT);
+      event->modifiers.ctrl_pressed  = input_is_key_pressed(Keyboard_Key_CONTROL);
+      event->modifiers.alt_pressed   = input_is_key_pressed(Keyboard_Key_LEFT_MENU) || input_is_key_pressed(Keyboard_Key_RIGHT_MENU);
 
       event->payload.key = key;
 
@@ -578,7 +578,7 @@ input_is_key_up(Keyboard_Key key)
 }
 
 function b32
-input_is_key_down(Keyboard_Key key)
+input_is_key_pressed(Keyboard_Key key)
 {
   b32 result = WindowContext.input.keyboard_current.keys[key] == true;
   return result;
@@ -592,7 +592,7 @@ input_was_key_up(Keyboard_Key key)
 }
 
 function b32
-input_was_key_down(Keyboard_Key key)
+input_was_key_pressed(Keyboard_Key key)
 {
   b32 result = WindowContext.input.keyboard_previous.keys[key] == true;
   return result;
@@ -601,7 +601,7 @@ input_was_key_down(Keyboard_Key key)
 function b32
 input_is_key_clicked(Keyboard_Key key)
 {
-  return input_is_key_down(key) && input_was_key_up(key);
+  return input_is_key_pressed(key) && input_was_key_up(key);
 }
 
 function void
@@ -621,7 +621,7 @@ input_is_button_up(Mouse_Button button)
 }
 
 function b32
-input_is_button_down(Mouse_Button button)
+input_is_button_pressed(Mouse_Button button)
 {
   b32 result = WindowContext.input.mouse_current.buttons[button] == true;
   return result;
@@ -635,7 +635,7 @@ input_was_button_up(Mouse_Button button)
 }
 
 function b32
-input_was_button_down(Mouse_Button button)
+input_was_button_pressed(Mouse_Button button)
 {
   b32 result = WindowContext.input.mouse_previous.buttons[button] == true;
   return result;
@@ -644,7 +644,7 @@ input_was_button_down(Mouse_Button button)
 function b32
 input_is_button_clicked(Mouse_Button button)
 {
-  b32 result = input_is_button_down(button) && input_was_button_up(button);
+  b32 result = input_is_button_pressed(button) && input_was_button_up(button);
   return result;
 }
 

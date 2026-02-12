@@ -100,9 +100,9 @@
 #define memory_zero_array(arr)  memory_zero((arr), sizeof(arr))
 
 /* === Flags === */
-#define set_flags(flags, flag)    ((flags) |= (flag))
+#define set_flags(flags, flag)        ((flags) |= (flag))
 #define has_flags(flags, check_flags) (((flags) & (check_flags)) == (check_flags))
-#define toggle_flag(flags, flag) ((flags) ^= (flag))
+#define toggle_flag(flags, flag)      ((flags) ^= (flag))
 
 /* === Control flow === */
 #define DEFER_LOOP_ID2(a, b) a##b

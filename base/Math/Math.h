@@ -37,6 +37,9 @@ function V2f32 v2f32_snap45(V2f32 v); /* Snaps v to the closest 45 degree angle 
 // @Section: V2u32
 function String v2u32_to_string(Arena *arena, V2u32 v);
 
+// @Section: V2s32
+function String  v2s32_to_string(Arena *arena, V2s32 v);
+
 // @Section: V3f32
 function V3f32 v3f32_cross(V3f32 v1, V3f32 v2); /* Computes the cross product of two 3D vectors */
 function f32   v3f32_length(V3f32 v); /* Returns the Euclidean length (magnitude) of a 3D vector */
@@ -362,6 +365,13 @@ function String
 v2u32_to_string(Arena *arena, V2u32 v)
 {
   String result = Sf(arena, "%u, %u", v.x, v.y); 
+  return result;
+}
+
+function String
+v2s32_to_string(Arena *arena, V2s32 v)
+{
+  String result = Sf(arena, "%d, %d", v.x, v.y); 
   return result;
 }
 
