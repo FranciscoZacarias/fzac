@@ -13,9 +13,11 @@ struct Camera2D
 };
 
 function Camera2D camera2d_init(u32 window_width, u32 window_height);
-function void  _camera2d_update(Camera2D* camera2d, u32 window_width, u32 window_height);
-function void   camera2d_zoom(Camera2D* camera2d, f32 delta, u32 window_width, u32 window_height);
-function void   camera2d_move(Camera2D* camera2d, V2f32 delta, u32 window_width, u32 window_height);
+function void  _camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height);
+function void   camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height);
+function void   camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height);
+function void   camera2d_reset(Camera2D *camera2d); /* Resets camera zoom and position */
+
 
 #endif // CAMERA_H
 
@@ -31,7 +33,7 @@ camera2d_init(u32 window_width, u32 window_height)
 }
 
 function void
-_camera2d_update(Camera2D* camera2d, u32 window_width, u32 window_height)
+_camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height)
 {
   f32 half_width  = (window_width  * 0.5f) / camera2d->zoom;
   f32 half_height = (window_height * 0.5f) / camera2d->zoom;
@@ -40,14 +42,14 @@ _camera2d_update(Camera2D* camera2d, u32 window_width, u32 window_height)
 }
 
 function void
-camera2d_move(Camera2D* camera2d, V2f32 delta, u32 window_width, u32 window_height)
+camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height)
 {
   camera2d->position = v2f32_add(camera2d->position, delta);
   _camera2d_update(camera2d, window_width, window_height);
 }
 
 function void
-camera2d_zoom(Camera2D* camera2d, f32 delta, u32 window_width, u32 window_height)
+camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height)
 {
   f32 new_zoom = camera2d->zoom + delta;
   if (new_zoom > 0.01f)
@@ -55,4 +57,11 @@ camera2d_zoom(Camera2D* camera2d, f32 delta, u32 window_width, u32 window_height
     camera2d->zoom = new_zoom;
   }
   _camera2d_update(camera2d, window_width, window_height);
+}
+
+function void
+camera2d_reset(Camera2D *camera2d)
+{
+  camera2d->zoom = 1.0f;
+  camera2d->position = v2f32(0,0);
 }

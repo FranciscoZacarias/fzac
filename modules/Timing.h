@@ -23,7 +23,7 @@ function u64       time_milliseconds(); /* Time since boot in milliseconds */
 function f64       time_seconds(); /* Time since boot in seconds */
 function u64       get_epoch_microseconds(); /* Wall clock time since unix epoch (1970-01-01) in microseconds */
 function Date_Time datetime_now(); /* Current local date and time */
-function String    datetime_to_string8(Arena* arena, Date_Time date, b32 include_ms); /* Returns a verbose datetime string */
+function String    datetime_to_string(Arena* arena, Date_Time date, b32 include_ms); /* Returns a verbose datetime string */
 
 function Timer timer_start(); /* Returns a started timer */
 function u64   timer_microseconds(Timer *timer); /* Returns timer's elapsed time in microseconds */
@@ -91,7 +91,7 @@ datetime_now()
 }
 
 function String
-datetime_to_string8(Arena *arena, Date_Time dt, b32 include_ms)
+datetime_to_string(Arena *arena, Date_Time dt, b32 include_ms)
 {
   local_persist const char* months[] = 
   {
