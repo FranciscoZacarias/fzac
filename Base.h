@@ -17,6 +17,7 @@
 # pragma warning(disable: 4100) // Unreferenced parameters
 # pragma warning(disable: 4702) // Unreachable code
 # pragma warning(disable: 4189) // Local variable is initialized but not referenced
+# pragma warning(disable: 4244) // Type conversion - possible loss of data
 #endif
 
 #define RADDBG_MARKUP_IMPLEMENTATION

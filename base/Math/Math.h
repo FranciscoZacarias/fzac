@@ -4,8 +4,6 @@
 #include "generated/Math.generated.h"
 
 // @Section: Math types
-typedef struct V3f32    V3f32;
-typedef struct V4f32    V4f32;
 typedef struct Matrix3    Matrix3;
 typedef struct Matrix4    Matrix4;
 typedef struct Quaternion Quaternion;

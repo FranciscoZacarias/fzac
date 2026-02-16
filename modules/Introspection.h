@@ -179,7 +179,10 @@ struct Intsp_Context
   u32 files_capacity;
 };
 
-function Intsp_Context intsp_run(String source_directory, b32 introspect_base_library);
+//#define intsp_print_struct(type, var) \
+
+function Intsp_Context  intsp_run(String source_directory, b32 introspect_base_library);
+function Intsp_Aggregate* intsp_find_struct(Intsp_Context *ctx, String name);
 
 function void   _intsp_skip_line(Lexer *lexer, Intsp_File *file);
 function void   _intsp_skip_spaces(Lexer *lexer, Intsp_File *file);
@@ -326,6 +329,36 @@ intsp_run(String source_directory, b32 introspect_base_library)
     }
   }
 
+  return result;
+}
+
+function String
+intsp_test(Arena* arena, Intsp_Aggregate *aggregate)
+{
+  for (u32 i = 0; i < aggregate->members_count; i += 1)
+  {
+    Intsp_Aggregate_Member *member = &aggregate->members[i];;
+
+  }
+}
+
+function Intsp_Aggregate*
+intsp_find_struct(Intsp_Context *ctx, String name)
+{
+  Intsp_Aggregate *result = NULL;
+  for (u32 file_idx = 0; file_idx < ctx->files_count; file_idx += 1)
+  {
+    Intsp_File *file = &ctx->files[file_idx];
+    for (u32 typedef_idx = 0; typedef_idx < file->aggregates_count; typedef_idx += 1)
+    {
+      Intsp_Aggregate *struct_type = &file->aggregates[typedef_idx];
+      if (string_equals(struct_type->name, name, true))
+      {
+        result = struct_type;
+        break;
+      }
+    }
+  }
   return result;
 }
 
