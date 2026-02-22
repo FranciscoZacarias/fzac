@@ -193,15 +193,15 @@ function void _input_init(); /* Initializes input state (clears previous + curre
 function void _input_update(); /* Updates previous input state with current state (to track deltas and transitions) */
 
 function b32 input_is_key_up(Keyboard_Key key); /* True if the given key is currently up */
-function b32 input_is_key_pressed(Keyboard_Key key); /* True if the given key is currently down */
+function b32 input_is_key_down(Keyboard_Key key); /* True if the given key is currently down */
 function b32 input_was_key_up(Keyboard_Key key); /* True if the given key was up on the previous frame */
-function b32 input_was_key_pressed(Keyboard_Key key); /* True if the given key was down on the previous frame */
+function b32 input_was_key_down(Keyboard_Key key); /* True if the given key was down on the previous frame */
 function b32 input_is_key_clicked(Keyboard_Key key); /* True if the given key is down this frame but was up last frame */
 
 function b32 input_is_button_up(Mouse_Button button); /* True if the given mouse button is currently up */
-function b32 input_is_button_pressed(Mouse_Button button); /* True if the given mouse button is currently down */
+function b32 input_is_button_down(Mouse_Button button); /* True if the given mouse button is currently down */
 function b32 input_was_button_up(Mouse_Button button); /* True if the given mouse button was up on the previous frame */
-function b32 input_was_button_pressed(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
+function b32 input_was_button_down(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
 function b32 input_is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
 
 function void _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed); /* Internal: Processes a key press/release and updates keyboard state */
