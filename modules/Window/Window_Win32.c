@@ -181,7 +181,7 @@ window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
   );
   if (!hwnd) return NULL;
 
-  Window* window = arena_push(WindowContext.arena, Window, 1);
+  Window* window = push_array(WindowContext.arena, Window, 1);
   memory_zero_struct(window);
 
   window->next   = NULL;
@@ -447,7 +447,7 @@ _init_window_class()
   WindowContext.frame_arena = arena_alloc();
   WindowContext.events_this_frame.count    = 0;
   WindowContext.events_this_frame.capacity = 4096;
-  WindowContext.events_this_frame.data     = arena_push(WindowContext.frame_arena, Window_Event, WindowContext.events_this_frame.capacity);
+  WindowContext.events_this_frame.data     = push_array(WindowContext.frame_arena, Window_Event, WindowContext.events_this_frame.capacity);
 }
 
 function void

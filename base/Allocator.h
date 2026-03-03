@@ -63,15 +63,16 @@ struct Arena
 function Arena* arena_alloc(); /* Allocates an arena with the default reserve and commit size */
 function Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
 
-#define        arena_push(arena, type, count)         (type*) _arena_push((arena), sizeof(type)*(count))
-#define        arena_push_no_zero(arena, type, count) (type*) _arena_push_no_zero((arena), sizeof(type)*(count))
+#define        push_array(arena, type, count)         (type*) _push_array((arena), sizeof(type)*(count))
+#define        push_struct(arena, type)               (type*) _push_array((arena), sizeof(type))
+#define        push_array_no_zero(arena, type, count) (type*) _push_array_no_zero((arena), sizeof(type)*(count))
 function void  arena_pop(Arena* arena, u64 size); /* Moves the arena pointer back by <size> bytes */
 function void  arena_pop_to(Arena* arena, u64 pos); /* Moves the arena pointer to the specific <pos> position */
 function void  arena_clear(Arena* arena); /* Resets the arena position */
 function void  arena_free(Arena* arena); /* Frees the arena's memory */
 
-function void* _arena_push(Arena* arena, u64 size); /* Pushes data into the arena */
-function void* _arena_push_no_zero(Arena* arena, u64 size); /* Pushes data into the arena without zeroing the memory */
+function void* _push_array(Arena* arena, u64 size); /* Pushes data into the arena */
+function void* _push_array_no_zero(Arena* arena, u64 size); /* Pushes data into the arena without zeroing the memory */
 
 typedef struct Scratch Scratch;
 struct Scratch
@@ -89,7 +90,7 @@ function void    arena_temp_end(Scratch* temp); /* Ends the temporary arena and 
     assert((arena) != NULL);                           \
     name##_count = 0;                                  \
     name##_capacity = (capacity);                      \
-    name = arena_push((arena), type, name##_capacity); \
+    name = push_array((arena), type, name##_capacity); \
   )
 
 #define arena_array_push(out_ptr, ptr, count, cap)       \
@@ -151,15 +152,15 @@ arena_alloc_sized(u64 reserve, u64 commit)
 }
 
 function void*
-_arena_push(Arena* arena, u64 size)
+_push_array(Arena* arena, u64 size)
 {
-  void* result = _arena_push_no_zero(arena, size);
+  void* result = _push_array_no_zero(arena, size);
   memory_zero(result, size);
   return result;
 }
 
 function void*
-_arena_push_no_zero(Arena* arena, u64 size)
+_push_array_no_zero(Arena* arena, u64 size)
 {
   void* result = NULL;
 

@@ -191,7 +191,7 @@ string_copy(Arena* arena, String source)
 {
   String result;
   result.count = source.count;
-  result.cstring  = arena_push(arena, u8, result.count + 1);
+  result.cstring  = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, source.cstring, result.count);
   result.cstring[result.count] = '\0';
   return result;
@@ -203,7 +203,7 @@ string_range(Arena* arena, u8* first, u8* range)
   u64 count = (u64)(range - first);
   String result;
   result.count = count;
-  result.cstring = arena_push(arena, u8, count + 1);
+  result.cstring = push_array(arena, u8, count + 1);
   memory_copy(result.cstring, first, count);
   result.cstring[count] = '\0';
   return result;
@@ -214,7 +214,7 @@ string_join(Arena* arena, String a, String b)
 {
   String result = { 0 };
   result.count = a.count + b.count;
-  result.cstring = arena_push(arena, u8, result.count + 1);
+  result.cstring = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, a.cstring, a.count);
   memory_copy(result.cstring + a.count, b.cstring, b.count);
   result.cstring[result.count] = '\0';
@@ -230,7 +230,7 @@ string_replace_first(Arena* arena, String str, String a, String b)
   if (string_find_first(str, a, &index))
   {
     u64 new_size = str.count - a.count + b.count;
-    u8* new_str = arena_push(arena, u8, new_size + 1);
+    u8* new_str = push_array(arena, u8, new_size + 1);
     
     memory_copy(new_str, str.cstring, index);
     memory_copy(new_str + index, b.cstring, b.count);
@@ -253,7 +253,7 @@ string_replace_all(Arena *arena, String str, String a, String b)
   while (string_find_first(result, a, &index))
   {
     u64 new_size = result.count - a.count + b.count;
-    u8* new_str = arena_push(arena, u8, new_size + 1);
+    u8* new_str = push_array(arena, u8, new_size + 1);
     
     memory_copy(new_str, result.cstring, index);
     memory_copy(new_str + index, b.cstring, b.count);
@@ -271,7 +271,7 @@ function String
 string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement)
 {
   u64 new_size = str.count - length + replacement.count;
-  u8* new_str  = arena_push(arena, u8, new_size + 1);
+  u8* new_str  = push_array(arena, u8, new_size + 1);
   
   memory_copy(new_str, str.cstring, start);
   memory_copy(new_str + start, replacement.cstring, replacement.count);
@@ -288,7 +288,7 @@ string_replace_range(Arena* arena, String str, u64 start, u64 length, String rep
 function String
 string_replace_backslash_n(Arena *arena, String in)
 {
-  u8 *destination = arena_push(arena, u8, in.count + 1);
+  u8 *destination = push_array(arena, u8, in.count + 1);
   u64 destination_count = 0;
 
   for(u64 i = 0; i < in.count; i++)
@@ -331,7 +331,7 @@ string_trim(Arena* arena, String str)
   {
     String result;
     result.count = 0;
-    result.cstring = arena_push(arena, u8, 1);
+    result.cstring = push_array(arena, u8, 1);
     result.cstring[0] = '\0';
     return result;
   }
@@ -350,7 +350,7 @@ string_trim(Arena* arena, String str)
   u64 count = end - start;
   String result;
   result.count = count;
-  result.cstring = arena_push(arena, u8, count + 1);
+  result.cstring = push_array(arena, u8, count + 1);
   memory_copy(result.cstring, str.cstring + start, count);
   result.cstring[count] = '\0';
   return result;
@@ -364,13 +364,13 @@ string_substring(Arena* arena, String str, u64 start, u64 end)
   {
     u64 count = end - start;
     result.count = count;
-    result.cstring = arena_push(arena, u8, count + 1);
+    result.cstring = push_array(arena, u8, count + 1);
     memory_copy(result.cstring, str.cstring + start, count);
     result.cstring[count] = '\0';
   }
   else
   {
-    result.cstring = arena_push(arena, u8, 1);
+    result.cstring = push_array(arena, u8, 1);
     result.cstring[0] = '\0';
   }
   return result;
@@ -475,14 +475,14 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
   va_copy(args_copy, args);
 
   int count = kilobytes(8);
-  char *temp = arena_push(scratch.arena, char, count);
+  char *temp = push_array(scratch.arena, char, count);
 
   int len = vsnprintf(temp, count, fmt, args_copy);
   va_end(args_copy);
 
   if (len <= 0)
   {
-    result.cstring = arena_push(arena, u8, 1);
+    result.cstring = push_array(arena, u8, 1);
     result.cstring[0] = 0;
     scratch_end(&scratch);
     return result;
@@ -491,7 +491,7 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
   // If buffer too small, re-run exactly sized
   if (len >= count)
   {
-    temp = arena_push(scratch.arena, char, len + 1);
+    temp = push_array(scratch.arena, char, len + 1);
 
     va_list args_copy2;
     va_copy(args_copy2, args);
@@ -500,7 +500,7 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
   }
 
   result.count = (u64)len;
-  result.cstring = arena_push(arena, u8, result.count + 1);
+  result.cstring = push_array(arena, u8, result.count + 1);
   memory_copy(result.cstring, (u8*)temp, result.count);
   result.cstring[result.count] = 0;
 
@@ -581,7 +581,7 @@ string_list_new()
 function void
 string_list_push(Arena* arena, String_List* list, String str)
 {
-  String_Node* node = arena_push(arena, String_Node, sizeof(String_Node));
+  String_Node* node = push_array(arena, String_Node, sizeof(String_Node));
   node->value = str;
   if (!list->first && !list->last)
   {
@@ -674,7 +674,7 @@ string_list_remove_last(String_List* list)
 function String
 string_list_join(Arena* arena, String_List* list)
 {
-  u8* dst = arena_push(arena, u8, list->total_size + 1);
+  u8* dst = push_array(arena, u8, list->total_size + 1);
   u8* ptr = dst;
   for (String_Node* node = list->first; node; node = node->next)
   {
