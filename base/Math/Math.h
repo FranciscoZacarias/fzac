@@ -94,11 +94,12 @@ struct Matrix3
 
 function Matrix3 matrix3_transpose(Matrix3 m); /* Transposes a 3x3 matrix */
 function Matrix3 matrix3_multiply(Matrix3 a, Matrix3 b); /* Multiplies two 3x3 matrices (a * b) */
-function V3f32 matrix3_multiply_v3f32(Matrix3 m, V3f32 v); /* Multiplies a 3x3 matrix by a 3D vector */
+function V3f32   matrix3_multiply_v3f32(Matrix3 m, V3f32 v); /* Multiplies a 3x3 matrix by a 3D vector */
 function Matrix3 matrix3_translate(V2f32 translation); /* Creates a translation matrix for a 2D vector */
 function Matrix3 matrix3_rotate(f32 radians); /* Creates a rotation matrix (around origin) by given radians */
 function Matrix3 matrix3_scale(V2f32 scale); /* Creates a scaling matrix for a 2D vector */
 function Matrix3 matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top); /* Creates a 2D orthographic projection matrix */
+function Matrix3 matrix3_inverse(Matrix3 m);
 
 // @Section: Matrix4
 struct Matrix4
@@ -987,6 +988,31 @@ matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top)
   m.m2 = 0.0f; m.m5 = 0.0f; m.m8 = 1.0f;
 
   return m;
+}
+
+function Matrix3
+matrix3_inverse(Matrix3 m)
+{
+  f32 c0 = m.m4*m.m8 - m.m7*m.m5;
+  f32 c1 = m.m7*m.m2 - m.m1*m.m8;
+  f32 c2 = m.m1*m.m5 - m.m4*m.m2;
+
+  f32 c3 = m.m6*m.m5 - m.m3*m.m8;
+  f32 c4 = m.m0*m.m8 - m.m6*m.m2;
+  f32 c5 = m.m3*m.m2 - m.m0*m.m5;
+
+  f32 c6 = m.m3*m.m7 - m.m6*m.m4;
+  f32 c7 = m.m6*m.m1 - m.m0*m.m7;
+  f32 c8 = m.m0*m.m4 - m.m3*m.m1;
+
+  f32 det = m.m0*c0 + m.m3*c1 + m.m6*c2;
+  f32 inv_det = 1.0f / det; // det == 0 is undefined behavior, ensure valid matrix
+
+  Matrix3 r;
+  r.m0 = c0*inv_det; r.m3 = c3*inv_det; r.m6 = c6*inv_det;
+  r.m1 = c1*inv_det; r.m4 = c4*inv_det; r.m7 = c7*inv_det;
+  r.m2 = c2*inv_det; r.m5 = c5*inv_det; r.m8 = c8*inv_det;
+  return r;
 }
 
 function f32
