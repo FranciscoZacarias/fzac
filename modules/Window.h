@@ -273,7 +273,7 @@ struct Window_Context
 
 thread_local global Window_Context WindowContext;
 
-function void update_window_events(); /* Processes all window events this frame. Returns false if app should close */
+function void window_update_events(); /* Processes all window events this frame. Returns false if app should close */
 
 struct Window
 {

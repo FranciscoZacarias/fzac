@@ -451,7 +451,7 @@ _init_window_class()
 }
 
 function void
-update_window_events()
+window_update_events()
 {
   Window_Context* ctx = &WindowContext;
 
