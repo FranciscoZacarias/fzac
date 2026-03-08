@@ -13,6 +13,7 @@ global u32 _win32_key_table[Keyboard_Key_Count] =
   0x09, // Keyboard_Key_TAB
   0x10, // Keyboard_Key_SHIFT
   0x11, // Keyboard_Key_CONTROL
+  0x12, // Keyboard_Key_MENU
   0x13, // Keyboard_Key_PAUSE
   0x14, // Keyboard_Key_CAPS_LOCK
   0x1B, // Keyboard_Key_ESCAPE
@@ -302,6 +303,12 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
       if (WindowContext.focused_window == window)
       {
         WindowContext.focused_window = NULL;
+      }
+      // Reset input
+      {
+        memory_zero_struct(&WindowContext.input);
+        WindowContext.input.mouse_previous.screen_space.x = -1;
+        WindowContext.input.mouse_previous.screen_space.y = -1;
       }
       return 0;
     }

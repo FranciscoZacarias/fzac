@@ -1,6 +1,13 @@
 #ifndef FILES_H
 #define FILES_H
 
+typedef struct File_Watcher File_Watcher;
+struct File_Watcher
+{
+  String path;
+  u64 last_write_time;
+};
+
 // @Section: File and directory
 function b32    file_create(String path); /* Creates file. If file exists, returns true anyway. */
 function b32    file_delete(String path); /* Deletes a file */
@@ -11,6 +18,11 @@ function u32    file_size(String path); /* Returns the size of the file */
 function String file_load(Arena* arena, String path); /* Loads file into memory */
 function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
 function String_View file_get_extension(String path); /* Returns file extension. */
+
+// File watch
+function void file_watch_init(Arena *arena, File_Watcher *watch, String path);
+function u64  file_get_last_write_time(String path);
+function b32  file_watch_changed(File_Watcher *watch);
 
 function b32 file_exists(String path);
 function b32 is_file(String path);
@@ -308,6 +320,39 @@ file_get_extension(String path)
   result.string = path.cstring + last_dot + 1;
   result.count   = path.count - (last_dot + 1);
 
+  return result;
+}
+
+function void
+file_watch_init(Arena *arena, File_Watcher *watch, String path)
+{
+  watch->path = string_copy(arena, path);
+  watch->last_write_time = file_get_last_write_time(path);
+}
+
+function u64
+file_get_last_write_time(String path)
+{
+  u64 result = 0;
+  WIN32_FILE_ATTRIBUTE_DATA data;
+  if(GetFileAttributesExA((char*)path.cstring, GetFileExInfoStandard, &data))
+  {
+    FILETIME t = data.ftLastWriteTime;
+    result = ((u64)t.dwHighDateTime << 32) | (u64)t.dwLowDateTime;
+  }
+  return result;
+}
+
+function b32
+file_watch_changed(File_Watcher *watch)
+{
+  b32 result = false;
+  u64 new_time = file_get_last_write_time(watch->path);
+  if(new_time != watch->last_write_time)
+  {
+    watch->last_write_time = new_time;
+    result = true;
+  }
   return result;
 }
 

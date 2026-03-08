@@ -22,6 +22,7 @@ enum META_ENUM_LINK(Keyboard_Key)
   Keyboard_Key_TAB,
   Keyboard_Key_SHIFT,
   Keyboard_Key_CONTROL,
+  Keyboard_Key_MENU,
   Keyboard_Key_PAUSE,
   Keyboard_Key_CAPS_LOCK,
   Keyboard_Key_ESCAPE,
@@ -190,6 +191,7 @@ struct Input_State
 };
 
 function void _input_init(); /* Initializes input state (clears previous + current states) */
+function void _input_reset();
 function void _input_update(); /* Updates previous input state with current state (to track deltas and transitions) */
 
 function b32 input_is_key_up(Keyboard_Key key); /* True if the given key is currently up */
@@ -220,6 +222,8 @@ enum META_ENUM_LINK(Event_Kind)
   Event_Window,
   Event_Quit,
   Event_Drag_And_Drop,
+
+
 };
 
 typedef struct Window_Event Window_Event;
