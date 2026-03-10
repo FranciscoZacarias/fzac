@@ -584,5 +584,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glDisable = (PFNglDisablePROC)_load_gl_function("glDisable"); 
+  if (!__glDisable)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glDisable"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

@@ -78,6 +78,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glTexParameteri                 `(GLenum target, GLenum pname, GLint param)`                                                                                                 `(target, pname, param)` }
   {  glPixelStorei                   `(GLenum pname, GLint param)`                                                                                                                `(pname, param)` }
   {  glGenerateMipmap                `(GLenum target)`                                                                                                                            `(target)` }
+  {  glDisable                       `(GLenum cap)`                                                                                                                               `(cap)`    }
 }
 
 @Table

@@ -613,6 +613,14 @@ glGenerateMipmap (GLenum target)
   __glGenerateMipmap (target);
 }
 
+typedef void (*PFNglDisablePROC)(GLenum cap);
+global PFNglDisablePROC __glDisable = NULL;
+function inline void
+glDisable (GLenum cap)
+{
+  __glDisable (cap);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
