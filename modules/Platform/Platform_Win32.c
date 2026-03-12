@@ -1,5 +1,5 @@
 function void
-  console_attach()
+console_attach()
 {
   b32 attached = AttachConsole(ATTACH_PARENT_PROCESS);
 

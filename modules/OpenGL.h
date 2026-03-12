@@ -1,6 +1,9 @@
 #ifndef OPENGL_H
 #define OPENGL_H
 
+#include "Platform.h"
+#include "Window.h"
+
 #include "OpenGL/OpenGL_Constants.h"
 #include "OpenGL/generated/Opengl.generated.h"
 
