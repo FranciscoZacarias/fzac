@@ -52,6 +52,13 @@ _opengl_load_functions()
     return false;
   }
 
+  __glCheckFramebufferStatus = (PFNglCheckFramebufferStatusPROC)_load_gl_function("glCheckFramebufferStatus"); 
+  if (!glCheckFramebufferStatus)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glCheckFramebufferStatus"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   __glProgramUniform1i = (PFNglProgramUniform1iPROC)_load_gl_function("glProgramUniform1i"); 
   if (!__glProgramUniform1i)
   {
@@ -588,6 +595,69 @@ _opengl_load_functions()
   if (!__glDisable)
   {
     message_box(S("OpenGL"), S("Unable to load opengl function: glDisable"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGenFramebuffers = (PFNglGenFramebuffersPROC)_load_gl_function("glGenFramebuffers"); 
+  if (!__glGenFramebuffers)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glGenFramebuffers"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glFramebufferTexture2D = (PFNglFramebufferTexture2DPROC)_load_gl_function("glFramebufferTexture2D"); 
+  if (!__glFramebufferTexture2D)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glFramebufferTexture2D"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGetTexLevelParameteriv = (PFNglGetTexLevelParameterivPROC)_load_gl_function("glGetTexLevelParameteriv"); 
+  if (!__glGetTexLevelParameteriv)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glGetTexLevelParameteriv"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glReadBuffer = (PFNglReadBufferPROC)_load_gl_function("glReadBuffer"); 
+  if (!__glReadBuffer)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glReadBuffer"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glReadPixels = (PFNglReadPixelsPROC)_load_gl_function("glReadPixels"); 
+  if (!__glReadPixels)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glReadPixels"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGenQueries = (PFNglGenQueriesPROC)_load_gl_function("glGenQueries"); 
+  if (!__glGenQueries)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glGenQueries"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glGetQueryObjectui64v = (PFNglGetQueryObjectui64vPROC)_load_gl_function("glGetQueryObjectui64v"); 
+  if (!__glGetQueryObjectui64v)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glGetQueryObjectui64v"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glBeginQuery = (PFNglBeginQueryPROC)_load_gl_function("glBeginQuery"); 
+  if (!__glBeginQuery)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glBeginQuery"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glEndQuery = (PFNglEndQueryPROC)_load_gl_function("glEndQuery"); 
+  if (!__glEndQuery)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glEndQuery"), S("OpenGL.cgen"), 0);
     return false;
   }
 

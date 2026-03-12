@@ -49,6 +49,8 @@ _opengl_check_error(String file, u32 line)
 function void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
 {
+  if (id == 131218) return; // @TODO(fz): Deal with this
+
   Scratch scratch = scratch_begin(0,0);
 
   // Decode source

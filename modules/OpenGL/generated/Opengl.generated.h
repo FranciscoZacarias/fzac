@@ -621,6 +621,78 @@ glDisable (GLenum cap)
   __glDisable (cap);
 }
 
+typedef void (*PFNglGenFramebuffersPROC)(GLsizei n, GLuint *framebuffers);
+global PFNglGenFramebuffersPROC __glGenFramebuffers = NULL;
+function inline void
+glGenFramebuffers (GLsizei n, GLuint *framebuffers)
+{
+  __glGenFramebuffers (n, framebuffers);
+}
+
+typedef void (*PFNglFramebufferTexture2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+global PFNglFramebufferTexture2DPROC __glFramebufferTexture2D = NULL;
+function inline void
+glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+{
+  __glFramebufferTexture2D (target, attachment, textarget, texture, level);
+}
+
+typedef void (*PFNglGetTexLevelParameterivPROC)(GLenum target, GLint level, GLenum pname, GLint *params);
+global PFNglGetTexLevelParameterivPROC __glGetTexLevelParameteriv = NULL;
+function inline void
+glGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint *params)
+{
+  __glGetTexLevelParameteriv (target, level, pname, params);
+}
+
+typedef void (*PFNglReadBufferPROC)(GLenum src);
+global PFNglReadBufferPROC __glReadBuffer = NULL;
+function inline void
+glReadBuffer (GLenum src)
+{
+  __glReadBuffer (src);
+}
+
+typedef void (*PFNglReadPixelsPROC)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels);
+global PFNglReadPixelsPROC __glReadPixels = NULL;
+function inline void
+glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
+{
+  __glReadPixels (x, y, width, height, format, type, pixels);
+}
+
+typedef void (*PFNglGenQueriesPROC)(GLsizei n, GLuint *ids);
+global PFNglGenQueriesPROC __glGenQueries = NULL;
+function inline void
+glGenQueries (GLsizei n, GLuint *ids)
+{
+  __glGenQueries (n, ids);
+}
+
+typedef void (*PFNglGetQueryObjectui64vPROC)(GLuint id, GLenum pname, GLuint64 *params);
+global PFNglGetQueryObjectui64vPROC __glGetQueryObjectui64v = NULL;
+function inline void
+glGetQueryObjectui64v (GLuint id, GLenum pname, GLuint64 *params)
+{
+  __glGetQueryObjectui64v (id, pname, params);
+}
+
+typedef void (*PFNglBeginQueryPROC)(GLenum target, GLuint id);
+global PFNglBeginQueryPROC __glBeginQuery = NULL;
+function inline void
+glBeginQuery (GLenum target, GLuint id)
+{
+  __glBeginQuery (target, id);
+}
+
+typedef void (*PFNglEndQueryPROC)(GLenum target);
+global PFNglEndQueryPROC __glEndQuery = NULL;
+function inline void
+glEndQuery (GLenum target)
+{
+  __glEndQuery (target);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
@@ -675,6 +747,14 @@ function inline GLenum
 glGetError (void)
 {
   return __glGetError ();
+}
+
+typedef GLenum (*PFNglCheckFramebufferStatusPROC)(GLenum target);
+global PFNglCheckFramebufferStatusPROC __glCheckFramebufferStatus = NULL;
+function inline GLenum
+glCheckFramebufferStatus (GLenum target)
+{
+  return __glCheckFramebufferStatus (target);
 }
 
 #endif // OPENGL_FUNCTIONS_H

@@ -5,6 +5,7 @@ typedef void GLvoid;
 typedef u32  GLenum;
 typedef u32  GLbitfield;
 typedef u32  GLuint;
+typedef u64  GLuint64;
 typedef f32  GLfloat;
 typedef f64  GLdouble;
 typedef f64  GLclampd;
