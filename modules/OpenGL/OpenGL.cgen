@@ -101,7 +101,6 @@ OpenGL_Function_Table (return name args call_args)
   { `void*`           glMapNamedBufferRange           `(GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access)`   `(buffer, offset, length, access)`  }
   {  GLenum           glGetError                      `(void)`                                                                   `()`                                }
   {  GLenum           glCheckFramebufferStatus        `(GLenum target)`                                                          `(target)`                          }
-
 }
 
 @Generator(Opengl.generated.h)
