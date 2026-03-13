@@ -5,6 +5,8 @@
 #pragma warning(disable: 4700) // Uninitalized local variable used
 #pragma warning(disable: 4094) // Untagged structs
 #pragma warning(disable: 4100) // Unreferenced parameter
+#pragma warning(disable: 4244) // Type conversion - possible loss of data
+#pragma warning(disable: 4189) // Local variable is initialized but not referenced
 
 #if 1 // There are specifically because of raddbg_markup.h
 # pragma warning(disable: 4431) // Name in formal parameter list illegal. This warning messes up some macros
@@ -16,8 +18,6 @@
 # pragma warning(disable: 4101) // Unused variable
 # pragma warning(disable: 4100) // Unreferenced parameters
 # pragma warning(disable: 4702) // Unreachable code
-# pragma warning(disable: 4189) // Local variable is initialized but not referenced
-# pragma warning(disable: 4244) // Type conversion - possible loss of data
 #endif
 
 #define RADDBG_MARKUP_IMPLEMENTATION
