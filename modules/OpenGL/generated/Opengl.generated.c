@@ -661,5 +661,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glBlendFuncSeparate = (PFNglBlendFuncSeparatePROC)_load_gl_function("glBlendFuncSeparate"); 
+  if (!__glBlendFuncSeparate)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glBlendFuncSeparate"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

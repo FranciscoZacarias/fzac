@@ -88,6 +88,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glGetQueryObjectui64v           `(GLuint id, GLenum pname, GLuint64 *params)`                                                                                                `(id, pname, params)`                                                               }
   {  glBeginQuery                    `(GLenum target, GLuint id)`                                                                                                                 `(target, id)`                                                                      }
   {  glEndQuery                      `(GLenum target)`                                                                                                                            `(target)`                                                                          }
+  {  glBlendFuncSeparate             `(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)`                                                           `(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)` }
 }
 
 @Table

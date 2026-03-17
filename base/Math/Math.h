@@ -9,7 +9,8 @@ typedef struct Matrix4    Matrix4;
 typedef struct Quaternion Quaternion;
 
 // @Section: f32
-function f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
+function_inline f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
+function_inline f32 f32_lerp(f32 start, f32 end, f32 t);
 
 // @Section: V2f32
 function String  v2f32_to_string(Arena *arena, V2f32 v);
@@ -169,12 +170,16 @@ function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns tr
 
 #include "generated/Math.generated.c"
 
-function f32
+function_inline f32
 f32_remap(f32 value, f32 min, f32 max)
 {
-  value = clamp(value, 0.0f, 1.0f);
-  f32 remaped = min + (max - min) * value;
-  return remaped;
+  return min + (max - min) * clamp(value, 0.0f, 1.0f);;
+}
+
+function_inline f32
+f32_lerp(f32 from, f32 to, f32 t)
+{
+  return from + (to - from) * t;
 }
 
 function String

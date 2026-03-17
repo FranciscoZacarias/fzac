@@ -693,6 +693,14 @@ glEndQuery (GLenum target)
   __glEndQuery (target);
 }
 
+typedef void (*PFNglBlendFuncSeparatePROC)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+global PFNglBlendFuncSeparatePROC __glBlendFuncSeparate = NULL;
+function inline void
+glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
+{
+  __glBlendFuncSeparate (sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
