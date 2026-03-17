@@ -143,148 +143,87 @@ function LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM wpar
 
 // @TODO(Fz): Add resize callback
 
-function Window* 
-window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y)
+function Window*
+window_create(String title, u32 width, u32 height, u32 x, u32 y)
 {
   if (!WindowClassInited) _init_window_class();
 
-  DWORD style = WINDOWED_STYLE;
-  if (parent) style = SECONDARY_WINDOW_STYLE;
-
-  if (x == -1 || y == -1)
-  {
-    RECT work_area = {0};
-    if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &work_area, 0))
-    {
-      if (x == -1) x = work_area.left;
-      if (y == -1) y = work_area.top;
-    }
-  }
-
-  RECT rect = {0};
-  rect.right  = (LONG)width;
-  rect.bottom = (LONG)height;
-  AdjustWindowRect(&rect, style, false);
-  u32 client_width  = (u32)(rect.right - rect.left);
-  u32 client_height = (u32)(rect.bottom - rect.top);
-
-  if (title.count >= 126) return NULL;
-
-  wchar_t title_w[126];
-  s32 required = MultiByteToWideChar(CP_UTF8, 0, (char*)title.cstring, (s32)title.count, NULL, 0);
-  if (required == 0 || required > 256) return NULL;
-  MultiByteToWideChar(CP_UTF8, 0, (char*)title.cstring, (s32)title.count, title_w, required);
-  title_w[required] = 0;
-
-  HWND hwnd = CreateWindowExW(
-    0, WINDOW_CLASS_NAME, title_w, style, x, y, client_width, client_height,
-    parent ? parent->hwnd : NULL, NULL, (HINSTANCE)0, NULL
-  );
-  if (!hwnd) return NULL;
-
-  Window* window = push_array(WindowContext.arena, Window, 1);
+  Window *window = &GlobalWindow;
   memory_zero_struct(window);
 
-  window->next   = NULL;
   window->title  = title;
   window->width  = width;
   window->height = height;
   window->x      = x;
   window->y      = y;
-  window->hwnd   = hwnd;
 
-  // Add to WindowContext linked list
-  if (!WindowContext.window_list)
-  {
-    WindowContext.window_list = window;
-  }
-  else
-  {
-    Window* it = WindowContext.window_list;
-    while (it->next) it = it->next;
-    it->next = window;
-  }
+  DWORD style = WINDOWED_STYLE;
 
-  // Device context
-  window->dc = GetDC(window->hwnd);
-  if (!window->dc)
-  {
-    // TODO(fz): Handle error
-    assert(0);
-  }
+  RECT rect = {0};
+  rect.right  = width;
+  rect.bottom = height;
+  AdjustWindowRect(&rect, style, false);
 
-  WindowContext.total_windows += 1;
-  UpdateWindow(hwnd);
+  HWND hwnd = CreateWindowExW(
+    0,
+    WINDOW_CLASS_NAME,
+    L"Window",
+    style,
+    x, y,
+    rect.right - rect.left,
+    rect.bottom - rect.top,
+    NULL, NULL,
+    GetModuleHandle(NULL),
+    NULL
+  );
+
+  window->hwnd = hwnd;
+  window->dc   = GetDC(hwnd);
+
+  window->frame_arena = arena_alloc();
+
+  window->events_this_frame.capacity = 4096;
+  window->events_this_frame.data =
+    push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
+
   ShowWindow(hwnd, SW_SHOW);
+  UpdateWindow(hwnd);
 
   return window;
 }
 
 function void
-window_swap_buffers(Window* window)
+window_swap_buffers()
 {
-  SwapBuffers(window->dc);
+  SwapBuffers(GlobalWindow.dc);
 }
 
 function void
-window_destroy(Window* window)
+window_destroy()
 {
-  if (!window)
-  {
-    return;
-  }
+  if (!GlobalWindow.hwnd) return;
 
-  WindowContext.total_windows -= 1;
-  DestroyWindow(window->hwnd);
-  
-  Window* prev = NULL;
-  Window* it = WindowContext.window_list;
-  while (it)
-  {
-    if (it == window)
-    {
-      if (prev)
-      {
-        prev->next = it->next;
-      }
-      else
-      {
-        WindowContext.window_list = it->next;
-      }
-      break;
-    }
-    prev = it;
-    it = it->next;
-  }
+  DestroyWindow(GlobalWindow.hwnd);
+  GlobalWindow.should_close = true;
 }
 
 function LRESULT CALLBACK
 _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-  Window_Context* ctx = &WindowContext;
-  Event_Array* events = &ctx->events_this_frame;
-
-  Window* window = WindowContext.window_list;
-  while (window && window->hwnd != hwnd)
-  {
-    window = window->next;
-  }
+  Event_Array* events = &GlobalWindow.events_this_frame;
+  Window *window = &GlobalWindow;
 
   if (window) switch (message)
   {
     case WM_CLOSE:
     {
-      WindowContext.any_window_pending_close = true;
       window->should_close = true;
       return 0;
     }
     break;
     case WM_DESTROY:
     { 
-      if (WindowContext.total_windows == 0) 
-      {
-        PostQuitMessage(0);
-      }
+      PostQuitMessage(0);
       return 0;
     } break;
     
@@ -292,7 +231,6 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_SETFOCUS:
     {
       window->is_focused = true;
-      WindowContext.focused_window = window;
       return 0;
     }
     break;
@@ -300,15 +238,11 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_KILLFOCUS:
     {
       window->is_focused = false;
-      if (WindowContext.focused_window == window)
-      {
-        WindowContext.focused_window = NULL;
-      }
       // Reset input
       {
-        memory_zero_struct(&WindowContext.input);
-        WindowContext.input.mouse_previous.screen_space.x = -1;
-        WindowContext.input.mouse_previous.screen_space.y = -1;
+        memory_zero_struct(&GlobalWindow.input);
+        GlobalWindow.input.mouse_previous.screen_space.x = -1;
+        GlobalWindow.input.mouse_previous.screen_space.y = -1;
       }
       return 0;
     }
@@ -355,8 +289,8 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
       s32 x = GET_X_LPARAM(lparam);
       s32 y = GET_Y_LPARAM(lparam);
-      WindowContext.input.mouse_current.screen_space.x = x; 
-      WindowContext.input.mouse_current.screen_space.y = y;
+      GlobalWindow.input.mouse_current.screen_space.x = x; 
+      GlobalWindow.input.mouse_current.screen_space.y = y;
       return 0;
     }
     break;
@@ -364,7 +298,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_MOUSEWHEEL:
     {
       short delta = GET_WHEEL_DELTA_WPARAM(wparam);
-      WindowContext.input.mouse_current.wheel_delta += delta;
+      GlobalWindow.input.mouse_current.wheel_delta += delta;
       return 0;
     }
     break;
@@ -386,9 +320,9 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
       Window_Event* event = _event_push(events);
       event->kind = Event_Keyboard;
 
-      event->modifiers.shift_pressed = input_is_key_down(Keyboard_Key_SHIFT);
-      event->modifiers.ctrl_pressed  = input_is_key_down(Keyboard_Key_CONTROL);
-      event->modifiers.alt_pressed   = input_is_key_down(Keyboard_Key_LEFT_MENU) || input_is_key_down(Keyboard_Key_RIGHT_MENU);
+      event->modifiers.shift_pressed = is_key_down(Keyboard_Key_SHIFT);
+      event->modifiers.ctrl_pressed  = is_key_down(Keyboard_Key_CONTROL);
+      event->modifiers.alt_pressed   = is_key_down(Keyboard_Key_LEFT_MENU) || is_key_down(Keyboard_Key_RIGHT_MENU);
 
       event->payload.key = key;
 
@@ -450,51 +384,37 @@ _init_window_class()
   RegisterClassExW(&wc);
   WindowClassInited = 1;
 
-  WindowContext.arena = arena_alloc();
-  WindowContext.frame_arena = arena_alloc();
-  WindowContext.events_this_frame.count    = 0;
-  WindowContext.events_this_frame.capacity = 4096;
-  WindowContext.events_this_frame.data     = push_array(WindowContext.frame_arena, Window_Event, WindowContext.events_this_frame.capacity);
+  GlobalWindow.frame_arena = arena_alloc();
+  GlobalWindow.events_this_frame.count    = 0;
+  GlobalWindow.events_this_frame.capacity = 4096;
+  GlobalWindow.events_this_frame.data     = push_array(GlobalWindow.frame_arena, Window_Event, GlobalWindow.events_this_frame.capacity);
 }
 
 function void
 window_update_events()
 {
-  Window_Context* ctx = &WindowContext;
+  Window *window = &GlobalWindow;
 
-  ctx->events_this_frame.count = 0;
-  arena_clear(ctx->frame_arena);
+  window->events_this_frame.count = 0;
+  arena_clear(window->frame_arena);
 
-  _input_update(&ctx->input);
+  _input_update();
 
   for (;;)
   {
     MSG msg;
-    if (!PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) break;
+    if (!PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+      break;
 
     if (msg.message == WM_QUIT)
     {
-      Window_Event* event = _event_push(&ctx->events_this_frame);
+      Window_Event* event = _event_push(&window->events_this_frame);
       event->kind = Event_Quit;
       continue;
     }
 
     TranslateMessage(&msg);
     DispatchMessageW(&msg);
-  }
-
-  if (WindowContext.any_window_pending_close)
-  {
-    Window* it = WindowContext.window_list;
-    Window* next = NULL;
-    while (it)
-    {
-      next = it->next;
-      if (it->should_close) window_destroy(it);
-      it = next;
-    }
-
-    WindowContext.any_window_pending_close = false;
   }
 }
 
@@ -510,14 +430,13 @@ _event_push(Event_Array* array)
 function u32
 get_total_events_this_frame()
 {
-  return WindowContext.events_this_frame.count;
+  return GlobalWindow.events_this_frame.count;
 }
 
 function Window_Event*
 get_event_this_frame(u32 index)
 {
-  assert(index < WindowContext.events_this_frame.count);
-  return &(WindowContext.events_this_frame.data[index]);
+  return &GlobalWindow.events_this_frame.data[index];
 }
 
 function void
@@ -559,107 +478,182 @@ function void
 _input_init()
 {
   assert_no_reentry();
-  memory_zero_struct(&WindowContext.input);
+  memory_zero_struct(&GlobalWindow.input);
   
-  WindowContext.input.mouse_previous.screen_space.x = -1;
-  WindowContext.input.mouse_previous.screen_space.y = -1;
+  GlobalWindow.input.mouse_previous.screen_space.x = -1;
+  GlobalWindow.input.mouse_previous.screen_space.y = -1;
 }
 
 function void
 _input_update()
 {
   // Compute new deltas
-  WindowContext.input.mouse_current.delta.x = WindowContext.input.mouse_current.screen_space.x - WindowContext.input.mouse_previous.screen_space.x; 
-  WindowContext.input.mouse_current.delta.y = WindowContext.input.mouse_current.screen_space.y - WindowContext.input.mouse_previous.screen_space.y;
-  WindowContext.input.mouse_current.wheel_delta = 0;
+  GlobalWindow.input.mouse_current.delta.x = GlobalWindow.input.mouse_current.screen_space.x - GlobalWindow.input.mouse_previous.screen_space.x; 
+  GlobalWindow.input.mouse_current.delta.y = GlobalWindow.input.mouse_current.screen_space.y - GlobalWindow.input.mouse_previous.screen_space.y;
+  GlobalWindow.input.mouse_current.wheel_delta = 0;
 
-  memory_copy(&(WindowContext.input.keyboard_previous), &(WindowContext.input.keyboard_current), sizeof(Keyboard_State));
-  memory_copy(&(WindowContext.input.mouse_previous),    &(WindowContext.input.mouse_current),    sizeof(Mouse_State));
+  memory_copy(&(GlobalWindow.input.keyboard_previous), &(GlobalWindow.input.keyboard_current), sizeof(Keyboard_State));
+  memory_copy(&(GlobalWindow.input.mouse_previous),    &(GlobalWindow.input.mouse_current),    sizeof(Mouse_State));
 }
 
 function b32
-input_is_key_up(Keyboard_Key key)
+is_key_up(Keyboard_Key key)
 {
-  b32 result = WindowContext.input.keyboard_current.keys[key] == false;
+  b32 result = GlobalWindow.input.keyboard_current.keys[key] == false;
   return result;
 }
 
 function b32
-input_is_key_down(Keyboard_Key key)
+is_key_down(Keyboard_Key key)
 {
-  b32 result = WindowContext.input.keyboard_current.keys[key] == true;
+  b32 result = GlobalWindow.input.keyboard_current.keys[key] == true;
   return result;
 }
 
 function b32
-input_was_key_up(Keyboard_Key key)
+was_key_up(Keyboard_Key key)
 {
-  b32 result = WindowContext.input.keyboard_previous.keys[key] == false;
+  b32 result = GlobalWindow.input.keyboard_previous.keys[key] == false;
   return result;
 }
 
 function b32
-input_was_key_down(Keyboard_Key key)
+was_key_down(Keyboard_Key key)
 {
-  b32 result = WindowContext.input.keyboard_previous.keys[key] == true;
+  b32 result = GlobalWindow.input.keyboard_previous.keys[key] == true;
   return result;
 }
 
 function b32
-input_is_key_clicked(Keyboard_Key key)
+is_key_clicked(Keyboard_Key key)
 {
-  return input_is_key_down(key) && input_was_key_up(key);
+  return is_key_down(key) && was_key_up(key);
 }
 
 function void
 _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed)
 {
-  if (WindowContext.input.keyboard_current.keys[key] != is_pressed)
+  if (GlobalWindow.input.keyboard_current.keys[key] != is_pressed)
   {
-    WindowContext.input.keyboard_current.keys[key] = is_pressed;
+    GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
   }
 }
 
 function b32
-input_is_button_up(Mouse_Button button)
+is_button_up(Mouse_Button button)
 {
-  b32 result = WindowContext.input.mouse_current.buttons[button] == false;
+  b32 result = GlobalWindow.input.mouse_current.buttons[button] == false;
   return result;
 }
 
 function b32
-input_is_button_down(Mouse_Button button)
+is_button_down(Mouse_Button button)
 {
-  b32 result = WindowContext.input.mouse_current.buttons[button] == true;
+  b32 result = GlobalWindow.input.mouse_current.buttons[button] == true;
   return result;
 }
 
 function b32
-input_was_button_up(Mouse_Button button)
+was_button_up(Mouse_Button button)
 {
-  b32 result = WindowContext.input.mouse_previous.buttons[button] == false;
+  b32 result = GlobalWindow.input.mouse_previous.buttons[button] == false;
   return result;
 }
 
 function b32
-input_was_button_down(Mouse_Button button)
+was_button_down(Mouse_Button button)
 {
-  b32 result = WindowContext.input.mouse_previous.buttons[button] == true;
+  b32 result = GlobalWindow.input.mouse_previous.buttons[button] == true;
   return result;
 }
 
 function b32
-input_is_button_clicked(Mouse_Button button)
+is_button_clicked(Mouse_Button button)
 {
-  b32 result = input_is_button_down(button) && input_was_button_up(button);
+  b32 result = is_button_down(button) && was_button_up(button);
   return result;
 }
 
 function void
 _input_process_mouse_button(Mouse_Button button, b32 is_pressed)
 {
-  if (WindowContext.input.mouse_current.buttons[button] != (b8)is_pressed)
+  if (GlobalWindow.input.mouse_current.buttons[button] != (b8)is_pressed)
   {
-    WindowContext.input.mouse_current.buttons[button] = (b8)is_pressed;
+    GlobalWindow.input.mouse_current.buttons[button] = (b8)is_pressed;
   }
+}
+
+function s32
+get_mouse_x()
+{
+  return GlobalWindow.input.mouse_current.screen_space.x;
+}
+
+function s32
+get_mouse_y()
+{
+  return GlobalWindow.input.mouse_current.screen_space.y;
+}
+
+function V2s32
+get_mouse_position()
+{
+  return GlobalWindow.input.mouse_current.screen_space;
+}
+
+function s32
+get_mouse_delta_x()
+{
+  return GlobalWindow.input.mouse_current.delta.x;
+}
+
+function s32
+get_mouse_delta_y()
+{
+  return GlobalWindow.input.mouse_current.delta.y;
+}
+
+function V2s32
+get_mouse_delta()
+{
+  return GlobalWindow.input.mouse_current.delta;
+}
+
+function s32
+get_mouse_wheel_delta()
+{
+  return GlobalWindow.input.mouse_current.wheel_delta;
+}
+
+function u32
+get_window_width()
+{
+  return GlobalWindow.width;
+}
+
+function u32
+get_window_height()
+{
+  return GlobalWindow.height;
+}
+
+function V2u32
+get_window_dimensions()
+{
+  return v2u32(GlobalWindow.width, GlobalWindow.height);
+}
+
+function u32   get_window_x()
+{
+  return GlobalWindow.x;
+}
+
+function u32   get_window_y()
+{
+  return GlobalWindow.y;
+}
+
+function V2u32 get_window_position()
+{
+  return v2u32(GlobalWindow.x, GlobalWindow.y);
 }

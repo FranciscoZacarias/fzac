@@ -98,8 +98,14 @@ function b32 _win32_load_wgl_functions(); /* Opens webgl functions */
 // @Section: Implementation
 
 function b32
-opengl_init(Window* window)
+opengl_init()
 {
+  if (!WindowClassInited)
+  {
+    // @TODO(fz): Handle error
+    assert(0);
+  }
+
   if (!_win32_load_wgl_functions())
   {
     // emit_fatal(S("Failed to load wgl functions."));
@@ -133,7 +139,7 @@ opengl_init(Window* window)
 
     int format;
     UINT formats;
-    if (!wglChoosePixelFormatARB(window->dc, attrib, NULL, 1, &format, &formats) || formats == 0)
+    if (!wglChoosePixelFormatARB(GlobalWindow.dc, attrib, NULL, 1, &format, &formats) || formats == 0)
     {
       //emit_fatal(S("OpenGL does not support required pixel format!"));
       // @TODO(Fz): Handle error
@@ -161,13 +167,13 @@ opengl_init(Window* window)
       0,
       0
     };
-    if(!DescribePixelFormat(window->dc, format, sizeof(desc), &desc))
+    if(!DescribePixelFormat(GlobalWindow.dc, format, sizeof(desc), &desc))
     {
       // emit_error(S("Failed to describe OpenGL pixel format"));
       // @TODO(fz): Handle error.
       assert(0);
     }
-    if (!SetPixelFormat(window->dc, format, &desc))
+    if (!SetPixelFormat(GlobalWindow.dc, format, &desc))
     {
       // emit_fatal(S("Cannot set OpenGL selected pixel format!"));
       // @TODO(fz): Handle error.
@@ -190,15 +196,15 @@ opengl_init(Window* window)
       0,
     };
 
-    window->rc = wglCreateContextAttribsARB(window->dc, NULL, attrib);
-    if (!window->rc)
+    GlobalWindow.rc = wglCreateContextAttribsARB(GlobalWindow.dc, NULL, attrib);
+    if (!GlobalWindow.rc)
     {
       // emit_fatal(S("Cannot create modern OpenGL context! OpenGL version 4.5 not supported?"));
       // @TODO(Fz): Handle error
       assert(false);
     }
 
-    b32 ok = wglMakeCurrent(window->dc, window->rc);
+    b32 ok = wglMakeCurrent(GlobalWindow.dc, GlobalWindow.rc);
     if (!ok)
     {
       // win32_check_error();
@@ -220,7 +226,7 @@ opengl_init(Window* window)
   }
 
   // Set viewport
-  glViewport(0, 0, window->width, window->height);
+  glViewport(0, 0, GlobalWindow.width, GlobalWindow.height);
 
   // Check for errors
   GLenum error = glGetError();
@@ -236,7 +242,7 @@ function void
 opengl_end(Window* window)
 {
   wglMakeCurrent(NULL, NULL);
-  wglDeleteContext(window->rc);
+  wglDeleteContext(GlobalWindow.rc);
 }
 
 function void

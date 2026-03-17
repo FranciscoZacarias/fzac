@@ -8,8 +8,8 @@
 #include "OpenGL/generated/Opengl.generated.h"
 
 // @Section: Opengl entry point
-function b32   opengl_init(Window* window); /* Initializes opengl context */
-function void  opengl_end(Window* window);  /* Deletes opengl context */
+function b32   opengl_init(); /* Initializes opengl context */
+function void  opengl_end();  /* Deletes opengl context */
 #define opengl_check_errors() _opengl_check_error(S(__FILE__), __LINE__)
 
 // @Section: Settings

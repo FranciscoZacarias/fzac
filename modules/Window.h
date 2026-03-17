@@ -9,9 +9,9 @@
 
 typedef struct Window Window;
 
-function Window* window_create(Window* parent, String title, u32 width, u32 height, u32 x, u32 y);
-function void    window_swap_buffers(Window* window);
-function void    window_destroy(Window* window);
+function Window* window_create(String title, u32 width, u32 height, u32 x, u32 y);
+function void    window_swap_buffers();
+function void    window_destroy();
 
 // @Section: Input
 typedef u32 Keyboard_Key;
@@ -192,22 +192,29 @@ struct Input_State
 
 function void _input_init(); /* Initializes input state (clears previous + current states) */
 function void _input_update(); /* Updates previous input state with current state (to track deltas and transitions) */
-
-function b32 input_is_key_up(Keyboard_Key key); /* True if the given key is currently up */
-function b32 input_is_key_down(Keyboard_Key key); /* True if the given key is currently down */
-function b32 input_was_key_up(Keyboard_Key key); /* True if the given key was up on the previous frame */
-function b32 input_was_key_down(Keyboard_Key key); /* True if the given key was down on the previous frame */
-function b32 input_is_key_clicked(Keyboard_Key key); /* True if the given key is down this frame but was up last frame */
-
-function b32 input_is_button_up(Mouse_Button button); /* True if the given mouse button is currently up */
-function b32 input_is_button_down(Mouse_Button button); /* True if the given mouse button is currently down */
-function b32 input_was_button_up(Mouse_Button button); /* True if the given mouse button was up on the previous frame */
-function b32 input_was_button_down(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
-function b32 input_is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
-
 function void _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed); /* Internal: Processes a key press/release and updates keyboard state */
 function void _input_process_mouse_move(s32 x, s32 y);
 function void _input_process_mouse_button(Mouse_Button button, b32 is_pressed); /* Internal: Processes mouse button press/release and updates mouse state */
+
+function b32 is_key_up(Keyboard_Key key); /* True if the given key is currently up */
+function b32 is_key_down(Keyboard_Key key); /* True if the given key is currently down */
+function b32 was_key_up(Keyboard_Key key); /* True if the given key was up on the previous frame */
+function b32 was_key_down(Keyboard_Key key); /* True if the given key was down on the previous frame */
+function b32 is_key_clicked(Keyboard_Key key); /* True if the given key is down this frame but was up last frame */
+
+function b32 is_button_up(Mouse_Button button); /* True if the given mouse button is currently up */
+function b32 is_button_down(Mouse_Button button); /* True if the given mouse button is currently down */
+function b32 was_button_up(Mouse_Button button); /* True if the given mouse button was up on the previous frame */
+function b32 was_button_down(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
+function b32 is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
+
+function s32   get_mouse_x();
+function s32   get_mouse_y();
+function V2s32 get_mouse_position();
+function s32   get_mouse_delta_x();
+function s32   get_mouse_delta_y();
+function V2s32 get_mouse_delta();
+function s32   get_mouse_wheel_delta();
 
 // @Section: Events
 
@@ -221,7 +228,6 @@ enum META_ENUM_LINK(Event_Kind)
   Event_Window,
   Event_Quit,
   Event_Drag_And_Drop,
-
 
 };
 
@@ -260,28 +266,10 @@ function Window_Event* _event_push(Event_Array* array);
 function u32            get_total_events_this_frame();
 function Window_Event*  get_event_this_frame(u32 index);
 
-typedef struct Window_Context Window_Context;
-struct Window_Context
-{
-  Arena* arena;
-  Arena* frame_arena;
-  Window* window_list;
-  u32 total_windows;
-  Window* focused_window;
-  Event_Array events_this_frame;
-  Input_State input;
-
-  b32 any_window_pending_close;
-};
-
-thread_local global Window_Context WindowContext;
-
 function void window_update_events(); /* Processes all window events this frame. Returns false if app should close */
 
 struct Window
 {
-  Window *next;
-
   String title;
 
   u32 width;
@@ -293,6 +281,12 @@ struct Window
   b32 is_focused;
   b32 should_close;
 
+  Input_State input;
+
+  Event_Array events_this_frame;
+
+  Arena *frame_arena;
+
 #if OS_WINDOWS
 
   HWND  hwnd;
@@ -300,7 +294,7 @@ struct Window
   HDC   dc;
 };
 
-  global Window* WindowListHead = NULL;
+  global Window GlobalWindow;
   global b32 WindowClassInited = 0;
 
   function void _init_window_class(); /* Only needs to be called one time per process. */
@@ -311,5 +305,12 @@ struct Window
 #else
 # error Operating System not supported
 #endif
+
+function u32   get_window_width();
+function u32   get_window_height();
+function V2u32 get_window_dimensions();
+function u32   get_window_x();
+function u32   get_window_y();
+function V2u32 get_window_position();
 
 #endif // WINDOW_CREATION
