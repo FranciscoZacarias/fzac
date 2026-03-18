@@ -668,5 +668,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glFinish = (PFNglFinishPROC)_load_gl_function("glFinish"); 
+  if (!__glFinish)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glFinish"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

@@ -701,6 +701,14 @@ glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, 
   __glBlendFuncSeparate (sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 }
 
+typedef void (*PFNglFinishPROC)();
+global PFNglFinishPROC __glFinish = NULL;
+function inline void
+glFinish ()
+{
+  __glFinish ();
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint
