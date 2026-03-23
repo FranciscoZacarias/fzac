@@ -3,12 +3,28 @@
 
 #include "..\modules\Command_Line.h"
 
+function void metaprogram_entry_point(Command_Line *command_line); /* Metaprogram entry point, defined by user. */
 function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
 raddbg_entry_point(entry_point);
 
+function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
 function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
 
 // @Section: Implementation
+
+#if METAPROGRAM
+#include "Introspection.h"
+#include "Code_Generation.h"
+function void
+metaprogram_main_thread_base_entry_point(String command_line)
+{
+  local_persist Thread_Context thread_context;
+  thread_context_init_and_attach(&thread_context);
+  Command_Line cmd_line = command_line_parse(command_line);
+  metaprogram_entry_point(&cmd_line);
+}
+#endif
+
 function void
 main_thread_base_entry_point(String command_line)
 {
@@ -42,7 +58,11 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
     command_line.cstring = buf;
   }
 
+#if METAPROGRAM
+  metaprogram_main_thread_base_entry_point(command_line);
+#else
   main_thread_base_entry_point(command_line);
+#endif
   return 0;
 }
 
