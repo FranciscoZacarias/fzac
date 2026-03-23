@@ -3,12 +3,15 @@
 
 #include "..\modules\Command_Line.h"
 
+#if METAPROGRAM
 function void metaprogram_entry_point(Arena* arena,Command_Line *command_line, String project_path); /* Metaprogram entry point, defined by user. */
+raddbg_entry_point(metaprogram_entry_point);
+function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+#else
 function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
 raddbg_entry_point(entry_point);
-
-function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
 function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+#endif
 
 // @Section: Implementation
 
@@ -44,8 +47,7 @@ metaprogram_main_thread_base_entry_point(String command_line)
   
   metaprogram_entry_point(arena, &cmd_line, S("../src"));
 }
-#endif
-
+#else
 function void
 main_thread_base_entry_point(String command_line)
 {
@@ -54,6 +56,7 @@ main_thread_base_entry_point(String command_line)
   Command_Line cmd_line = command_line_parse(command_line);
   entry_point(&cmd_line);
 }
+#endif
 
 #if OS_WINDOWS
 
