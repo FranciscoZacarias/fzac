@@ -9,13 +9,11 @@ raddbg_entry_point(entry_point);
 function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
 
 // @Section: Implementation
-
 function void
 main_thread_base_entry_point(String command_line)
 {
   local_persist Thread_Context thread_context;
   thread_context_init_and_attach(&thread_context);
-
   Command_Line cmd_line = command_line_parse(command_line);
   entry_point(&cmd_line);
 }

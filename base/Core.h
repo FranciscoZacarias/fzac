@@ -37,7 +37,7 @@
 #if DEBUG
 # define assert_break() (*(volatile int*)0 = 0)
 # define assert(condition) statement(if (!(condition)){ assert_break(); })
-# define assert_no_reentry() statement(local_persist b32 __triggered__ = 0; assert(__triggered__ == 0); __triggered__ = 1;) 
+# define assert_no_reentry() statement(local_persist b32 __assert_no_reentry_triggered = 0; assert(__assert_no_reentry_triggered == 0); __assert_no_reentry_triggered = 1;) 
 # define assert_unreachable() assert_break(0)
 # define static_assert(condition,label) typedef u8 glue(label,__LINE__) [(condition)?1:-1]
 # define assert_expr(condition) ((condition) ? 0 : (assert_break(), 0))
