@@ -3,7 +3,7 @@
 
 #include "..\modules\Command_Line.h"
 
-function void metaprogram_entry_point(Command_Line *command_line); /* Metaprogram entry point, defined by user. */
+function void metaprogram_entry_point(Arena* arena,Command_Line *command_line, String project_path); /* Metaprogram entry point, defined by user. */
 function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
 raddbg_entry_point(entry_point);
 
@@ -15,13 +15,34 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 #if METAPROGRAM
 #include "Introspection.h"
 #include "Code_Generation.h"
+#include "Platform.h"
 function void
 metaprogram_main_thread_base_entry_point(String command_line)
 {
   local_persist Thread_Context thread_context;
   thread_context_init_and_attach(&thread_context);
   Command_Line cmd_line = command_line_parse(command_line);
-  metaprogram_entry_point(&cmd_line);
+  
+  // Default metaprogram 
+  Arena* arena = arena_alloc();
+  {
+    console_attach();
+    String path = full_path_from_relative_path(arena, S("../src"));
+    if (cmd_line.args_count > 0)
+    {
+      for (u32 i = 0; i < cmd_line.args_count; i += 1)
+      {
+        Command_Line_Arg arg = cmd_line.args[i];
+        if (string_equals(arg.value, S("cgen"), false))
+        {
+          CGen_Context cgen = cgen_run(path);
+          cgen_execute_commands(&cgen);
+        }
+      }
+    }
+  }
+  
+  metaprogram_entry_point(arena, &cmd_line, S("../src"));
 }
 #endif
 
