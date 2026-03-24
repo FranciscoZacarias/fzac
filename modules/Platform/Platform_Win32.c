@@ -29,6 +29,67 @@ console_attach()
   }
 }
 
+function void
+clipboard_write(String str)
+{
+  if(!OpenClipboard(0))
+  {
+    return;
+  }
+
+  EmptyClipboard();
+  s32 wchar_count = MultiByteToWideChar(CP_UTF8, 0, (char*)str.cstring, (int)str.count, 0, 0);
+  HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (wchar_count + 1) * sizeof(wchar_t));
+  if(!mem)
+  {
+    CloseClipboard();
+    return;
+  }
+
+  wchar_t *buffer = (wchar_t*)GlobalLock(mem);
+  MultiByteToWideChar(CP_UTF8, 0, (char*)str.cstring, (int)str.count, buffer, wchar_count);
+  buffer[wchar_count] = 0;
+  GlobalUnlock(mem);
+  SetClipboardData(CF_UNICODETEXT, mem);
+  CloseClipboard();
+}
+
+function String
+clipboard_read(Arena *arena)
+{
+  String result = {0};
+
+  if(!OpenClipboard(0))
+  {
+    return result;
+  }
+
+  HANDLE handle = GetClipboardData(CF_UNICODETEXT);
+  if(!handle)
+  {
+    CloseClipboard();
+    return result;
+  }
+
+  wchar_t *wstr = (wchar_t*)GlobalLock(handle);
+  if(!wstr)
+  {
+    CloseClipboard();
+    return result;
+  }
+
+  s32 wchar_count = (s32)wcslen(wstr);
+  s32 utf8_size = WideCharToMultiByte(CP_UTF8, 0, wstr, wchar_count, 0, 0, 0, 0);
+  u8 *buffer = push_array(arena, u8, utf8_size + 1);
+  WideCharToMultiByte(CP_UTF8, 0, wstr, wchar_count, (char*)buffer, utf8_size, 0, 0);
+  buffer[utf8_size] = 0;
+  result.count   = utf8_size;
+  result.cstring = buffer;
+  GlobalUnlock(handle);
+  CloseClipboard();
+
+  return result;
+}
 
 function void
 message_box(String title, String content, String file, u32 line)

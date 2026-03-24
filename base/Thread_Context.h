@@ -6,8 +6,8 @@
 typedef struct Thread_Context Thread_Context;
 struct Thread_Context
 {
-  Arena* temporary_storage; /* Used for allocating without thinking too hard about where the allocation goes to. Use get_temporary_storage() and clear_temporary_storage(); */
-  Arena* temporary_arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT]; /* Used for scratches arenas */
+  Arena *temporary_storage; /* Used for allocating without thinking too hard about where the allocation goes to. Use get_temporary_storage() and clear_temporary_storage(); */
+  Arena *temporary_arenas[DEFAULT_ARENAS_PER_THREAD_CONTEXT]; /* Used for scratches arenas */
 };
 
 C_LINKAGE thread_static Thread_Context* ThreadContextThreadLocal = 0;
