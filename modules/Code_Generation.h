@@ -2,6 +2,8 @@
 #define CODE_GENERATION_H
 
 #include "../Base.h"
+
+#include "String_Builder.h"
 #include "Lexer.h"
 
 #define CGEN_FILES_CAPACITY 64
@@ -256,9 +258,8 @@ cgen_execute_commands(CGen_Context *ctx)
     {
       CGen_Generator *generator = &file->generators[generator_index];
 
-      String_Buffer buffer; // Where the file data will be written to 
-      string_buffer_init(&buffer, &MallocAllocator, kilobytes(32));
-      string_buffer_push(&buffer, "/* Generated code */\n\n");
+      String_Builder buffer = string_builder_init(kilobytes(32));
+      string_builder_pushf(&buffer, "/* Generated code */\n\n");
 
       if (generator->custom_file_name.count > 0)
       {
@@ -273,7 +274,7 @@ cgen_execute_commands(CGen_Context *ctx)
         {
           case CGen_Command_Kind_String:
           {
-            string_buffer_push_literal(&buffer, (const char*)command->string.data.cstring);
+            string_builder_push(&buffer, (const char*)command->string.data.cstring);
           }
           break;
 
@@ -282,7 +283,7 @@ cgen_execute_commands(CGen_Context *ctx)
             for (u32 row_index = 0; row_index < command->table->rows_count; row_index += 1)
             {
               String final_string = _cgen_string_replace_arguments(scratch.arena, command->string, command->table, row_index);
-              string_buffer_push(&buffer, (const char*)final_string.cstring);
+              string_builder_pushf(&buffer, (const char*)final_string.cstring);
             }
           }
           break;
@@ -305,7 +306,7 @@ cgen_execute_commands(CGen_Context *ctx)
       {
         _cgen_error(Sf(scratch.arena, "Unable to write buffer to "S_FMT"\n", S_ARG(output_file)));
       }
-      string_buffer_free(&buffer);
+      string_builder_free(&buffer);
     }
   }
   scratch_end(&scratch);

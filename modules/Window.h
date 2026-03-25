@@ -15,7 +15,7 @@ function void    window_destroy();
 
 // @Section: Input
 typedef u32 Keyboard_Key;
-enum META_ENUM_LINK(Keyboard_Key)
+enum
 {
   Keyboard_Key_BACKSPACE,
   Keyboard_Key_ENTER,
@@ -156,7 +156,7 @@ function Keyboard_Key _key_from_native_key(u32 native_key); /* Converts native k
 
 
 typedef u32 Mouse_Button;
-enum META_ENUM_LINK(Mouse_Button)
+enum
 {
   Mouse_Button_Left,
   Mouse_Button_Right,
@@ -219,7 +219,7 @@ function s32   get_mouse_wheel_delta();
 // @Section: Events
 
 typedef u32 Event_Kind;
-enum META_ENUM_LINK(Event_Kind)
+enum
 {
   Event_Error = 0,
   Event_Keyboard,

@@ -134,11 +134,10 @@ The base layer includes:
   - Scratch memory functions for short lived memory.
 - `Context_Cracking`: Parses platform (OS, Compiler, CPU Arch ... ) into macros.
 - `Core`: Defines data types and some helper macros
+- `Os`: Operating system specific core functions
 - `Custom_Entry_Point`: Defines the entry_point function that has to be implemented by the user. 
-- `Data_Structures`:
-  - String_Buffer: Dynamic buffer of u8*
 - `Memory`: OS Dependent implementation of memory functions (Reserve, Free, etc... ).
-- `String`: Length based string API.
+- `String`: Immutable count based strings.
 - `Thread_Context`: Implementes a thread context that includes temporary memory.
 
 # Modules
@@ -149,6 +148,7 @@ The base layer includes:
 - `Art`: Colors and color related functions.
 - `Camera2D`: Implementation for 2D camera.
 - `Code_Generation`: Code generation module that powers all `.cgen` files.
+- `String_Builder`: String builder 
 - `Command_Line`: Command line parser
 - `Files`: File related functions
 - `Introspection`: Parses `my style of C code` and stores it in a structured way.

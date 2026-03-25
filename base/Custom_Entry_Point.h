@@ -16,7 +16,6 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 // @Section: Implementation
 
 #if METAPROGRAM
-#include "Introspection.h"
 #include "Code_Generation.h"
 #include "Platform.h"
 function void

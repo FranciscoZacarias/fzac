@@ -60,8 +60,8 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     if ((count) >= (cap))                                \
     {                                                    \
       message_box(S("Arena Array Overflow"),             \
-                Sf(get_temporary_storage(), "arena_array_push capacity of %u exceeded", (cap)), \
-                S(__FILE__),                             \
+                  Sf(get_temporary_storage(), "arena_array_push capacity of %u exceeded", (cap)), \
+                  S(__FILE__),                             \
                 __LINE__);                               \
       assert(false);                                     \
     }                                                    \

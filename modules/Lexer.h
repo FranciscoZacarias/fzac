@@ -1,6 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "String_Builder.h"
 #include "Files.h"
 
 /*
@@ -110,7 +111,7 @@ struct Token
 };
 
 typedef u8 Trivia_Flags;
-enum META_ENUM_LINK(Trivia_Flags)
+enum
 {
   Trivia_None = 0,
 
@@ -125,7 +126,7 @@ enum META_ENUM_LINK(Trivia_Flags)
 };
 
 typedef u8 Emit_Structures;
-enum META_ENUM_LINK(Emit_Structures)
+enum
 {
   Emit_None = 0,
 
@@ -755,17 +756,16 @@ lexer_parse_block_comment(Lexer* lexer, Token* token)
   lexer_eat_character(lexer);
   lexer_eat_character(lexer);
 
-  String_Buffer buffer;
-  defer_loop(string_buffer_init(&buffer, &MallocAllocator, 512), string_buffer_free(&buffer)) // @TODO(fz): Replace Malloc allocator with scratch arena
+  String_Builder buffer = string_builder_init(512);
   {
-    string_buffer_push(&buffer, "/*"); // '/*' have already been eaten
+    string_builder_push(&buffer, "/*"); // '/*' have already been eaten
     for (;;)
     {
       s16 c_s16 = lexer_peek_character(lexer);
       if (c_s16 == -1) break;
       u8 c = (u8)c_s16;
 
-      string_buffer_push(&buffer, "%c", c);
+      string_builder_pushf(&buffer, "%c", c);
       lexer_eat_character(lexer);
 
       s16 next_c = lexer_peek_character(lexer);
@@ -773,7 +773,7 @@ lexer_parse_block_comment(Lexer* lexer, Token* token)
       if (c == '*' && next_c == '/')
       {
         lexer_eat_character(lexer); // eat next_c
-        string_buffer_push(&buffer, "/");
+        string_builder_push(&buffer, "/");
         break;
       }
     }
@@ -783,6 +783,7 @@ lexer_parse_block_comment(Lexer* lexer, Token* token)
     token->l1    = lexer->current_line_number;
     token->c1    = lexer->current_character_index;
   }
+  string_builder_free(&buffer);
 }
 
 function Token*

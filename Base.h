@@ -26,13 +26,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <math.h>
 
-// @NOTE(fz): Belongs to Introspection.h. See [Introspection.h@Section: Introspection macros] for more information.
-#define META_ENUM_LINK(enum_name)
+// @Section: Dynamic String Buffer
+#define STB_SPRINTF_IMPLEMENTATION
+#include "Extern/stb_sprintf.h"
 
 // @Section: Base includes
-
 #include "base\Context_Cracking.h"
 #include "base\Core.h" 
 
@@ -44,8 +45,8 @@
 
 #include "base\String.h"
 #include "base\Math\Math.h"
+#include "base\Os.h"
 
-#include "base\Data_Structures.h"
 #include "base\Custom_Entry_Point.h"
 
 #endif // BASE_H
