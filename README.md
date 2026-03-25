@@ -130,7 +130,8 @@ The base layer includes:
 - `Math`: Linear math functions
 - `Allocators`: Custom allocators
   - Arena Allocator
-  - Scratch memory functions for short lived functions.
+  - Pool Allocator
+  - Scratch memory functions for short lived memory.
 - `Context_Cracking`: Parses platform (OS, Compiler, CPU Arch ... ) into macros.
 - `Core`: Defines data types and some helper macros
 - `Custom_Entry_Point`: Defines the entry_point function that has to be implemented by the user. 
