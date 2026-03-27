@@ -18,33 +18,41 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 #if METAPROGRAM
 #include "Code_Generation.h"
 #include "Platform.h"
+#include "Default_Metaprogram.h"
+
+#define METAPROGRAM_SRC_DIRECTORY S("../src")
+
+global Default_Metaprogram DefaultMetaprogram;
+
 function void
 metaprogram_main_thread_base_entry_point(String command_line)
 {
   local_persist Thread_Context thread_context;
   thread_context_init_and_attach(&thread_context);
   Command_Line cmd_line = command_line_parse(command_line);
+  console_attach();
+
+  // Default Metaprogram
+  DefaultMetaprogram.arena = arena_alloc();
+  DefaultMetaprogram.files_capacity = 64;
+  default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);
   
-  // Default metaprogram 
-  Arena* arena = arena_alloc();
+  // Metaprogram arguments
+  String path = full_path_from_relative_path(DefaultMetaprogram.arena, METAPROGRAM_SRC_DIRECTORY);
+  if (cmd_line.args_count > 0)
   {
-    console_attach();
-    String path = full_path_from_relative_path(arena, S("../src"));
-    if (cmd_line.args_count > 0)
+    for (u32 i = 0; i < cmd_line.args_count; i += 1)
     {
-      for (u32 i = 0; i < cmd_line.args_count; i += 1)
+      Command_Line_Arg arg = cmd_line.args[i];
+      if (string_equals(arg.value, S("cgen"), false))
       {
-        Command_Line_Arg arg = cmd_line.args[i];
-        if (string_equals(arg.value, S("cgen"), false))
-        {
-          CGen_Context cgen = cgen_run(path);
-          cgen_execute_commands(&cgen);
-        }
+        CGen_Context cgen = cgen_run(path);
+        cgen_execute_commands(&cgen);
       }
     }
   }
   
-  metaprogram_entry_point(arena, &cmd_line, S("../src"));
+  metaprogram_entry_point(DefaultMetaprogram.arena, &cmd_line, S("../src"));
 }
 #else
 function void
