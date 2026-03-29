@@ -68,6 +68,8 @@ pool_alloc(u64 chunk_size, u64 chunk_count)
     return NULL;
   }
 
+  memory_zero(memory, total_size);
+
   Pool* pool      = (Pool*) memory;
   pool->chunk_size  = chunk_size;
   pool->chunk_count = chunk_count;
@@ -129,7 +131,6 @@ pool_free_chunk(Pool* pool, void* chunk)
     return;
   }
 
-  /* Bounds check: ensure the pointer belongs to this pool. */
   u8* start = pool->memory;
   u8* end   = pool->memory + pool->chunk_size * pool->chunk_count;
   if ((u8*)chunk < start || (u8*)chunk >= end)
@@ -138,7 +139,6 @@ pool_free_chunk(Pool* pool, void* chunk)
     return;
   }
 
-  /* Alignment check: pointer must land exactly on a chunk boundary. */
   u64 offset = (u8*)chunk - start;
   if (offset % pool->chunk_size != 0)
   {
@@ -146,7 +146,8 @@ pool_free_chunk(Pool* pool, void* chunk)
     return;
   }
 
-  /* Push onto the head of the free list. */
+  memory_zero(chunk, pool->chunk_size);
+
   void** free_chunk = (void**) chunk;
   *free_chunk     = pool->free_list;
   pool->free_list = free_chunk;
@@ -160,6 +161,8 @@ pool_clear(Pool* pool)
   {
     return;
   }
+
+  memory_zero(pool->memory, pool->chunk_size * pool->chunk_count);
 
   pool->free_list = NULL;
   pool->used      = 0;
