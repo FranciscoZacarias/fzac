@@ -32,26 +32,26 @@ metaprogram_main_thread_base_entry_point(String command_line)
   Command_Line cmd_line = command_line_parse(command_line);
   console_attach();
 
+  // Metaprogram optional flags
+  // @TODO(fz): Move to default_metaprogram
+	String path = full_path_from_relative_path(DefaultMetaprogram.arena, METAPROGRAM_SRC_DIRECTORY);
+	if (cmd_line.args_count > 0)
+	{
+		for (u32 i = 0; i < cmd_line.args_count; i += 1)
+		{
+			Command_Line_Arg arg = cmd_line.args[i];
+			if (string_equals(arg.value, S("cgen"), false))
+			{
+				CGen_Context cgen = cgen_run(path);
+				cgen_execute_commands(&cgen);
+			}
+		}
+	}
+
   // Default Metaprogram
   DefaultMetaprogram.arena = arena_alloc();
   DefaultMetaprogram.files_capacity = 64;
-  default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);
-  
-  // Metaprogram arguments
-  String path = full_path_from_relative_path(DefaultMetaprogram.arena, METAPROGRAM_SRC_DIRECTORY);
-  if (cmd_line.args_count > 0)
-  {
-    for (u32 i = 0; i < cmd_line.args_count; i += 1)
-    {
-      Command_Line_Arg arg = cmd_line.args[i];
-      if (string_equals(arg.value, S("cgen"), false))
-      {
-        CGen_Context cgen = cgen_run(path);
-        cgen_execute_commands(&cgen);
-      }
-    }
-  }
-  
+  default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);  
   metaprogram_entry_point(DefaultMetaprogram.arena, &cmd_line, S("../src"));
 }
 #else

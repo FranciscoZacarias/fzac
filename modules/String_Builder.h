@@ -1,6 +1,8 @@
 #ifndef STRING_BUILDER_H
 #define STRING_BUILDER_H
 
+/* TODO(fz): This should not own an arena, it should receive an arena from the user. */
+
 typedef struct String_Builder String_Builder;
 struct String_Builder
 {
