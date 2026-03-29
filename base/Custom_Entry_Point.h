@@ -32,6 +32,9 @@ metaprogram_main_thread_base_entry_point(String command_line)
   Command_Line cmd_line = command_line_parse(command_line);
   console_attach();
 
+  DefaultMetaprogram.arena = arena_alloc();
+  DefaultMetaprogram.files_capacity = 64;
+
   // Metaprogram optional flags
   // @TODO(fz): Move to default_metaprogram
 	String path = full_path_from_relative_path(DefaultMetaprogram.arena, METAPROGRAM_SRC_DIRECTORY);
@@ -49,8 +52,6 @@ metaprogram_main_thread_base_entry_point(String command_line)
 	}
 
   // Default Metaprogram
-  DefaultMetaprogram.arena = arena_alloc();
-  DefaultMetaprogram.files_capacity = 64;
   default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);  
   metaprogram_entry_point(DefaultMetaprogram.arena, &cmd_line, S("../src"));
 }
