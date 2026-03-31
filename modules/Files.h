@@ -17,7 +17,7 @@ function b32    file_wipe(String path); /* Clears file */
 function u32    file_size(String path); /* Returns the size of the file */
 function String file_load(Arena* arena, String path); /* Loads file into memory */
 function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
-function String_View file_get_extension(String path); /* Returns file extension. */
+function String file_get_extension(String path); /* Returns file extension. */
 
 // File watch
 function void file_watch_init(Arena *arena, File_Watcher *watch, String path);
@@ -290,10 +290,10 @@ file_get_files_in_path(Arena* arena, String path, b32 recursive)
   return result;
 }
 
-function String_View
+function String
 file_get_extension(String path)
 {
-  String_View result = {0};
+  String result = {0};
 
   if(path.count == 0 || path.cstring == 0) return result;
 
@@ -317,7 +317,7 @@ file_get_extension(String path)
 
   if(last_dot < 0 || last_dot + 1 >= (s64)path.count) return result;
 
-  result.string = path.cstring + last_dot + 1;
+  result.cstring = path.cstring + last_dot + 1;
   result.count   = path.count - (last_dot + 1);
 
   return result;

@@ -1,7 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "generated/Math.generated.h"
+#include "generated/Math.cgen.h"
 
 // @Section: Math types
 typedef struct Matrix3    Matrix3;
@@ -168,7 +168,7 @@ function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns tr
 
 // @Section: Implementation
 
-#include "generated/Math.generated.c"
+#include "generated/Math.cgen.c"
 
 function_inline f32
 f32_remap(f32 value, f32 min, f32 max)

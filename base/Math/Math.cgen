@@ -6,7 +6,7 @@
   { s32 S32 }
 }
 
-@Generator(Math.generated.h)
+@Generator(Math.cgen.h)
 {
   `#ifndef MATH_GENERATED_H\n#define MATH_GENERATED_H\n\n`
 
@@ -60,7 +60,7 @@ function V4$(type) v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max);
   `#endif // MATH_GENERATED_H`
 }
 
-@Generator(Math.generated.c)
+@Generator(Math.cgen.c)
 {
   `// V2 Implementation\n`
   @foreach(Vector_Type_Table) `function V2$(type)

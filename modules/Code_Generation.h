@@ -148,9 +148,8 @@ cgen_run(String source_directory)
       continue;
     }
 
-    String_View extension = file_get_extension(file_being_lexed);
-    String ext = string_new(extension.count, extension.string);
-    if (!string_equals(ext, S("cgen"), true)) continue;
+    String extension = file_get_extension(file_being_lexed);
+    if (!string_equals(extension, S("cgen"), true)) continue;
 
     CGen_File *cgen_file;
     arena_array_push(cgen_file, result.files, result.files_count, result.files_capacity);
@@ -252,7 +251,7 @@ cgen_execute_commands(CGen_Context *ctx)
     output_directory = string_join(scratch.arena, output_directory, (separator == '/') ? S("/") : S("\\"));
     
     String output_file = string_join(scratch.arena, output_directory, name);
-    output_file        = string_join(scratch.arena, output_file, S(".generated.inl"));
+    output_file        = string_join(scratch.arena, output_file, S(".cgen.inl"));
 
     for (u32 generator_index = 0; generator_index < file->generators_count; generator_index += 1)
     {
