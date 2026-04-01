@@ -13,7 +13,7 @@
 #define local_persist   static
 #define global          static
 #define function        static
-#define function_inline static inline
+#define function_no_reflection static
 
 /* === Readonly === */
 #if OS_WINDOWS

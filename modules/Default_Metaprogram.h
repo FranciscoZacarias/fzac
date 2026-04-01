@@ -24,6 +24,7 @@ typedef struct DM_Code_Enum DM_Code_Enum;
 struct DM_Code_Enum
 {
   String name;
+  String type;
 };
 
 typedef struct DM_File DM_File;
@@ -146,6 +147,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
               if (last_identifier.count > 0)
               {
                 string_builder_push_string(&return_type_builder, last_identifier);
+                string_builder_push(&return_type_builder, " ");
               }
               last_identifier = token->value;
             }
@@ -257,9 +259,11 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
 
           is_first_token_on_line = false;
         }
-        else if (string_equals(token->value, S("enum"), true) && is_first_token_on_line)
+        else if (string_equals(token->value, S("enum_type"), true) && is_first_token_on_line)
         {
           lexer_eat_token(&lexer);
+
+          // Expect '('
           token = lexer_peek_token(&lexer);
           while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
           {
@@ -267,13 +271,10 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
             token = lexer_peek_token(&lexer);
           }
 
-          while (token->kind != Token_Close_Brace && token->kind != Token_End_Of_File)
-          {
-            lexer_eat_token(&lexer);
-            token = lexer_peek_token(&lexer);
-          }
-          assert(token->kind == Token_Close_Brace && "Expected '}' to close enum body");
+          assert(token->kind == Token_Open_Parentheses && "Expected '(' after enum_type");
           lexer_eat_token(&lexer);
+
+          // Parse name
           token = lexer_peek_token(&lexer);
           while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
           {
@@ -281,11 +282,14 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
             token = lexer_peek_token(&lexer);
           }
 
-          assert(token->kind == Token_Identifier && "Expected enum typedef name after '}'");
+          assert(token->kind == Token_Identifier && "Expected enum name");
 
           DM_Code_Enum parsed_enum = {0};
           parsed_enum.name = string_copy(default_metaprogram->arena, token->value);
+
           lexer_eat_token(&lexer);
+
+          // Expect ','
           token = lexer_peek_token(&lexer);
           while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
           {
@@ -293,9 +297,34 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
             token = lexer_peek_token(&lexer);
           }
 
-          assert(token->kind == Token_Semicolon && "Expected ';' after enum typedef name");
+          assert(token->kind == Token_Comma && "Expected ',' after enum name");
           lexer_eat_token(&lexer);
 
+          // Parse type
+          token = lexer_peek_token(&lexer);
+          while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+
+          assert(token->kind == Token_Identifier && "Expected enum underlying type");
+          parsed_enum.type = string_copy(default_metaprogram->arena, token->value);
+
+          lexer_eat_token(&lexer);
+
+          // Expect ')'
+          token = lexer_peek_token(&lexer);
+          while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+
+          assert(token->kind == Token_Close_Parentheses && "Expected ')' after enum_type");
+          lexer_eat_token(&lexer);
+
+          // Store
           assert(dm_file->enum_definitions_count < dm_file->enum_definitions_capacity && "enum_definitions capacity exceeded");
           dm_file->enum_definitions[dm_file->enum_definitions_count] = parsed_enum;
           dm_file->enum_definitions_count += 1;
@@ -354,6 +383,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
       DM_Code_Struct *code_struct = &file->struct_definitions[structs_index];
       string_builder_pushf(&builder, "typedef struct "S_FMT" "S_FMT";\n", S_ARG(code_struct->name), S_ARG(code_struct->name));
     }
+    string_builder_push(&builder, " ");
 
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
     {
@@ -392,7 +422,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
     {
       DM_Code_Function *code_function = &file->function_definitions[function_index];
-      string_builder_pushf(&builder, "function %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
+      string_builder_pushf(&builder, "function %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
         string_builder_pushf(&builder, "%s", code_function->arguments.cstring);

@@ -16,7 +16,7 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 // @Section: Implementation
 
 // This macro is so that the metaprogram knows what enum is being defined
-#define fz_enum(name, type) enum
+#define enum_type(name, type) enum name
 
 #if METAPROGRAM
 #include "Code_Generation.h"

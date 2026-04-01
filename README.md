@@ -9,6 +9,22 @@ For `modules\` each file can be included individually into the program as a sing
 #include "Window.h"
 #include "OpenGL.h"
 
+/* This is the output of the metaprogram that generates the forward declarations for everything.
+   So, in this codebase, we don't need to forward declare anything or do things in any specific order,
+   since the metaprogram generates headers automatically.
+*/
+#include "global_headers.h" 
+
+/* For enums to be forward declared, they have to be defined with the macro enum_type(name, type).
+   This is the only way to make the metaprogrma know what is the identifier and type that it should typedef this enum to.
+*/
+enum_type(My_Enum, u32)
+{
+  My_Enum_None = 0,
+  My_Enum_One,
+  My_Enum_Two
+};
+
 global Window *gWindow = NULL;
 global Arena *gArena   = NULL;
 global b8 gShouldQuit  = false;
@@ -60,6 +76,11 @@ handle_input()
   {
     gShouldQuit = true;
   }
+}
+
+function void
+metaprogram_entry_point(Arena* arena, Command_Line *command_line, String project_path)
+{
 }
 
 function void
@@ -123,6 +144,12 @@ entry_point(Command_Line *command_line)
 - `Extern\`: Opt-in external code imported into this library.
 
 > `Opt-in` means that it has to be explicitly included by the user
+
+# Metaprogram
+
+This codebase includes a default metaprogram that generates the headers and forward declarations for
+enums, structs and functions. Additionally to the default metaprogram, you can implement the function `metaprogram_entry_point` 
+to implement a project specific metaprogram.
 
 # Base
 
