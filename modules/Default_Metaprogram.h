@@ -55,15 +55,15 @@ struct Default_Metaprogram
   u32 files_capacity;
 };
 
-function void default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directory);
+function void default_metaprogram(Default_Metaprogram *dm, String src_directory);
 
 function void
-default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directory)
+default_metaprogram(Default_Metaprogram *dm, String src_directory)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  arena_array_init(default_metaprogram->arena, default_metaprogram->files, DM_File, METAPROGRAM_MAX_FILES);
-  String_List files = file_get_files_in_path(default_metaprogram->arena, src_directory, true);
+  arena_array_init(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
+  String_List files = file_get_files_in_path(dm->arena, src_directory, true);
 
   for (String_Node *next = files.first; next != NULL; next = next->next)
   {
@@ -101,13 +101,13 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
     }
 
     DM_File *dm_file;
-    arena_array_push(dm_file, default_metaprogram->files, default_metaprogram->files_count, default_metaprogram->files_capacity);
+    arena_array_push(dm_file, dm->files, dm->files_count, dm->files_capacity);
     memory_zero_struct(dm_file);
 
-    dm_file->name = string_copy(default_metaprogram->arena, file_being_lexed);
-    arena_array_init(default_metaprogram->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
-    arena_array_init(default_metaprogram->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
-    arena_array_init(default_metaprogram->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
+    dm_file->name = string_copy(dm->arena, file_being_lexed);
+    arena_array_init(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
+    arena_array_init(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
+    arena_array_init(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Whitespace|Trivia_Line_Break, Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
@@ -159,8 +159,8 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
             token = lexer_peek_token(&lexer);
           }
           assert(last_identifier.count > 0 && "Expected function name before '('");
-          parsed_function.name = string_copy(default_metaprogram->arena, last_identifier);
-          parsed_function.return_type = string_builder_to_string(default_metaprogram->arena, &return_type_builder);
+          parsed_function.name = string_copy(dm->arena, last_identifier);
+          parsed_function.return_type = string_builder_to_string(dm->arena, &return_type_builder);
           string_builder_free(&return_type_builder);
           assert(token->kind == Token_Open_Parentheses && "Expected '('");
           lexer_eat_token(&lexer);
@@ -174,7 +174,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
           }
           assert(token->kind == Token_Close_Parentheses && "Expected ')' to close argument list");
           lexer_eat_token(&lexer);
-          parsed_function.arguments = string_builder_to_string(default_metaprogram->arena, &arguments_builder);
+          parsed_function.arguments = string_builder_to_string(dm->arena, &arguments_builder);
           string_builder_free(&arguments_builder);
           token = lexer_peek_token(&lexer);
           while (token->kind != Token_Semicolon  &&
@@ -254,7 +254,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
           lexer_eat_token(&lexer);
 
           assert(dm_file->struct_definitions_count < dm_file->struct_definitions_capacity && "struct_definitions capacity exceeded");
-          dm_file->struct_definitions[dm_file->struct_definitions_count].name = string_copy(default_metaprogram->arena, struct_name);
+          dm_file->struct_definitions[dm_file->struct_definitions_count].name = string_copy(dm->arena, struct_name);
           dm_file->struct_definitions_count += 1;
 
           is_first_token_on_line = false;
@@ -285,7 +285,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
           assert(token->kind == Token_Identifier && "Expected enum name");
 
           DM_Code_Enum parsed_enum = {0};
-          parsed_enum.name = string_copy(default_metaprogram->arena, token->value);
+          parsed_enum.name = string_copy(dm->arena, token->value);
 
           lexer_eat_token(&lexer);
 
@@ -309,7 +309,7 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
           }
 
           assert(token->kind == Token_Identifier && "Expected enum underlying type");
-          parsed_enum.type = string_copy(default_metaprogram->arena, token->value);
+          parsed_enum.type = string_copy(dm->arena, token->value);
 
           lexer_eat_token(&lexer);
 
@@ -357,9 +357,9 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
   string_builder_push(&builder, "#ifndef GLOBAL_HEADERS_H\n#define GLOBAL_HEADERS_H\n\n/* Generated File */\n");
 
   // Just headers
-  for (u32 file_index = 0; file_index < default_metaprogram->files_count; file_index += 1)
+  for (u32 file_index = 0; file_index < dm->files_count; file_index += 1)
   {
-    DM_File *file = &default_metaprogram->files[file_index];
+    DM_File *file = &dm->files[file_index];
     String extension = file_get_extension(file->name);
     if (!string_equals(extension, S("h"), true))
     {
@@ -398,9 +398,9 @@ default_metaprogram(Default_Metaprogram *default_metaprogram, String src_directo
   }
 
   // Just implementation
-  for (u32 file_index = 0; file_index < default_metaprogram->files_count; file_index += 1)
+  for (u32 file_index = 0; file_index < dm->files_count; file_index += 1)
   {
-    DM_File *file = &default_metaprogram->files[file_index];
+    DM_File *file = &dm->files[file_index];
     String extension = file_get_extension(file->name);
     if (!string_equals(extension, S("c"), true))
     {

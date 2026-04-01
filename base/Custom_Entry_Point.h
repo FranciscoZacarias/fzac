@@ -22,6 +22,7 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 #include "Code_Generation.h"
 #include "Platform.h"
 #include "Default_Metaprogram.h"
+#include "List_Todos.h"
 
 #define METAPROGRAM_SRC_DIRECTORY S("../src")
 
@@ -46,17 +47,23 @@ metaprogram_main_thread_base_entry_point(String command_line)
 		for (u32 i = 0; i < cmd_line.args_count; i += 1)
 		{
 			Command_Line_Arg arg = cmd_line.args[i];
-			if (string_equals(arg.value, S("cgen"), false))
+			if (string_equals(arg.value, S("cgen"), true))
 			{
 				CGen_Context cgen = cgen_run(path);
 				cgen_execute_commands(&cgen);
 			}
+      else if (string_equals(arg.value, S("list-todos"), true))
+      {
+        List_Todos todos = list_todos(METAPROGRAM_SRC_DIRECTORY);
+        print_list_todos(&todos);
+      }
 		}
 	}
 
   // Default Metaprogram
   default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);  
   metaprogram_entry_point(DefaultMetaprogram.arena, &cmd_line, S("../src"));
+  arena_free(DefaultMetaprogram.arena);
 }
 #else
 function void
