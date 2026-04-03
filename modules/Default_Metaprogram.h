@@ -375,7 +375,7 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
     for (u32 enums_index = 0; enums_index < file->enum_definitions_count; enums_index += 1)
     {
       DM_Code_Enum *code_enum = &file->enum_definitions[enums_index];
-      string_builder_pushf(&builder, "typedef enum "S_FMT" "S_FMT";\n", S_ARG(code_enum->name), S_ARG(code_enum->name));
+      string_builder_pushf(&builder, "typedef "S_FMT" "S_FMT";\n", S_ARG(code_enum->type), S_ARG(code_enum->name));
     }
 
     for (u32 structs_index = 0; structs_index < file->struct_definitions_count; structs_index += 1)
