@@ -178,6 +178,5 @@ The base layer includes:
 - `String_Builder`: String builder 
 - `Command_Line`: Command line parser
 - `Files`: File related functions
-- `Introspection`: Parses `my style of C code` and stores it in a structured way.
 - `Lexer`: Lexer implementation
 - `Timing`: Timing functions
