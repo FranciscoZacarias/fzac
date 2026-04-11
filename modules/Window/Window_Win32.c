@@ -496,35 +496,35 @@ _input_update()
   memory_copy(&(GlobalWindow.input.mouse_previous),    &(GlobalWindow.input.mouse_current),    sizeof(Mouse_State));
 }
 
-function b32
+function b8
 is_key_up(Keyboard_Key key)
 {
-  b32 result = GlobalWindow.input.keyboard_current.keys[key] == false;
+  b8 result = GlobalWindow.input.keyboard_current.keys[key] == false;
   return result;
 }
 
-function b32
+function b8
 is_key_down(Keyboard_Key key)
 {
-  b32 result = GlobalWindow.input.keyboard_current.keys[key] == true;
+  b8 result = GlobalWindow.input.keyboard_current.keys[key] == true;
   return result;
 }
 
-function b32
+function b8
 was_key_up(Keyboard_Key key)
 {
-  b32 result = GlobalWindow.input.keyboard_previous.keys[key] == false;
+  b8 result = GlobalWindow.input.keyboard_previous.keys[key] == false;
   return result;
 }
 
-function b32
+function b8
 was_key_down(Keyboard_Key key)
 {
-  b32 result = GlobalWindow.input.keyboard_previous.keys[key] == true;
+  b8 result = GlobalWindow.input.keyboard_previous.keys[key] == true;
   return result;
 }
 
-function b32
+function b8
 is_key_clicked(Keyboard_Key key)
 {
   return is_key_down(key) && was_key_up(key);
@@ -539,43 +539,43 @@ _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed)
   }
 }
 
-function b32
+function b8
 is_button_up(Mouse_Button button)
 {
-  b32 result = GlobalWindow.input.mouse_current.buttons[button] == false;
+  b8 result = GlobalWindow.input.mouse_current.buttons[button] == false;
   return result;
 }
 
-function b32
+function b8
 is_button_down(Mouse_Button button)
 {
-  b32 result = GlobalWindow.input.mouse_current.buttons[button] == true;
+  b8 result = GlobalWindow.input.mouse_current.buttons[button] == true;
   return result;
 }
 
-function b32
+function b8
 was_button_up(Mouse_Button button)
 {
-  b32 result = GlobalWindow.input.mouse_previous.buttons[button] == false;
+  b8 result = GlobalWindow.input.mouse_previous.buttons[button] == false;
   return result;
 }
 
-function b32
+function b8
 was_button_down(Mouse_Button button)
 {
-  b32 result = GlobalWindow.input.mouse_previous.buttons[button] == true;
+  b8 result = GlobalWindow.input.mouse_previous.buttons[button] == true;
   return result;
 }
 
-function b32
+function b8
 is_button_clicked(Mouse_Button button)
 {
-  b32 result = is_button_down(button) && was_button_up(button);
+  b8 result = is_button_down(button) && was_button_up(button);
   return result;
 }
 
 function void
-_input_process_mouse_button(Mouse_Button button, b32 is_pressed)
+_input_process_mouse_button(Mouse_Button button, b8 is_pressed)
 {
   if (GlobalWindow.input.mouse_current.buttons[button] != (b8)is_pressed)
   {
