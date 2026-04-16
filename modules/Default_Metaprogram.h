@@ -5,6 +5,7 @@
 #define METAPROGRAM_MAX_FUNTIONS 256
 #define METAPROGRAM_MAX_STRUCTS 128
 #define METAPROGRAM_MAX_ENUMS 128
+#define METAPROGRAM_MAX_VALUES 128
 
 typedef struct DM_Code_Function DM_Code_Function;
 struct DM_Code_Function
@@ -25,6 +26,9 @@ struct DM_Code_Enum
 {
   String name;
   String type;
+  String values[METAPROGRAM_MAX_VALUES];
+  u32    values_count;
+  b8     to_string;
 };
 
 typedef struct DM_File DM_File;
@@ -262,7 +266,6 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
         else if (string_equals(token->value, S("enum_type"), true) && is_first_token_on_line)
         {
           lexer_eat_token(&lexer);
-
           // Expect '('
           token = lexer_peek_token(&lexer);
           while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
@@ -270,7 +273,6 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-
           assert(token->kind == Token_Open_Parentheses && "Expected '(' after enum_type");
           lexer_eat_token(&lexer);
 
@@ -281,12 +283,9 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-
           assert(token->kind == Token_Identifier && "Expected enum name");
-
           DM_Code_Enum parsed_enum = {0};
           parsed_enum.name = string_copy(dm->arena, token->value);
-
           lexer_eat_token(&lexer);
 
           // Expect ','
@@ -296,7 +295,6 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-
           assert(token->kind == Token_Comma && "Expected ',' after enum name");
           lexer_eat_token(&lexer);
 
@@ -307,10 +305,36 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-
           assert(token->kind == Token_Identifier && "Expected enum underlying type");
           parsed_enum.type = string_copy(dm->arena, token->value);
+          lexer_eat_token(&lexer);
+          // Expect ','
+          token = lexer_peek_token(&lexer);
+          while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+          assert(token->kind == Token_Comma && "Expected ',' after enum type");
+          lexer_eat_token(&lexer);
 
+          // Parse to_string (0, 1, false, true)
+          token = lexer_peek_token(&lexer);
+          while (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+          assert((token->kind == Token_Identifier || token->kind == Token_Number) && "Expected enum 0/false or 1/true for to_string");
+          parsed_enum.to_string = string_equals(token->value, S("1"), false) || string_equals(token->value, S("true"), false);
+          if (token->kind == Token_Identifier)
+          {
+            if (string_equals(token->value, S("true"), true)) { parsed_enum.to_string = true; }
+          }
+          else if (token->kind == Token_Number)
+          {
+            if (string_equals(token->value, S("1"), true)) { parsed_enum.to_string = true; }
+          }
           lexer_eat_token(&lexer);
 
           // Expect ')'
@@ -320,15 +344,54 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-
           assert(token->kind == Token_Close_Parentheses && "Expected ')' after enum_type");
           lexer_eat_token(&lexer);
-
+          // Find opening '{'
+          token = lexer_peek_token(&lexer);
+          while (token->kind != Token_Open_Brace)
+          {
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+          lexer_eat_token(&lexer); // eat '{'
+          // Parse values until '}'
+          token = lexer_peek_token(&lexer);
+          while (token->kind != Token_Close_Brace)
+          {
+            if (token->kind == Token_Whitespace || token->kind == Token_Line_Break)
+            {
+              lexer_eat_token(&lexer);
+              token = lexer_peek_token(&lexer);
+              continue;
+            }
+            if (token->kind == Token_Identifier)
+            {
+              assert(parsed_enum.values_count < 512 && "enum values capacity exceeded");
+              parsed_enum.values[parsed_enum.values_count] = string_copy(dm->arena, token->value);
+              parsed_enum.values_count += 1;
+              lexer_eat_token(&lexer);
+              // Skip everything until the next ',' or '}'
+              token = lexer_peek_token(&lexer);
+              while (token->kind != Token_Comma && token->kind != Token_Close_Brace)
+              {
+                lexer_eat_token(&lexer);
+                token = lexer_peek_token(&lexer);
+              }
+              if (token->kind == Token_Comma)
+              {
+                lexer_eat_token(&lexer); // eat ','
+                token = lexer_peek_token(&lexer);
+              }
+              continue;
+            }
+            lexer_eat_token(&lexer);
+            token = lexer_peek_token(&lexer);
+          }
+          lexer_eat_token(&lexer); // eat '}'
           // Store
           assert(dm_file->enum_definitions_count < dm_file->enum_definitions_capacity && "enum_definitions capacity exceeded");
           dm_file->enum_definitions[dm_file->enum_definitions_count] = parsed_enum;
           dm_file->enum_definitions_count += 1;
-
           is_first_token_on_line = false;
         }
         else
@@ -376,6 +439,15 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
     {
       DM_Code_Enum *code_enum = &file->enum_definitions[enums_index];
       string_builder_pushf(&builder, "typedef "S_FMT" "S_FMT";\n", S_ARG(code_enum->type), S_ARG(code_enum->name));
+      if (code_enum->to_string)
+      {
+        string_builder_pushf(&builder, "const char* "S_FMT"_to_string[] = { ", S_ARG(string_to_lower(scratch.arena, code_enum->name)));
+        for (u32 enum_values_index = 0; enum_values_index < code_enum->values_count; enum_values_index += 1)
+        {
+          string_builder_pushf(&builder, "\""S_FMT", \"", S_ARG(code_enum->values[enum_values_index]));
+        }
+        string_builder_push(&builder, "};\n");
+      }
     }
 
     for (u32 structs_index = 0; structs_index < file->struct_definitions_count; structs_index += 1)
