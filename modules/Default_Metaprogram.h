@@ -460,6 +460,10 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
     {
       DM_Code_Function *code_function = &file->function_definitions[function_index];
+      if (string_equals(code_function->name, S("entry_point"), true) || string_equals(code_function->name, S("metaprogram_entry_point"), true))
+      {
+        continue;
+      }
       string_builder_pushf(&builder, "function %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
@@ -494,6 +498,10 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
     {
       DM_Code_Function *code_function = &file->function_definitions[function_index];
+      if (string_equals(code_function->name, S("entry_point"), true) || string_equals(code_function->name, S("metaprogram_entry_point"), true))
+      {
+        continue;
+      }
       string_builder_pushf(&builder, "function %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {

@@ -49,4 +49,8 @@
 
 #include "base\Custom_Entry_Point.h"
 
+#if METAPROGRAM
+#include "Default_Metaprogram.h"
+#endif
+
 #endif // BASE_H

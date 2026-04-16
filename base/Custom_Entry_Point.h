@@ -4,7 +4,15 @@
 #include "..\modules\Command_Line.h"
 
 #if METAPROGRAM
-function void metaprogram_entry_point(Arena* arena,Command_Line *command_line, String project_path); /* Metaprogram entry point, defined by user. */
+#include "Code_Generation.h"
+#include "Platform.h"
+#include "Default_Metaprogram.h"
+#include "List_Todos.h"
+
+#define METAPROGRAM_SRC_DIRECTORY S("../src")
+global Default_Metaprogram DefaultMetaprogram;
+
+function void metaprogram_entry_point(Command_Line *command_line, String project_path); /* Metaprogram entry point, defined by user. */
 raddbg_entry_point(metaprogram_entry_point);
 function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
 #else
@@ -19,15 +27,6 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 #define enum_type(name, type, to_string) enum name
 
 #if METAPROGRAM
-#include "Code_Generation.h"
-#include "Platform.h"
-#include "Default_Metaprogram.h"
-#include "List_Todos.h"
-
-#define METAPROGRAM_SRC_DIRECTORY S("../src")
-
-global Default_Metaprogram DefaultMetaprogram;
-
 function void
 metaprogram_main_thread_base_entry_point(String command_line)
 {
@@ -62,7 +61,7 @@ metaprogram_main_thread_base_entry_point(String command_line)
 
   // Default Metaprogram
   default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);  
-  metaprogram_entry_point(DefaultMetaprogram.arena, &cmd_line, S("../src"));
+  metaprogram_entry_point(&cmd_line, S("../src"));
   arena_free(DefaultMetaprogram.arena);
 }
 #else
