@@ -444,7 +444,7 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
         string_builder_pushf(&builder, "const char* "S_FMT"_to_string[] = { ", S_ARG(string_to_lower(scratch.arena, code_enum->name)));
         for (u32 enum_values_index = 0; enum_values_index < code_enum->values_count; enum_values_index += 1)
         {
-          string_builder_pushf(&builder, "\""S_FMT", \"", S_ARG(code_enum->values[enum_values_index]));
+          string_builder_pushf(&builder, "\""S_FMT"\", ", S_ARG(code_enum->values[enum_values_index]));
         }
         string_builder_push(&builder, "};\n");
       }
