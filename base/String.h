@@ -27,13 +27,6 @@ struct String
 #define S_FMT "%.*s"
 #define S_ARG(s) (s32)s.count, s.cstring
 
-typedef struct String_View String_View; /* This exists so that we explicitly know when a string is a view into another string's memory, and the caller is explicitly aware that the lifetime of this string depends on another */
-struct String_View
-{
-  u64 count;
-  u8* string;
-};
-
 typedef struct String_Node String_Node; /* 8 bit string node */
 struct String_Node
 {

@@ -187,18 +187,19 @@ function void
 print_list_todos(List_Todos *todos)
 {
   String_Builder builder = string_builder_init(kilobytes(64));
+  s32 total_todos = 0;
 
   for (u32 i = 0; i < todos->files_count; i += 1)
   {
     LT_File *file = &todos->files[i];
-    
+    total_todos += file->todos_count;
 
     for (u32 t = 0; t < file->todos_count; t += 1)
     {
       LT_Todo *todo = &file->todos[t];
-    
+
+      string_builder_pushf(&builder, "(%s) ", todo->author.cstring);
       string_builder_pushf(&builder, "%s: %d - ", file->name.cstring, todo->line);
-      string_builder_pushf(&builder, "(%s)", todo->author.cstring);
 
       switch (todo->kind)
       {
@@ -216,6 +217,8 @@ print_list_todos(List_Todos *todos)
       string_builder_push(&builder, "\n");
     }
   }
+
+  string_builder_pushf(&builder, "\n%d todos.", total_todos);
 
   Scratch scratch = scratch_begin(0,0);
   {
