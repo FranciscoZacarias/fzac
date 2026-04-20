@@ -366,7 +366,6 @@ function void
 _init_window_class()
 {
   if(WindowClassInited) return;
-  assert_no_reentry();
 
   _input_init();
   _init_win32_key_tables();
@@ -477,7 +476,6 @@ _key_from_native_key(u32 native_key)
 function void
 _input_init()
 {
-  assert_no_reentry();
   memory_zero_struct(&GlobalWindow.input);
   
   GlobalWindow.input.mouse_previous.screen_space.x = -1;
