@@ -353,7 +353,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
       Window_Event* event = _event_push(events);
       event->kind = Event_Text_Input;
-      event->payload.codepoint = (u32)wparam; // UTF-32
+      event->payload.codepoint = (u32)wparam;
 
       return 0;
     }
