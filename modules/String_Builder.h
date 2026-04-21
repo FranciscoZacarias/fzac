@@ -9,7 +9,7 @@ struct String_Builder
   u8*    data;
   u64    count;
   u64    capacity;
-  Arena* arena; /* Owned internally — do not use this arena directly */
+  Arena* arena;
 };
 
 function String_Builder string_builder_init(u64 initial_capacity);                        /* Allocates an internal arena and initializes the builder */
@@ -180,6 +180,11 @@ string_builder_free(String_Builder* builder)
 function String
 string_builder_to_string(Arena* arena, String_Builder* builder)
 {
+  if (!builder || builder->count == 0)
+  {
+    return S("");
+  }
+
   String result = {0};
 
   if (!builder || !builder->arena || builder->count == 0) { return result; }
