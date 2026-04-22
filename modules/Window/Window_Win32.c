@@ -1,143 +1,11 @@
 
 #define WINDOW_CLASS_NAME L"DefaultWindowClass"
 
-#define WINDOWED_STYLE         WS_OVERLAPPEDWINDOW;
-#define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP;
-#define SECONDARY_WINDOW_STYLE WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
+#define WINDOWED_STYLE         WS_OVERLAPPEDWINDOW
+#define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP
+#define SECONDARY_WINDOW_STYLE WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 
-global Keyboard_Key _win32_vk_to_key[Keyboard_Key_Count];
-global u32 _win32_key_table[Keyboard_Key_Count] =
-{
-  0x08, // Keyboard_Key_BACKSPACE
-  0x0D, // Keyboard_Key_ENTER
-  0x09, // Keyboard_Key_TAB
-  0x10, // Keyboard_Key_SHIFT
-  0x11, // Keyboard_Key_CONTROL
-  0x12, // Keyboard_Key_MENU
-  0x13, // Keyboard_Key_PAUSE
-  0x14, // Keyboard_Key_CAPS_LOCK
-  0x1B, // Keyboard_Key_ESCAPE
-  0x1C, // Keyboard_Key_CONVERT
-  0x1D, // Keyboard_Key_NONCONVERT
-  0x1E, // Keyboard_Key_ACCEPT
-  0x1F, // Keyboard_Key_MODECHANGE
-  0x20, // Keyboard_Key_SPACE
-  0x21, // Keyboard_Key_PRIOR
-  0x22, // Keyboard_Key_NEXT
-  0x23, // Keyboard_Key_END
-  0x24, // Keyboard_Key_HOME
-  0x25, // Keyboard_Key_ARROW_LEFT
-  0x26, // Keyboard_Key_ARROW_UP
-  0x27, // Keyboard_Key_ARROW_RIGHT
-  0x28, // Keyboard_Key_ARROW_DOWN
-  0x29, // Keyboard_Key_SELECT
-  0x2A, // Keyboard_Key_PRINT
-  0x2B, // Keyboard_Key_EXECUTE
-  0x2C, // Keyboard_Key_SNAPSHOT
-  0x2D, // Keyboard_Key_INSERT
-  0x2E, // Keyboard_Key_DELETE
-  0x2F, // Keyboard_Key_HELP
-  0x30, // Keyboard_Key_0
-  0x31, // Keyboard_Key_1
-  0x32, // Keyboard_Key_2
-  0x33, // Keyboard_Key_3
-  0x34, // Keyboard_Key_4
-  0x35, // Keyboard_Key_5
-  0x36, // Keyboard_Key_6
-  0x37, // Keyboard_Key_7
-  0x38, // Keyboard_Key_8
-  0x39, // Keyboard_Key_9
-  0x41, // Keyboard_Key_A
-  0x42, // Keyboard_Key_B
-  0x43, // Keyboard_Key_C
-  0x44, // Keyboard_Key_D
-  0x45, // Keyboard_Key_E
-  0x46, // Keyboard_Key_F
-  0x47, // Keyboard_Key_G
-  0x48, // Keyboard_Key_H
-  0x49, // Keyboard_Key_I
-  0x4A, // Keyboard_Key_J
-  0x4B, // Keyboard_Key_K
-  0x4C, // Keyboard_Key_L
-  0x4D, // Keyboard_Key_M
-  0x4E, // Keyboard_Key_N
-  0x4F, // Keyboard_Key_O
-  0x50, // Keyboard_Key_P
-  0x51, // Keyboard_Key_Q
-  0x52, // Keyboard_Key_R
-  0x53, // Keyboard_Key_S
-  0x54, // Keyboard_Key_T
-  0x55, // Keyboard_Key_U
-  0x56, // Keyboard_Key_V
-  0x57, // Keyboard_Key_W
-  0x58, // Keyboard_Key_X
-  0x59, // Keyboard_Key_Y
-  0x5A, // Keyboard_Key_Z
-  0x5B, // Keyboard_Key_LEFT_WIN
-  0x5C, // Keyboard_Key_RIGHT_WIN
-  0x5D, // Keyboard_Key_APPS
-  0x5F, // Keyboard_Key_SLEEP
-  0x60, // Keyboard_Key_NUMPAD0
-  0x61, // Keyboard_Key_NUMPAD1
-  0x62, // Keyboard_Key_NUMPAD2
-  0x63, // Keyboard_Key_NUMPAD3
-  0x64, // Keyboard_Key_NUMPAD4
-  0x65, // Keyboard_Key_NUMPAD5
-  0x66, // Keyboard_Key_NUMPAD6
-  0x67, // Keyboard_Key_NUMPAD7
-  0x68, // Keyboard_Key_NUMPAD8
-  0x69, // Keyboard_Key_NUMPAD9
-  0x6A, // Keyboard_Key_NUMPAD_MULTIPLY
-  0x6B, // Keyboard_Key_NUMPAD_ADD
-  0x6C, // Keyboard_Key_NUMPAD_SEPARATOR
-  0x6D, // Keyboard_Key_NUMPAD_SUBTRACT
-  0x6E, // Keyboard_Key_NUMPAD_DECIMAL
-  0x6F, // Keyboard_Key_NUMPAD_DIVIDE
-  0x70, // Keyboard_Key_F1
-  0x71, // Keyboard_Key_F2
-  0x72, // Keyboard_Key_F3
-  0x73, // Keyboard_Key_F4
-  0x74, // Keyboard_Key_F5
-  0x75, // Keyboard_Key_F6
-  0x76, // Keyboard_Key_F7
-  0x77, // Keyboard_Key_F8
-  0x78, // Keyboard_Key_F9
-  0x79, // Keyboard_Key_F10
-  0x7A, // Keyboard_Key_F11
-  0x7B, // Keyboard_Key_F12
-  0x7C, // Keyboard_Key_F13
-  0x7D, // Keyboard_Key_F14
-  0x7E, // Keyboard_Key_F15
-  0x7F, // Keyboard_Key_F16
-  0x80, // Keyboard_Key_F17
-  0x81, // Keyboard_Key_F18
-  0x82, // Keyboard_Key_F19
-  0x83, // Keyboard_Key_F20
-  0x84, // Keyboard_Key_F21
-  0x85, // Keyboard_Key_F22
-  0x86, // Keyboard_Key_F23
-  0x87, // Keyboard_Key_F24
-  0x90, // Keyboard_Key_NUMLOCK
-  0x91, // Keyboard_Key_SCROLL
-  0x92, // Keyboard_Key_NUMPAD_EQUAL
-  0xA0, // Keyboard_Key_LEFT_SHIFT
-  0xA1, // Keyboard_Key_RIGHT_SHIFT
-  0xA2, // Keyboard_Key_LEFT_CONTROL
-  0xA3, // Keyboard_Key_RIGHT_CONTROL
-  0xA4, // Keyboard_Key_LEFT_MENU
-  0xA5, // Keyboard_Key_RIGHT_MENU
-  0xBA, // Keyboard_Key_SEMICOLON
-  0xBB, // Keyboard_Key_PLUS
-  0xBC, // Keyboard_Key_COMMA
-  0xBD, // Keyboard_Key_MINUS
-  0xBE, // Keyboard_Key_PERIOD
-  0xBF, // Keyboard_Key_SLASH
-  0xC0, // Keyboard_Key_GRAVE
-  0xDB, // Keyboard_Key_LEFT_BRACKET
-  0xDC, // Keyboard_Key_BACKSLASH
-  0xDD, // Keyboard_Key_RIGHT_BRACKET
-  0xDE, // Keyboard_Key_QUOTE
-};
+global Keyboard_Key _win32_vk_to_key[256];
 
 function LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
@@ -183,8 +51,7 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   window->frame_arena = arena_alloc();
 
   window->events_this_frame.capacity = 4096;
-  window->events_this_frame.data =
-    push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
+  window->events_this_frame.data =  push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
 
   ShowWindow(hwnd, SW_SHOW);
   UpdateWindow(hwnd);
@@ -213,7 +80,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
   Event_Array* events = &GlobalWindow.events_this_frame;
   Window *window = &GlobalWindow;
 
-  if (window) switch (message)
+  switch (message)
   {
     case WM_CLOSE:
     {
@@ -307,7 +174,10 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     {
-      if (lparam & (1 << 30)) break; // ignore auto-repeat
+      if (lparam & (1 << 30))
+      {
+        return 0;
+      }
 
       u32 vk = (u32)wparam;
       Keyboard_Key key = _key_from_native_key(vk);
@@ -368,7 +238,7 @@ _init_window_class()
   if(WindowClassInited) return;
 
   _input_init();
-  _init_win32_key_tables();
+  _init_win32_key_table();
 
   HMODULE hInstance = GetModuleHandle(NULL);
 
@@ -439,38 +309,116 @@ get_event_this_frame(u32 index)
 }
 
 function void
-_init_win32_key_tables()
+_init_win32_key_table()
 {
   for (u32 i = 0; i < 256; ++i)
   {
     _win32_vk_to_key[i] = Keyboard_Key_Count;
   }
 
-  for (u32 key = 0; key < Keyboard_Key_Count; ++key)
+  for (u32 i = 'A'; i <= 'Z'; ++i)
   {
-    u32 vk = _win32_key_table[key];
-    if (vk < 256)
-    {
-      _win32_vk_to_key[vk] = (Keyboard_Key)key;
-    }
+    _win32_vk_to_key[i] = Keyboard_Key_A + (i - 'A');
   }
-}
+  for (u32 i = '0'; i <= '9'; ++i)
+  {
+    _win32_vk_to_key[i] = Keyboard_Key_0 + (i - '0');
+  }
 
-function u32
-_native_key_from_key(Keyboard_Key key)
-{
-  assert(key < Keyboard_Key_Count);
-  return _win32_key_table[key];
+  _win32_vk_to_key[VK_F1]  = Keyboard_Key_F1;
+  _win32_vk_to_key[VK_F2]  = Keyboard_Key_F2;
+  _win32_vk_to_key[VK_F3]  = Keyboard_Key_F3;
+  _win32_vk_to_key[VK_F4]  = Keyboard_Key_F4;
+  _win32_vk_to_key[VK_F5]  = Keyboard_Key_F5;
+  _win32_vk_to_key[VK_F6]  = Keyboard_Key_F6;
+  _win32_vk_to_key[VK_F7]  = Keyboard_Key_F7;
+  _win32_vk_to_key[VK_F8]  = Keyboard_Key_F8;
+  _win32_vk_to_key[VK_F9]  = Keyboard_Key_F9;
+  _win32_vk_to_key[VK_F10] = Keyboard_Key_F10;
+  _win32_vk_to_key[VK_F11] = Keyboard_Key_F11;
+  _win32_vk_to_key[VK_F12] = Keyboard_Key_F12;
+
+#ifdef VK_F13
+  _win32_vk_to_key[VK_F13] = Keyboard_Key_F13;
+  _win32_vk_to_key[VK_F14] = Keyboard_Key_F14;
+  _win32_vk_to_key[VK_F15] = Keyboard_Key_F15;
+  _win32_vk_to_key[VK_F16] = Keyboard_Key_F16;
+  _win32_vk_to_key[VK_F17] = Keyboard_Key_F17;
+  _win32_vk_to_key[VK_F18] = Keyboard_Key_F18;
+  _win32_vk_to_key[VK_F19] = Keyboard_Key_F19;
+  _win32_vk_to_key[VK_F20] = Keyboard_Key_F20;
+  _win32_vk_to_key[VK_F21] = Keyboard_Key_F21;
+  _win32_vk_to_key[VK_F22] = Keyboard_Key_F22;
+  _win32_vk_to_key[VK_F23] = Keyboard_Key_F23;
+  _win32_vk_to_key[VK_F24] = Keyboard_Key_F24;
+#endif
+
+  _win32_vk_to_key[VK_INSERT] = Keyboard_Key_INSERT;
+  _win32_vk_to_key[VK_DELETE] = Keyboard_Key_DELETE;
+  _win32_vk_to_key[VK_HOME]   = Keyboard_Key_HOME;
+  _win32_vk_to_key[VK_END]    = Keyboard_Key_END;
+  _win32_vk_to_key[VK_PRIOR]  = Keyboard_Key_Count; // @TODO(fz): Keyboard_Key_PAGE_UP
+  _win32_vk_to_key[VK_NEXT]   = Keyboard_Key_Count; // @TODO(fz): Keyboard_Key_PAGE_DOWN
+
+  _win32_vk_to_key[VK_LEFT]  = Keyboard_Key_ARROW_LEFT;
+  _win32_vk_to_key[VK_RIGHT] = Keyboard_Key_ARROW_RIGHT;
+  _win32_vk_to_key[VK_UP]    = Keyboard_Key_ARROW_UP;
+  _win32_vk_to_key[VK_DOWN]  = Keyboard_Key_ARROW_DOWN;
+
+  _win32_vk_to_key[VK_ESCAPE] = Keyboard_Key_ESCAPE;
+  _win32_vk_to_key[VK_TAB]    = Keyboard_Key_TAB;
+  _win32_vk_to_key[VK_RETURN] = Keyboard_Key_ENTER;
+  _win32_vk_to_key[VK_SPACE]  = Keyboard_Key_SPACE;
+  _win32_vk_to_key[VK_BACK]   = Keyboard_Key_BACKSPACE;
+
+  _win32_vk_to_key[VK_SHIFT]   = Keyboard_Key_SHIFT;
+  _win32_vk_to_key[VK_CONTROL] = Keyboard_Key_CONTROL;
+  _win32_vk_to_key[VK_MENU]    = Keyboard_Key_MENU; // ALT
+
+  _win32_vk_to_key[VK_CAPITAL] = Keyboard_Key_CAPS_LOCK;
+  _win32_vk_to_key[VK_NUMLOCK] = Keyboard_Key_Count; // @TODO(fz): Keyboard_Key_NUM_LOCK;
+  _win32_vk_to_key[VK_SCROLL]  = Keyboard_Key_Count; // @TODO(fz): Keyboard_Key_SCROLL_LOCK;
+
+  _win32_vk_to_key[VK_NUMPAD0] = Keyboard_Key_NUMPAD0;
+  _win32_vk_to_key[VK_NUMPAD1] = Keyboard_Key_NUMPAD1;
+  _win32_vk_to_key[VK_NUMPAD2] = Keyboard_Key_NUMPAD2;
+  _win32_vk_to_key[VK_NUMPAD3] = Keyboard_Key_NUMPAD3;
+  _win32_vk_to_key[VK_NUMPAD4] = Keyboard_Key_NUMPAD4;
+  _win32_vk_to_key[VK_NUMPAD5] = Keyboard_Key_NUMPAD5;
+  _win32_vk_to_key[VK_NUMPAD6] = Keyboard_Key_NUMPAD6;
+  _win32_vk_to_key[VK_NUMPAD7] = Keyboard_Key_NUMPAD7;
+  _win32_vk_to_key[VK_NUMPAD8] = Keyboard_Key_NUMPAD8;
+  _win32_vk_to_key[VK_NUMPAD9] = Keyboard_Key_NUMPAD9;
+
+  _win32_vk_to_key[VK_MULTIPLY] = Keyboard_Key_NUMPAD_MULTIPLY;
+  _win32_vk_to_key[VK_ADD]      = Keyboard_Key_NUMPAD_ADD;
+  _win32_vk_to_key[VK_SUBTRACT] = Keyboard_Key_NUMPAD_SUBTRACT;
+  _win32_vk_to_key[VK_DIVIDE]   = Keyboard_Key_NUMPAD_DIVIDE;
+  _win32_vk_to_key[VK_DECIMAL]  = Keyboard_Key_NUMPAD_DECIMAL;
+
+  _win32_vk_to_key[VK_OEM_1]      = Keyboard_Key_SEMICOLON;
+  _win32_vk_to_key[VK_OEM_PLUS]   = Keyboard_Key_EQUAL;
+  _win32_vk_to_key[VK_OEM_COMMA]  = Keyboard_Key_COMMA;
+  _win32_vk_to_key[VK_OEM_MINUS]  = Keyboard_Key_MINUS;
+  _win32_vk_to_key[VK_OEM_PERIOD] = Keyboard_Key_PERIOD;
+  _win32_vk_to_key[VK_OEM_2]      = Keyboard_Key_SLASH;
+  _win32_vk_to_key[VK_OEM_3]      = Keyboard_Key_GRAVE;
+
+  _win32_vk_to_key[VK_OEM_4] = Keyboard_Key_LEFT_BRACKET;
+  _win32_vk_to_key[VK_OEM_5] = Keyboard_Key_BACKSLASH;
+  _win32_vk_to_key[VK_OEM_6] = Keyboard_Key_RIGHT_BRACKET;
+
 }
 
 function Keyboard_Key
 _key_from_native_key(u32 native_key)
 {
+  Keyboard_Key result = Keyboard_Key_Count;
   if (native_key < 256)
   {
-    return _win32_vk_to_key[native_key];
+    result = _win32_vk_to_key[native_key];
   }
-  return Keyboard_Key_Count;
+  return result;
 }
 
 function void
@@ -531,10 +479,11 @@ is_key_clicked(Keyboard_Key key)
 function void
 _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed)
 {
-  if (GlobalWindow.input.keyboard_current.keys[key] != is_pressed)
-  {
-    GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
-  }
+  // if (GlobalWindow.input.keyboard_current.keys[key] != is_pressed)
+  // {
+  //   GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
+  // }
+  GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
 }
 
 function b8
@@ -575,10 +524,11 @@ is_button_clicked(Mouse_Button button)
 function void
 _input_process_mouse_button(Mouse_Button button, b8 is_pressed)
 {
-  if (GlobalWindow.input.mouse_current.buttons[button] != (b8)is_pressed)
-  {
-    GlobalWindow.input.mouse_current.buttons[button] = (b8)is_pressed;
-  }
+  // if (GlobalWindow.input.mouse_current.buttons[button] != (b8)is_pressed)
+  // {
+  //   GlobalWindow.input.mouse_current.buttons[button] = (b8)is_pressed;
+  // }
+  GlobalWindow.input.mouse_current.buttons[button] = (b8)is_pressed;
 }
 
 function s32
