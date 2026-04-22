@@ -6,6 +6,7 @@ struct File_Watcher
 {
   String path;
   u64 last_write_time;
+  f64 last_triggered_time;
 };
 
 // @Section: File and directory
@@ -348,10 +349,16 @@ file_watch_changed(File_Watcher *watch)
 {
   b32 result = false;
   u64 new_time = file_get_last_write_time(watch->path);
-  if(new_time != watch->last_write_time)
+  if (new_time != watch->last_write_time)
   {
     watch->last_write_time = new_time;
-    result = true;
+
+    f64 current_time = time_seconds();
+    if ((current_time - watch->last_triggered_time) > 0.1)
+    {
+      watch->last_triggered_time = current_time;
+      result = true;
+    }
   }
   return result;
 }
