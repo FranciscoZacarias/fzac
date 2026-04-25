@@ -2,15 +2,15 @@
 #define STRING_H
 
 // @Section: 8 bit characters
-function b32 char8_is_alpha(u8 c); /* Check if character is alphabetic. */
-function b32 char8_is_alphanum(u8 c); /* Check if character is alphanumeric. */
-function b32 char8_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
-function b32 char8_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
-function b32 char8_is_digit(u8 c); /* Check if character is digit 0-9. */
-function b32 char8_is_symbol(u8 c); /* Check if character is symbol/punctuation. */
-function b32 char8_is_space(u8 c); /* Check if character is whitespace. */
-function u8  char8_to_upper(u8 c); /* Convert character to uppercase. */
-function u8  char8_to_lower(u8 c); /* Convert character to lowercase. */
+function b32 char_is_alpha(u8 c); /* Check if character is alphabetic. */
+function b32 char_is_alphanum(u8 c); /* Check if character is alphanumeric. */
+function b32 char_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
+function b32 char_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
+function b32 char_is_digit(u8 c); /* Check if character is digit 0-9. */
+function b32 char_is_symbol(u8 c); /* Check if character is symbol/punctuation. */
+function b32 char_is_space(u8 c); /* Check if character is whitespace. */
+function u8  char_to_upper(u8 c); /* Convert character to uppercase. */
+function u8  char_to_lower(u8 c); /* Convert character to lowercase. */
 
 // @Section: 8 Bit strings
 typedef struct String String; /* 8 bit string. */
@@ -102,37 +102,37 @@ struct Text
 // @Section: 8 Bit character implementation
 
 function b32
-char8_is_alpha(u8 c)
+char_is_alpha(u8 c)
 {
-  return char8_is_alpha_upper(c) || char8_is_alpha_lower(c);
+  return char_is_alpha_upper(c) || char_is_alpha_lower(c);
 }
 
 function b32
-char8_is_alphanum(u8 c)
+char_is_alphanum(u8 c)
 {
-  return char8_is_alpha(c) || char8_is_digit(c);
+  return char_is_alpha(c) || char_is_digit(c);
 }
 
 function b32
-char8_is_alpha_upper(u8 c)
+char_is_alpha_upper(u8 c)
 {
   return c >= 'A' && c <= 'Z';
 }
 
 function b32
-char8_is_alpha_lower(u8 c)
+char_is_alpha_lower(u8 c)
 {
   return c >= 'a' && c <= 'z';
 }
 
 function b32
-char8_is_digit(u8 c)
+char_is_digit(u8 c)
 {
   return c >= '0' && c <= '9';
 }
 
 function b32
-char8_is_symbol(u8 c)
+char_is_symbol(u8 c)
 {
   return (c == '~' || c == '!'  || c == '$' || c == '%' || c == '^' ||
           c == '&' || c == '*'  || c == '-' || c == '=' || c == '+' ||
@@ -143,20 +143,20 @@ char8_is_symbol(u8 c)
 }
 
 function b32
-char8_is_space(u8 c)
+char_is_space(u8 c)
 {
   return c == ' ' || c == '\r' || c == '\t' || c == '\f' || c == '\v' || c == '\n';
 }
 
 function u8
-char8_to_upper(u8 c)
+char_to_upper(u8 c)
 {
   u8 is_lower = (c >= 'a') & (c <= 'z');
   return c - is_lower * ('a' - 'A');
 }
 
 function u8
-char8_to_lower(u8 c)
+char_to_lower(u8 c)
 {
   u8 is_upper = (c >= 'A') & (c <= 'Z');
   return c + is_upper * ('a' - 'A');
@@ -313,7 +313,7 @@ string_trim(Arena* arena, String str)
   while (start < str.count)
   {
     u8 c = str.cstring[start];
-    if (!char8_is_space(c))
+    if (!char_is_space(c))
     {
       break;
     }
@@ -333,7 +333,7 @@ string_trim(Arena* arena, String str)
   while (end > start)
   {
     u8 c = str.cstring[end - 1];
-    if (!char8_is_space(c))
+    if (!char_is_space(c))
     {
       break;
     }
@@ -382,7 +382,7 @@ string_to_lower(Arena* arena, String str)
   String result = string_copy(arena, str);
   for (u32 i = 0; i < str.count; i += 1)
   {
-    result.cstring[i] = char8_to_lower(result.cstring[i]);
+    result.cstring[i] = char_to_lower(result.cstring[i]);
   }
   return result;
 }

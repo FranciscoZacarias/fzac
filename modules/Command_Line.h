@@ -51,7 +51,7 @@ command_line_arg_new(String key, String value, b32 is_flag)
 function void
 _command_line_skip_whitespace(u8** cursor)
 {
-  while (char8_is_space(**cursor)) (*cursor)++;
+  while (char_is_space(**cursor)) (*cursor)++;
 }
 
 function String
@@ -96,7 +96,7 @@ _command_line_parse_token(u8** cursor)
   }
   else
   {
-    while (*end && !char8_is_space(*end)) end++;
+    while (*end && !char_is_space(*end)) end++;
     *cursor = end;
   }
 

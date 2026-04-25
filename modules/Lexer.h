@@ -531,7 +531,7 @@ lexer_parse_identifier(Lexer* lexer, Token* token)
 
     u8 c = (u8)c_s16;
 
-    if (!(char8_is_alpha(c) || char8_is_digit(c) || c == '_')) break;
+    if (!(char_is_alpha(c) || char_is_digit(c) || c == '_')) break;
     if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE)
     {
       lexer->scratch_buffer[scratch_position] = c;
@@ -563,7 +563,7 @@ lexer_parse_number(Lexer* lexer, Token* token)
 
     u8 c = (u8)c_s16;
 
-    if (!(char8_is_digit(c) || c == '\'' || c == '.')) break;
+    if (!(char_is_digit(c) || c == '\'' || c == '.')) break;
 
     if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE)
     {
@@ -804,7 +804,7 @@ lexer_make_new_token(Lexer* lexer)
 
     u8 c = (u8)c_s16;
 
-    if (char8_is_space(c))
+    if (char_is_space(c))
     {
       lexer_parse_trivia(lexer, token);
 
@@ -817,15 +817,15 @@ lexer_make_new_token(Lexer* lexer)
       continue;
     }
 
-    if (char8_is_alpha(c) || c == '_') // Is this character a valid identifier starting point?
+    if (char_is_alpha(c) || c == '_') // Is this character a valid identifier starting point?
     {
       lexer_parse_identifier(lexer, token);
     }
-    else if (char8_is_digit(c))
+    else if (char_is_digit(c))
     {
       lexer_parse_number(lexer, token);
     }
-    else if (lexer->trivia_flags > 0 && char8_is_space(c))
+    else if (lexer->trivia_flags > 0 && char_is_space(c))
     {
       lexer_parse_trivia(lexer, token);
     }
