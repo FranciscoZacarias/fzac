@@ -689,7 +689,10 @@ function u64
 cstring_length(u8* cstring)
 {
   u64 result = 0;
-  while (cstring[result] != '\0') { result += 1; }
+  while (cstring[result] != '\0') 
+  { 
+    result += 1;
+  }
   return result;
 }
 
@@ -712,16 +715,25 @@ s64_from_string(String str, s64* out)
     cstring += 1;
   }
 
-  if(cstring == end) return false;
+  if(cstring == end)
+  {
+    return false;
+  }
 
   s64 value = 0;
   for(; cstring < end; cstring += 1)
   {
-    if(*cstring < '0' || *cstring > '9') return false;
+    if(*cstring < '0' || *cstring > '9')
+    {
+      return false;
+    }
     value = value * 10 + (*cstring - '0');
   }
 
-  if(negative) value = -value;
+  if(negative)
+  {
+    value = -value;
+  }
 
   *out = value;
   return true;

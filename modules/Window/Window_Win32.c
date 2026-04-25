@@ -1,5 +1,6 @@
 
-#define WINDOW_CLASS_NAME L"DefaultWindowClass"
+#define WINDOW_CLASS_NAME "DefaultWindowClass"
+#define WINDOW_CLASS_NAMEW L"DefaultWindowClass"
 
 #define WINDOWED_STYLE         WS_OVERLAPPEDWINDOW
 #define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP
@@ -32,26 +33,13 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   rect.bottom = height;
   AdjustWindowRect(&rect, style, false);
 
-  HWND hwnd = CreateWindowExW(
-    0,
-    WINDOW_CLASS_NAME,
-    L"Window",
-    style,
-    x, y,
-    rect.right - rect.left,
-    rect.bottom - rect.top,
-    NULL, NULL,
-    GetModuleHandle(NULL),
-    NULL
-  );
-
+  HWND hwnd    = CreateWindowExA(0, WINDOW_CLASS_NAME, (char*)title.cstring, style, x, y, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, GetModuleHandle(NULL), NULL);
   window->hwnd = hwnd;
   window->dc   = GetDC(hwnd);
 
-  window->frame_arena = arena_alloc();
-
+  window->frame_arena                = arena_alloc();
   window->events_this_frame.capacity = 4096;
-  window->events_this_frame.data =  push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
+  window->events_this_frame.data     =  push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
 
   ShowWindow(hwnd, SW_SHOW);
   UpdateWindow(hwnd);
@@ -248,7 +236,7 @@ _init_window_class()
   wc.lpfnWndProc   = _window_procedure;
   wc.hInstance     = hInstance;
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-  wc.lpszClassName = WINDOW_CLASS_NAME;
+  wc.lpszClassName = WINDOW_CLASS_NAMEW;
 
   RegisterClassExW(&wc);
   WindowClassInited = 1;
