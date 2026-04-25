@@ -133,8 +133,9 @@ enum
   Emit_String_Literals    = (1 << 0), /* Emits a Token_String_Literal like "This is a string literal", instead of individual tokens like "\"", "This", "is" ... */
   Emit_Character_Literals = (1 << 1), /* Emits a Token_Character_Literal like 'c', instead of 3 tokens like "'", "c", "'" */
   Emit_Line_Comments      = (1 << 2), /* Emits a line comment made made with '//' as a single token like: Token_Line_Comment "// This is a whole line comment" */
-  Emit_Block_Comments     = (1 << 3), /* Emits a block comment made with made with /* */
-  Emit_String_Backtick    = (1 << 4), /* Emits a Token_String_Backtick like `This is a backtick string` instead of each individual token */
+  Emit_Hash_Comments      = (1 << 3), /* Emits a line comment made made with '#' as a single token like: Token_Line_Comment "# This is a whole line comment" */
+  Emit_Block_Comments     = (1 << 4), /* Emits a block comment made with made with /* */
+  Emit_String_Backtick    = (1 << 5), /* Emits a Token_String_Backtick like `This is a backtick string` instead of each individual token */
 
   Emit_All = Emit_String_Literals|Emit_Character_Literals|Emit_Line_Comments|Emit_Block_Comments,
 };
@@ -712,6 +713,29 @@ lexer_parse_line_comment(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
+function void
+lexer_parse_hash_line_comment(Lexer* lexer, Token* token)
+{
+  lexer_eat_character(lexer);
+
+  u32 scratch_position = 0;
+  lexer->scratch_buffer[scratch_position++] = '#';
+
+  for (;;)
+  {
+    s16 c_s16 = lexer_peek_character(lexer);
+    if (c_s16 == -1 || c_s16 == '\n') break;
+    if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = (u8)c_s16;
+    lexer_eat_character(lexer);
+  }
+
+  lexer->scratch_buffer[scratch_position] = '\0';
+  token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
+  token->kind  = Token_Comment_Line;
+  token->l1    = lexer->current_line_number;
+  token->c1    = lexer->current_character_index;
+}
+
 function Token*
 lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count)
 {
@@ -814,7 +838,18 @@ lexer_make_new_token(Lexer* lexer)
     }
     else switch (c)
     {
-      case '#': { lexer_parse_single_character_token(lexer, token, Token_Hash); }              break;
+      case '#': 
+      { 
+        if (has_flags(lexer->emit_structures, Emit_Hash_Comments))
+        {
+          lexer_parse_hash_line_comment(lexer, token);
+        }
+        else
+        {
+          lexer_parse_single_character_token(lexer, token, Token_Hash);
+        }
+      }              
+      break;
       case '(': { lexer_parse_single_character_token(lexer, token, Token_Open_Parentheses); }  break;
       case ')': { lexer_parse_single_character_token(lexer, token, Token_Close_Parentheses); } break;
       case '[': { lexer_parse_single_character_token(lexer, token, Token_Open_Bracket); }      break;
