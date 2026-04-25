@@ -511,6 +511,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     string_builder_pushf(&builder, "\n/* File: "S_FMT" */\n", S_ARG(file->name));
+
     for (u32 enums_index = 0; enums_index < file->enum_definitions_count; enums_index += 1)
     {
       DM_Code_Enum *code_enum = &file->enum_definitions[enums_index];
