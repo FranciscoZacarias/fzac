@@ -7,7 +7,6 @@
 #include "Code_Generation.h"
 #include "Platform.h"
 #include "Default_Metaprogram.h"
-#include "List_Todos.h"
 
 #define METAPROGRAM_SRC_DIRECTORY S("../src")
 global Default_Metaprogram DefaultMetaprogram;
@@ -40,27 +39,9 @@ metaprogram_main_thread_base_entry_point(String command_line)
 
   // Metaprogram optional flags
   // @TODO(fz): Move to default_metaprogram
-	String path = full_path_from_relative_path(DefaultMetaprogram.arena, METAPROGRAM_SRC_DIRECTORY);
-	if (cmd_line.args_count > 0)
-	{
-		for (u32 i = 0; i < cmd_line.args_count; i += 1)
-		{
-			Command_Line_Arg arg = cmd_line.args[i];
-			if (string_equals(arg.value, S("cgen"), true))
-			{
-				CGen_Context cgen = cgen_run(path);
-				cgen_execute_commands(&cgen);
-			}
-      else if (string_equals(arg.value, S("list-todos"), true))
-      {
-        List_Todos todos = list_todos(METAPROGRAM_SRC_DIRECTORY);
-        print_list_todos(&todos);
-      }
-		}
-	}
-
+	
   // Default Metaprogram
-  default_metaprogram(&DefaultMetaprogram, METAPROGRAM_SRC_DIRECTORY);  
+  default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY);  
   metaprogram_entry_point(&cmd_line, S("../src"));
   arena_free(DefaultMetaprogram.arena);
 }

@@ -1,6 +1,8 @@
 #ifndef FILES_H
 #define FILES_H
 
+#include "Timing.h"
+
 typedef struct File_Watcher File_Watcher;
 struct File_Watcher
 {

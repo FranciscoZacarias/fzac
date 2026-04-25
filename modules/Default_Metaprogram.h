@@ -1,6 +1,8 @@
 #ifndef DEFAULT_METAPROGRAM_H
 #define DEFAULT_METAPROGRAM_H
 
+#include "List_Todos.h"
+
 #define METAPROGRAM_MAX_FILES 64
 #define METAPROGRAM_MAX_FUNTIONS 256
 #define METAPROGRAM_MAX_STRUCTS 128
@@ -47,6 +49,9 @@ struct DM_File
   DM_Code_Function *function_definitions;
   u32 function_definitions_count;
   u32 function_definitions_capacity;
+
+  u32 lines_of_code;
+  u32 significant_lines_of_code;
 };
 
 typedef struct Default_Metaprogram Default_Metaprogram;
@@ -59,10 +64,10 @@ struct Default_Metaprogram
   u32 files_capacity;
 };
 
-function void default_metaprogram(Default_Metaprogram *dm, String src_directory);
+function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory);
 
 function void
-default_metaprogram(Default_Metaprogram *dm, String src_directory)
+default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory)
 {
   Scratch scratch = scratch_begin(0,0);
 
@@ -107,6 +112,77 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
     DM_File *dm_file;
     arena_array_push(dm_file, dm->files, dm->files_count, dm->files_capacity);
     memory_zero_struct(dm_file);
+
+    // Counts lines of code
+    {
+      dm_file->lines_of_code        = 1;
+      dm_file->significant_lines_of_code = 0;
+      String file_content = file_load(scratch.arena, file_being_lexed);
+      u64 scratch_position        = scratch.arena->position;
+      b32 current_line_has_code   = false;
+      b32 inside_block_comment    = false;
+
+      for (u64 char_index = 0; char_index < file_content.count; char_index += 1)
+      {
+        u8 current_char = file_content.cstring[char_index];
+        u8 next_char    = (char_index + 1 < file_content.count)
+                            ? file_content.cstring[char_index + 1]
+                            : 0;
+
+        if (inside_block_comment)
+        {
+          if (current_char == '*' && next_char == '/')
+          {
+            inside_block_comment = false;
+            char_index += 1;
+          }
+          else if (current_char == '\n')
+          {
+            dm_file->lines_of_code += 1;
+          }
+          continue;
+        }
+
+        if (current_char == '/' && next_char == '/')
+        {
+          while (char_index < file_content.count && file_content.cstring[char_index] != '\n')
+          {
+            char_index += 1;
+          }
+          current_char = file_content.cstring[char_index];
+        }
+
+        if (current_char == '/' && next_char == '*')
+        {
+          inside_block_comment = true;
+          char_index += 1;
+          continue;
+        }
+
+        if (current_char == '\n')
+        {
+          dm_file->lines_of_code += 1;
+          if (current_line_has_code)
+          {
+            dm_file->significant_lines_of_code += 1;
+          }
+          current_line_has_code = false;
+          continue;
+        }
+
+        if (current_char != ' ' && current_char != '\t' && current_char != '\r')
+        {
+          current_line_has_code = true;
+        }
+      }
+
+      if (current_line_has_code)
+      {
+        dm_file->significant_lines_of_code += 1;
+      }
+
+      arena_pop_to(scratch.arena, scratch_position);    
+    }
 
     dm_file->name = string_copy(dm->arena, file_being_lexed);
     arena_array_init(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
@@ -522,6 +598,57 @@ default_metaprogram(Default_Metaprogram *dm, String src_directory)
 
   string_builder_free(&builder);
 
+  scratch_end(&scratch);
+
+  // Default meta program arguments
+  scratch = scratch_begin(0,0);
+  {
+    if (command_line->args_count > 0)
+    {
+      for (u32 i = 0; i < command_line->args_count; i += 1)
+      {
+        Command_Line_Arg arg = command_line->args[i];
+        if (string_equals(arg.value, S("cgen"), true))
+        {
+          String path = full_path_from_relative_path(scratch.arena, src_directory);
+          CGen_Context cgen = cgen_run(path);
+          cgen_execute_commands(&cgen);
+        }
+        else if (string_equals(arg.value, S("list-todos"), true))
+        {
+          List_Todos todos = list_todos(src_directory);
+          print_list_todos(&todos);
+        }
+        else if (string_equals(arg.value, S("loc"), true) || string_equals(arg.value, S("lines-of-code"), true))
+        {
+          String_Builder loc_builder = string_builder_init(thousand(32));
+
+          u32 total_loc  = 0;
+          u32 total_sloc = 0;
+
+          string_builder_push(&loc_builder, "\n");
+          string_builder_pushf(&loc_builder, "+----------------------------------+--------+--------+--------+\n");
+          string_builder_pushf(&loc_builder, "| %-32s | %6s | %6s | %6s |\n", "File", "LOC", "SLOC", "NSLOC");
+          string_builder_pushf(&loc_builder, "+----------------------------------+--------+--------+--------+\n");
+
+          for (u32 file_index = 0; file_index < dm->files_count; file_index += 1)
+          {
+            DM_File *file = &dm->files[file_index];
+            string_builder_pushf(&loc_builder, "| %-32s | %6d | %6d | %6d |\n", file->name.cstring, file->lines_of_code, file->significant_lines_of_code, file->lines_of_code - file->significant_lines_of_code);
+            total_loc  += file->lines_of_code;
+            total_sloc += file->significant_lines_of_code;
+          }
+
+          string_builder_pushf(&loc_builder, "+----------------------------------+--------+--------+--------+\n");
+          string_builder_pushf(&loc_builder, "| %-32s | %6d | %6d | %6d |\n", "Total", total_loc, total_sloc, total_loc - total_sloc);
+          string_builder_pushf(&loc_builder, "+----------------------------------+--------+--------+--------+\n");
+
+          String final_str = string_builder_to_string(scratch.arena, &loc_builder);
+          string_print(final_str);
+        }
+  		}
+  	}
+  }
   scratch_end(&scratch);
 }
 
