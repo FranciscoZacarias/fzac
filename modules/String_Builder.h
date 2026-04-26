@@ -3,6 +3,7 @@
 
 /* TODO(fz): This should not own an arena, it should receive an arena from the user. */
 
+raddbg_type_view(String_Builder, (data,count));
 typedef struct String_Builder String_Builder;
 struct String_Builder
 {

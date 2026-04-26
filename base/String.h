@@ -3,7 +3,7 @@
 
 // @Section: 8 bit characters
 function b32 char_is_alpha(u8 c); /* Check if character is alphabetic. */
-function b32 char_is_alphanum(u8 c); /* Check if character is alphanumeric. */
+function b32 char_is_alphanumeric(u8 c); /* Check if character is alphanumeric. */
 function b32 char_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
 function b32 char_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
 function b32 char_is_digit(u8 c); /* Check if character is digit 0-9. */
@@ -14,7 +14,7 @@ function u8  char_to_lower(u8 c); /* Convert character to lowercase. */
 
 // @Section: 8 Bit strings
 typedef struct String String; /* 8 bit string. */
-raddbg_type_view(String, cstring);
+raddbg_type_view(String, (cstring,count));
 struct String
 {
   u64 count;    /* Length of string (excluding null terminator) */
@@ -108,7 +108,7 @@ char_is_alpha(u8 c)
 }
 
 function b32
-char_is_alphanum(u8 c)
+char_is_alphanumeric(u8 c)
 {
   return char_is_alpha(c) || char_is_digit(c);
 }
