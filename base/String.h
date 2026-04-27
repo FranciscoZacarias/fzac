@@ -48,6 +48,8 @@ function String string_new(u64 size, u8* str); /* Create a new String with given
 function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
 function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
 function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
+function b8     string_begins_with(String str, String begins_with); /* Checks if str begins with begins_with */
+function b8     string_ends_with(String str, String ends_with); /* Checks if str ends with ends_with */
 function String string_replace_first(Arena* arena, String str, String a, String b); /* Replaces string a with string c in string str */
 function String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
 function String string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement); /* Replaces a range starting at start up to length with replacement */
@@ -211,6 +213,57 @@ string_join(Arena* arena, String a, String b)
   memory_copy(result.cstring, a.cstring, a.count);
   memory_copy(result.cstring + a.count, b.cstring, b.count);
   result.cstring[result.count] = '\0';
+  return result;
+}
+
+function b8
+string_begins_with(String str, String begins_with)
+{
+  b8 result = false;
+
+  if (begins_with.count <= str.count)
+  {
+    result = true;
+    for (u64 i = 0; i < begins_with.count; i += 1)
+    {
+      if (str.cstring[i] != begins_with.cstring[i])
+      {
+        result = false;
+        break;
+      }
+    }
+  }
+  else
+  {
+    result = false;
+  }
+
+  return result;
+}
+
+function b8
+string_ends_with(String str, String ends_with)
+{
+  b8 result = false;
+
+  if (ends_with.count <= str.count)
+  {
+    result = true;
+    u64 offset = str.count - ends_with.count;
+    for (u64 i = 0; i < ends_with.count; i += 1)
+    {
+      if (str.cstring[offset + i] != ends_with.cstring[i])
+      {
+        result = false;
+        break;
+      }
+    }
+  }
+  else
+  {
+    result = false;
+  }
+
   return result;
 }
 
