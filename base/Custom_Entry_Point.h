@@ -23,7 +23,7 @@ function void main_thread_base_entry_point(String command_line); /* Internal ent
 // @Section: Implementation
 
 // This macro is so that the metaprogram knows what enum is being defined
-#define enum_type(name, type, to_string) enum name
+#define enum_type(name, type, to_string) enum
 
 #if METAPROGRAM
 function void
