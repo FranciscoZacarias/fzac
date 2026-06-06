@@ -2,59 +2,60 @@
 #define CUSTOM_ENTRY_POINT_H
 
 #include "..\modules\Command_Line.h"
+#define enum_type(name, type, to_string) enum // This macro is so that the metaprogram knows what enum is being defined
 
 #if METAPROGRAM
-#include "Code_Generation.h"
-#include "Platform.h"
-#include "Default_Metaprogram.h"
-
-#define METAPROGRAM_SRC_DIRECTORY S("../src")
-global Default_Metaprogram DefaultMetaprogram;
-
-function void metaprogram_entry_point(Command_Line *command_line, String project_path); /* Metaprogram entry point, defined by user. */
-raddbg_entry_point(metaprogram_entry_point);
-function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  #include "Code_Generation.h"
+  #include "Platform.h"
+  #include "Default_Metaprogram.h"
+  
+  global Default_Metaprogram DefaultMetaprogram;
+  
+  // Metaprogram
+  #define METAPROGRAM_SRC_DIRECTORY S("../src")
+  function void metaprogram_entry_point(Command_Line *command_line, String project_path, b32 *run_default_metaprogram); /* Metaprogram entry point, defined by user. */
+  raddbg_entry_point(metaprogram_entry_point);
+  function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  
+  function void
+  metaprogram_main_thread_base_entry_point(String command_line)
+  {
+    local_persist Thread_Context thread_context;
+    thread_context_init_and_attach(&thread_context);
+    Command_Line cmd_line = command_line_parse(command_line);
+  
+    console_attach();
+  
+    DefaultMetaprogram.arena = arena_alloc();
+    DefaultMetaprogram.files_capacity = 64;
+  
+    // Metaprogram optional flags
+    // @TODO(fz): Move to default_metaprogram
+  	
+    // Default Metaprogram
+    b32 run_default_metaprogram = true;
+    metaprogram_entry_point(&cmd_line, S("../src"), &run_default_metaprogram);
+    if (run_default_metaprogram)
+    {
+      default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY);  
+    }
+    arena_free(DefaultMetaprogram.arena);
+  }
 #else
-function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
-raddbg_entry_point(entry_point);
-function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
-#endif
+  function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
+  raddbg_entry_point(entry_point);
+  function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  
+  function void
+  main_thread_base_entry_point(String command_line)
+  {
+    local_persist Thread_Context thread_context;
+    thread_context_init_and_attach(&thread_context);
+    Command_Line cmd_line = command_line_parse(command_line);
+    entry_point(&cmd_line);
+  }
+#endif // METAPROGRAM
 
-// @Section: Implementation
-
-// This macro is so that the metaprogram knows what enum is being defined
-#define enum_type(name, type, to_string) enum
-
-#if METAPROGRAM
-function void
-metaprogram_main_thread_base_entry_point(String command_line)
-{
-  local_persist Thread_Context thread_context;
-  thread_context_init_and_attach(&thread_context);
-  Command_Line cmd_line = command_line_parse(command_line);
-  console_attach();
-
-  DefaultMetaprogram.arena = arena_alloc();
-  DefaultMetaprogram.files_capacity = 64;
-
-  // Metaprogram optional flags
-  // @TODO(fz): Move to default_metaprogram
-	
-  // Default Metaprogram
-  default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY);  
-  metaprogram_entry_point(&cmd_line, S("../src"));
-  arena_free(DefaultMetaprogram.arena);
-}
-#else
-function void
-main_thread_base_entry_point(String command_line)
-{
-  local_persist Thread_Context thread_context;
-  thread_context_init_and_attach(&thread_context);
-  Command_Line cmd_line = command_line_parse(command_line);
-  entry_point(&cmd_line);
-}
-#endif
 
 #if OS_WINDOWS
 
@@ -91,9 +92,9 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
 #elif OS_LINUX
 # error fzac with Linux not supported
 #elif OS_MACOS
-# error Macos not supported
+# error fzac with Macos not supported
 #else
-# error fzac with Operating System not supported
+# error fzac doesn't even know what OS this is
 #endif
 
 #endif // CUSTOM_ENTRY_POINT_H
