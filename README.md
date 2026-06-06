@@ -17,8 +17,9 @@ For `modules\` each file can be included individually into the program as a sing
 
 /* For enums to be forward declared, they have to be defined with the macro enum_type(name, type).
    This is the only way to make the metaprogrma know what is the identifier and type that it should typedef this enum to.
+   Third argument is if we want to generate a to_string array.
 */
-enum_type(My_Enum, u32)
+enum_type(My_Enum, u32, )
 {
   My_Enum_None = 0,
   My_Enum_One,

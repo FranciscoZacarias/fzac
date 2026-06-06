@@ -85,6 +85,9 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     // Window
     case WM_SETFOCUS:
     {
+      Window_Event* event = _event_push(events);
+      event->kind = Event_Window;
+
       window->is_focused = true;
       return 0;
     }
@@ -92,6 +95,9 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 
     case WM_KILLFOCUS:
     {
+      Window_Event* event = _event_push(events);
+      event->kind = Event_Window;
+
       window->is_focused = false;
       // Reset input
       {
@@ -573,22 +579,38 @@ get_window_height()
 }
 
 function V2u32
+get_window_center(Window *window)
+{
+  V2u32 result = v2u32(get_window_width() / 2, get_window_height() / 2);
+  return result;
+}
+
+function V2u32
 get_window_dimensions()
 {
   return v2u32(GlobalWindow.width, GlobalWindow.height);
 }
 
-function u32   get_window_x()
+function u32   
+get_window_x()
 {
   return GlobalWindow.x;
 }
 
-function u32   get_window_y()
+function u32   
+get_window_y()
 {
   return GlobalWindow.y;
 }
 
-function V2u32 get_window_position()
+function V2u32 
+get_window_position()
 {
   return v2u32(GlobalWindow.x, GlobalWindow.y);
+}
+
+function b32
+is_window_focused()
+{
+  return GlobalWindow.is_focused;
 }

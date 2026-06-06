@@ -1,12 +1,31 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "Window.h"
+
 // @Section: Console
 function void console_attach(); /* Opens application terminal */
 
 // @Section: Clipboard
 function void   clipboard_write(String str);
 function String clipboard_read(Arena *arena);
+
+// @Section: Cursor
+typedef enum Cursor_Type
+{
+  Cursor_Arrow,
+  Cursor_Hand,
+  Cursor_Crosshair,
+  Cursor_Ibeam,
+  Cursor_Wait,
+  Cursor_Size_All,
+} Cursor_Type;
+
+function V2f32 cursor_get_position(Window *window);
+function void  cursor_lock(Window *window, b32 lock);
+function void  cursor_hide(b32 hide);
+function void  cursor_set_position(Window *window, s32 x, s32 y);
+function void  cursor_set_icon(Cursor_Type type);
 
 // @Section: Errors
 function void message_box(String title, String content, String file, u32 line);
