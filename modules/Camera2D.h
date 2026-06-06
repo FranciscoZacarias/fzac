@@ -1,5 +1,5 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef CAMERA2D_H
+#define CAMERA2D_H
 
 typedef struct Camera2D Camera2D;
 struct Camera2D
@@ -18,7 +18,7 @@ function void     camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width,
 function void     camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height);
 function void     camera2d_reset(Camera2D *camera2d); /* Resets camera zoom and position */
 
-#endif // CAMERA_H
+#endif // CAMERA2D_H
 
 function Camera2D
 camera2d_init(u32 window_width, u32 window_height)

@@ -131,7 +131,6 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     }
     break;
 
-
     // Mouse
     case WM_LBUTTONDOWN: { _input_process_mouse_button(Mouse_Button_Left,   true);  return 0; } break;
     case WM_LBUTTONUP:   { _input_process_mouse_button(Mouse_Button_Left,   false); return 0; } break;
