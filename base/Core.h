@@ -105,6 +105,7 @@
 #define set_flags(flags, flag)        ((flags) |= (flag))
 #define has_flags(flags, check_flags) (((flags) & (check_flags)) == (check_flags))
 #define toggle_flag(flags, flag)      ((flags) ^= (flag))
+#define remove_flag(flags, flag)      ((flags) &= ~(flag))
 
 /* === Control flow === */
 #define DEFER_LOOP_ID2(a, b) a##b
@@ -148,9 +149,6 @@ typedef s64 b64;
 #define clamp_top(A,X) min(A,X)
 #define clamp_bot(X,B) max(X,B)
 #define clamp(val,lo,hi) (((val) < (lo)) ? (lo) : (((val) > (hi)) ? (hi) : (val)))
-
-#define to_degrees(r) ((r) * (180.0f / PI32))
-#define to_radians(d) ((d) * (PI32 / 180.0f))
 
 /* === Constants === */
 #define U8_MIN      (u8) 0x00

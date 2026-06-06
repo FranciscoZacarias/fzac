@@ -3,10 +3,14 @@
 
 #include "generated/Math.cgen.h"
 
+#define degrees_from_radians(r) ((r) * (180.0f / PI32))
+#define radians_from_degrees(d) ((d) * (PI32 / 180.0f))
+
 // @Section: Math types
 typedef struct Matrix3    Matrix3;
 typedef struct Matrix4    Matrix4;
 typedef struct Quaternion Quaternion;
+typedef struct Transform  Transform;
 
 // @Section: f32
 function inline f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
@@ -134,9 +138,11 @@ function Matrix4 matrix4_rotate_XYZ(V3f32 angle); /* Creates a combined rotation
 function Matrix4 matrix4_rotate_ZYX(V3f32 angle); /* Creates a combined rotation matrix around the Z, Y, and X axes in order ZYX (angles in radians) */
 function Matrix4 matrix4_scale(f32 x, f32 y, f32 z); /* Creates a scaling matrix with scale factors for each axis */
 function Matrix4 matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 far_plane); /* Creates a perspective frustum projection matrix\n defined by the given left, right, bottom, top, near, and far planes */
-function Matrix4 matrix4_perspective(f64 fovY, f64 aspect, f64 near_plane, f64 far_plane); /* Creates a perspective projection matrix using a vertical field of view in radians\n with the given aspect ratio, near, and far planes */
+function Matrix4 matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane); /* Creates a perspective projection matrix using a vertical field of view in radians\n with the given aspect ratio, near, and far planes */
 function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane); /* Creates an orthographic projection matrix defined by the given planes */
 function Matrix4 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
+function Matrix4 matrix4_from_quaternion(Quaternion q); /* Creates a Matrix4 from the given quaternion */
+function V3f32   matrix4_multiply_v3f32(Matrix4 matrix, V3f32 v);
 
 // @Section: Quaternion
 struct Quaternion { f32 x, y, z, w; };
@@ -162,9 +168,19 @@ function Matrix4    quaternion_to_matrix4(Quaternion q); /* Converts a quaternio
 function Quaternion quaternion_from_axis_angle(V3f32 axis, f32 angle); /* Creates a quaternion representing a rotation around an axis by an angle in radians */
 function void       quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle); /* Extracts the rotation axis and angle (in radians) from a quaternion */
 function Quaternion quaternion_from_euler(f32 pitch, f32 yaw, f32 roll); /* Creates a quaternion equivalent to Euler angles (Z-Y-X rotation order)\n Angles must be provided in radians */
-function V3f32    quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
+function V3f32      quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
 function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
+function V3f32      quaternion_rotate_vec3f32(Quaternion q, V3f32 v);
+
+// @Section: Transform
+struct Transform 
+{
+  V3f32 translation;
+  Quaternion rotation;
+  V3f32 scale;
+};
+#define transform(t,r,s) (Transform){t,r,s}
 
 // @Section: Implementation
 
@@ -1376,27 +1392,30 @@ matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 fa
 }
 
 function Matrix4
-matrix4_perspective(f64 fovY, f64 aspect, f64 near_plane, f64 far_plane)
+matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane)
 {
-  Matrix4 result = { 0 };
+  Matrix4 result = {0};
 
-  f64 top = near_plane*tan(fovY*0.5);
+  f64 aspect = window_width / window_height;
+  f64 fov_radians = radians_from_degrees((f32)fovY);
+
+  f64 top = near_plane * tan(fov_radians * 0.5);
+
   f64 bottom = -top;
-  f64 right = top*aspect;
-  f64 left = -right;
+  f64 right  = top * aspect;
+  f64 left   = -right;
 
-  // matrix4_frustum(-right, right, -top, top, near, far);
   f32 rl = (f32)(right - left);
   f32 tb = (f32)(top - bottom);
   f32 fn = (f32)(far_plane - near_plane);
 
-  result.m0 = ((f32)near_plane*2.0f)/rl;
-  result.m5 = ((f32)near_plane*2.0f)/tb;
-  result.m8 = ((f32)right + (f32)left)/rl;
-  result.m9 = ((f32)top + (f32)bottom)/tb;
-  result.m10 = -((f32)far_plane + (f32)near_plane)/fn;
+  result.m0  = ((f32)near_plane * 2.0f) / rl;
+  result.m5  = ((f32)near_plane * 2.0f) / tb;
+  result.m8  = ((f32)right + (f32)left) / rl;
+  result.m9  = ((f32)top + (f32)bottom) / tb;
+  result.m10 = -((f32)far_plane + (f32)near_plane) / fn;
   result.m11 = -1.0f;
-  result.m14 = -((f32)far_plane*(f32)near_plane*2.0f)/fn;
+  result.m14 = -((f32)far_plane * (f32)near_plane * 2.0f) / fn;
 
   return result;
 }
@@ -1479,6 +1498,60 @@ matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up)
   result.m14 = -(vz.x*eye.x + vz.y*eye.y + vz.z*eye.z);   // v3f32_dot(vz, eye)
   result.m15 = 1.0f;
 
+  return result;
+}
+
+function Matrix4
+matrix4_from_quaternion(Quaternion q)
+{
+  Matrix4 result = matrix4_identity();
+
+  f32 a2 = q.x*q.x;
+  f32 b2 = q.y*q.y;
+  f32 c2 = q.z*q.z;
+  f32 ac = q.x*q.z;
+  f32 ab = q.x*q.y;
+  f32 bc = q.y*q.z;
+  f32 ad = q.w*q.x;
+  f32 bd = q.w*q.y;
+  f32 cd = q.w*q.z;
+
+  result.m0 = 1 - 2*(b2 + c2);
+  result.m1 = 2*(ab + cd);
+  result.m2 = 2*(ac - bd);
+
+  result.m4 = 2*(ab - cd);
+  result.m5 = 1 - 2*(a2 + c2);
+  result.m6 = 2*(bc + ad);
+
+  result.m8 = 2*(ac + bd);
+  result.m9 = 2*(bc - ad);
+  result.m10 = 1 - 2*(a2 + b2);
+
+  return result;
+}
+
+function V3f32
+matrix4_multiply_v3f32(Matrix4 matrix, V3f32 v)
+{
+  V3f32 result;
+  
+  f32 x = v.x;
+  f32 y = v.y;
+  f32 z = v.z;
+  
+  result.x = matrix.m0 * x + matrix.m1 * y + matrix.m2 * z + matrix.m3;
+  result.y = matrix.m4 * x + matrix.m5 * y + matrix.m6 * z + matrix.m7;
+  result.z = matrix.m8  * x + matrix.m9  * y + matrix.m10 * z + matrix.m11;
+  f32 w = matrix.m12 * x + matrix.m13 * y + matrix.m14 * z + matrix.m15;
+  
+  if (w != 0.0f && w != 1.0f)
+  {
+    result.x /= w;
+    result.y /= w;
+    result.z /= w;
+  }
+  
   return result;
 }
 
@@ -1941,6 +2014,17 @@ quaternion_equals(Quaternion p, Quaternion q)
                 ((fabsf(p.z + q.z)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.z), fabsf(q.z))))) &&
                 ((fabsf(p.w + q.w)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.w), fabsf(q.w))))));
   return result;
+}
+
+function V3f32      
+quaternion_rotate_v3f32(Quaternion q, V3f32 v)
+{
+  Quaternion q_norm = quaternion_normalize(q);
+  Quaternion v_q    = {v.x, v.y, v.z, 0.0f};
+  Quaternion q_conj = quaternion_invert(q_norm);
+  Quaternion temp   = quaternion_mul(q_norm, v_q);
+  Quaternion result = quaternion_mul(temp, q_conj);
+  return (V3f32){result.x, result.y, result.z};
 }
 
 

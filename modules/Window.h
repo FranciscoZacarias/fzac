@@ -313,9 +313,11 @@ struct Window
 
 function u32   get_window_width();
 function u32   get_window_height();
+function V2u32 get_window_center();
 function V2u32 get_window_dimensions();
 function u32   get_window_x();
 function u32   get_window_y();
 function V2u32 get_window_position();
+function b32   is_window_focused();
 
 #endif // WINDOW_CREATION
