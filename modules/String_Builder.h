@@ -7,10 +7,10 @@ raddbg_type_view(String_Builder, (data,count));
 typedef struct String_Builder String_Builder;
 struct String_Builder
 {
+  Arena* arena;
   u8*    data;
   u64    count;
   u64    capacity;
-  Arena* arena;
 };
 
 function String_Builder string_builder_init(u64 initial_capacity);                        /* Allocates an internal arena and initializes the builder */

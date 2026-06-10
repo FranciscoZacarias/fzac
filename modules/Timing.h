@@ -15,12 +15,12 @@ struct Date_Time
   u16 millisecond;
 };
 
-global LARGE_INTEGER Win32PerformanceFrequency;
+b8 TimingInited = false;
 
 function void      time_init(); /* Initializes timer module */
-function u64       time_microseconds(); /* Time since boot in microseconds */
-function u64       time_milliseconds(); /* Time since boot in milliseconds */
-function f64       time_seconds(); /* Time since boot in seconds */
+function u64       time_microseconds(); /* Time in microseconds */
+function u64       time_milliseconds(); /* Time in milliseconds */
+function f64       time_seconds(); /* Time inseconds */
 function u64       get_epoch_microseconds(); /* Wall clock time since unix epoch (1970-01-01) in microseconds */
 function Date_Time datetime_now(); /* Current local date and time */
 function String    datetime_to_string(Arena* arena, Date_Time date, b32 include_ms); /* Returns a verbose datetime string */
@@ -31,12 +31,34 @@ function u64   timer_milliseconds(Timer *timer); /* Returns timer's elapsed time
 function f64   timer_seconds(Timer *timer); /* Returns timer's elapsed time in seconds */
 function void  timer_reset(Timer *timer); /* Resets a timer */
 
+function f64 milliseconds_from_microseconds(u64 us);
+function f64 seconds_from_microseconds(u64 us);
+
+function f64
+milliseconds_from_microseconds(u64 us)
+{
+  f64 result = (f64)(us) / 1000.0;
+  return result;
+}
+
+function f64
+seconds_from_microseconds(u64 us)
+{
+  return (f64)us / 1000000.0;
+}
+
 #if OS_WINDOWS
 
+global LARGE_INTEGER Win32PerformanceFrequency;
+
 function void
-time_init()
+time_init() // @TODO(Fz): This should just be inited by default?
 {
-  QueryPerformanceFrequency(&Win32PerformanceFrequency);
+  if (!TimingInited)
+  {
+    QueryPerformanceFrequency(&Win32PerformanceFrequency);
+    TimingInited = true;
+  }
 }
 
 function u64

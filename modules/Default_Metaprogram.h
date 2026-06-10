@@ -110,7 +110,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     DM_File *dm_file;
-    arena_array_push(dm_file, dm->files, dm->files_count, dm->files_capacity);
+    arena_array_push(dm_file, dm->files);
     memory_zero_struct(dm_file);
 
     // Counts lines of code

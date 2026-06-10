@@ -55,17 +55,29 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     name = push_array((arena), type, name##_capacity); \
   )
 
-#define arena_array_push(out_ptr, ptr, count, cap)       \
+#define arena_array_push(out_ptr, name)       \
   statement(                                             \
-    if ((count) >= (cap))                                \
+  if ((name##_count) >= (name##_capacity))                                \
     {                                                    \
       message_box(S("Arena Array Overflow"),             \
-                  Sf(get_temporary_storage(), "arena_array_push capacity of %u exceeded", (cap)), \
+      St("arena_array_push capacity of %u exceeded", (name##_capacity)), \
                   S(__FILE__),                             \
                 __LINE__);                               \
       assert(false);                                     \
     }                                                    \
-    (out_ptr) = &(ptr)[(count)++];                       \
+    (out_ptr) = &(name)[(name##_count)++];                       \
+  )
+
+#define arena_array_pop(out_ptr, name)       \
+  statement(                                 \
+    if ((name##_count) == 0)                 \
+    {                                        \
+      message_box(S("Arena Array Underflow"),\
+        St("arena_array_pop on empty array"),\
+        S(__FILE__), __LINE__);              \
+      assert(false);                         \
+    }                                        \
+    (out_ptr) = &(name)[--(name##_count)];   \
   )
 
 // @Section: Implementation

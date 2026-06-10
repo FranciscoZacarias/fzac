@@ -79,7 +79,7 @@ list_todos(String src_directory)
     }
 
     LT_File *lt_file;
-    arena_array_push(lt_file, todos.files, todos.files_count, todos.files_capacity);
+    arena_array_push(lt_file, todos.files);
     memory_zero_struct(lt_file);
     
     lt_file->name = string_copy(todos.arena, file_being_lexed);
