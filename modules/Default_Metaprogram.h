@@ -71,7 +71,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
 {
   Scratch scratch = scratch_begin(0,0);
 
-  arena_array_init(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
+  array_pop_with_arena(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
   String_List files = file_get_files_in_path(dm->arena, src_directory, true);
 
   for (String_Node *next = files.first; next != NULL; next = next->next)
@@ -110,7 +110,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     DM_File *dm_file;
-    arena_array_push(dm_file, dm->files);
+    array_add(dm_file, dm->files);
     memory_zero_struct(dm_file);
 
     // Counts lines of code
@@ -185,9 +185,9 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     dm_file->name = string_copy(dm->arena, file_being_lexed);
-    arena_array_init(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
-    arena_array_init(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
-    arena_array_init(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
+    array_pop_with_arena(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
+    array_pop_with_arena(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
+    array_pop_with_arena(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Whitespace|Trivia_Line_Break, Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);

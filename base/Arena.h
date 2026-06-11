@@ -47,7 +47,7 @@ function Scratch arena_temp_begin(Arena* arena); /* Saves the current position f
 function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position saved in arena_temp_begin */
 
 // Helper to push data into an arena backed array
-#define arena_array_init(arena, name, type, capacity)  \
+#define array_pop_with_arena(arena, name, type, capacity)  \
   statement(                                           \
     assert((arena) != NULL);                           \
     name##_count = 0;                                  \
@@ -55,12 +55,12 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     name = push_array((arena), type, name##_capacity); \
   )
 
-#define arena_array_push(out_ptr, name)       \
+#define array_add(out_ptr, name)       \
   statement(                                             \
   if ((name##_count) >= (name##_capacity))                                \
     {                                                    \
       message_box(S("Arena Array Overflow"),             \
-      St("arena_array_push capacity of %u exceeded", (name##_capacity)), \
+      St("array_add capacity of %u exceeded", (name##_capacity)), \
                   S(__FILE__),                             \
                 __LINE__);                               \
       assert(false);                                     \
@@ -68,12 +68,12 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     (out_ptr) = &(name)[(name##_count)++];                       \
   )
 
-#define arena_array_pop(out_ptr, name)       \
+#define array_pop(out_ptr, name)       \
   statement(                                 \
     if ((name##_count) == 0)                 \
     {                                        \
       message_box(S("Arena Array Underflow"),\
-        St("arena_array_pop on empty array"),\
+        St("array_pop on empty array"),\
         S(__FILE__), __LINE__);              \
       assert(false);                         \
     }                                        \

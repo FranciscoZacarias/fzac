@@ -52,7 +52,7 @@ list_todos(String src_directory)
   memory_zero_struct(&todos);
   
   todos.arena = arena_alloc();
-  arena_array_init(todos.arena, todos.files, LT_File, LT_MAX_FILES);
+  array_pop_with_arena(todos.arena, todos.files, LT_File, LT_MAX_FILES);
   String_List files = file_get_files_in_path(todos.arena, src_directory, true);
 
   for (String_Node *next = files.first; next != NULL; next = next->next)
@@ -79,11 +79,11 @@ list_todos(String src_directory)
     }
 
     LT_File *lt_file;
-    arena_array_push(lt_file, todos.files);
+    array_add(lt_file, todos.files);
     memory_zero_struct(lt_file);
     
     lt_file->name = string_copy(todos.arena, file_being_lexed);
-    arena_array_init(todos.arena, lt_file->todos, LT_Todo, LT_MAX_TODOS);
+    array_pop_with_arena(todos.arena, lt_file->todos, LT_Todo, LT_MAX_TODOS);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, 0, Emit_Line_Comments|Emit_Block_Comments);
