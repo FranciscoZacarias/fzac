@@ -137,7 +137,7 @@ cgen_run(String source_directory)
     String file_being_lexed = next->value;
     if (!is_file(file_being_lexed)) continue;
 
-    if (string_contains(file_being_lexed, S("\\Extern\\"))  ||
+    if (string_contains(file_being_lexed, S("\\extern\\"))  ||
         string_contains(file_being_lexed, S("\\.git\\"))    ||
         string_contains(file_being_lexed, S("\\.svn\\"))    ||
         string_contains(file_being_lexed, S("\\.idea\\"))   ||

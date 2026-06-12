@@ -21,7 +21,7 @@
 #endif
 
 #define RADDBG_MARKUP_IMPLEMENTATION
-#include "Extern\raddbg_markup.h"
+#include "extern\raddbg_markup.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -142,7 +142,7 @@ entry_point(Command_Line *command_line)
 # Structure
 - `base\`: Core library.
 - `modules\`: Opt-In modules provided by the library.
-- `Extern\`: Opt-in external code imported into this library.
+- `extern\`: Opt-in external code imported into this library.
 
 > `Opt-in` means that it has to be explicitly included by the user
 
