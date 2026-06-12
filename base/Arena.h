@@ -47,7 +47,7 @@ function Scratch arena_temp_begin(Arena* arena); /* Saves the current position f
 function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position saved in arena_temp_begin */
 
 // Helper to push data into an arena backed array
-#define array_pop_with_arena(arena, name, type, capacity)  \
+#define array_init_with_arena(arena, name, type, capacity)  \
   statement(                                           \
     assert((arena) != NULL);                           \
     name##_count = 0;                                  \
