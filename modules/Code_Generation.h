@@ -385,7 +385,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
     }
     if (token->kind != Token_Open_Brace)
     {
-      _cgen_error(Sf(scratch.arena, "Expected '{' to begin table row, got: "S_FMT"\n", S_ARG(token->value)));
+      _cgen_error(Sf(scratch.arena, "Cgen file: "S_FMT" :: line:%d\nExpected '{' to begin table row, got: "S_FMT"\n", S_ARG(file->name), lexer->current_line_number, S_ARG(token->value)));
     }
     lexer_eat_token(lexer);
     token = lexer_peek_token(lexer);

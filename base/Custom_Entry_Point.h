@@ -30,8 +30,6 @@
     DefaultMetaprogram.files_capacity = 64;
   
     // Metaprogram optional flags
-    // @TODO(fz): Move to default_metaprogram
-  	
     // Default Metaprogram
     b32 run_default_metaprogram = true;
     metaprogram_entry_point(&cmd_line, S("../src"), &run_default_metaprogram);

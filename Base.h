@@ -1,6 +1,8 @@
 #ifndef BASE_H
 #define BASE_H
 
+// @TODO(fz): We probably want to rename all if guards in the library and prefix them with FZAC_
+
 #pragma warning(disable: 4201) // Nonstandard extension used: nameless struct/union
 #pragma warning(disable: 4700) // Uninitalized local variable used
 #pragma warning(disable: 4094) // Untagged structs

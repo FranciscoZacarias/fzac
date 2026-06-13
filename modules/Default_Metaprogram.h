@@ -125,9 +125,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       for (u64 char_index = 0; char_index < file_content.count; char_index += 1)
       {
         u8 current_char = file_content.cstring[char_index];
-        u8 next_char    = (char_index + 1 < file_content.count)
-                            ? file_content.cstring[char_index + 1]
-                            : 0;
+        u8 next_char    = (char_index + 1 < file_content.count) ? file_content.cstring[char_index + 1] : 0;
 
         if (inside_block_comment)
         {
