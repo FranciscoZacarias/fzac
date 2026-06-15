@@ -192,34 +192,30 @@ print_list_todos(List_Todos *todos)
   for (u32 i = 0; i < todos->files_count; i += 1)
   {
     LT_File *file = &todos->files[i];
+    if (file->todos_count == 0) 
+    {
+      continue;
+    }
     total_todos += file->todos_count;
+
+    string_builder_pushf(&builder, "[FILE: %s] (%d)\n", file->name.cstring, file->todos_count);
 
     for (u32 t = 0; t < file->todos_count; t += 1)
     {
       LT_Todo *todo = &file->todos[t];
-
-      string_builder_pushf(&builder, "(%s) ", todo->author.cstring);
-      string_builder_pushf(&builder, "%s: %d - ", file->name.cstring, todo->line);
-
+      const char *label = "";
       switch (todo->kind)
       {
-        case List_Todo_Kind_TODO: { string_builder_push(&builder, "TODO"); } break;
-        case List_Todo_Kind_BUG:  { string_builder_push(&builder, "BUG"); } break;
-        case List_Todo_Kind_None:
-        default:
-        {
-          string_builder_push(&builder, "NONE/UNHANDLED");
-        }
+        case List_Todo_Kind_TODO: label = "TODO"; break;
+        case List_Todo_Kind_BUG:  label = "BUG"; break;
+        default:                  label = "NONE"; break;
       }
-
-      string_builder_push(&builder, " :: ");
-      string_builder_push_string(&builder, todo->comment);
-      string_builder_push(&builder, "\n");
+      string_builder_pushf(&builder, "line: %5d | %-2s | %-5s | %.*s\n", todo->line, todo->author.cstring, label, (int)todo->comment.count, todo->comment.cstring);
     }
+    string_builder_push(&builder, "\n");
   }
 
-  string_builder_pushf(&builder, "\n%d todos.", total_todos);
-
+  string_builder_pushf(&builder, "TOTAL TODOS: %d\n", total_todos);
   Scratch scratch = scratch_begin(0,0);
   {
     String todos_string = string_builder_to_string(scratch.arena, &builder);
