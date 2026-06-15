@@ -3,6 +3,7 @@
 
 #include "List_Todos.h"
 
+#define METAPROGRAM_MAX_EXCLUDED_FILES 64
 #define METAPROGRAM_MAX_FILES 64
 #define METAPROGRAM_MAX_FUNTIONS 256
 #define METAPROGRAM_MAX_STRUCTS 128
@@ -62,9 +63,27 @@ struct Default_Metaprogram
   DM_File *files;
   u32 files_count;
   u32 files_capacity;
+
+  String *excluded_files;
+  u32 excluded_files_count;
+  u32 excluded_files_capacity;
 };
 
 function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory);
+function void default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name);
+
+function void 
+default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name)
+{
+  if (dm->excluded_files == NULL)
+  {
+    array_init_with_arena(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
+  }
+
+  String *out;
+  array_add(out, dm->excluded_files);
+  *out = string_copy(dm->arena, file_name);
+}
 
 function void
 default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory)
@@ -105,6 +124,20 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
     if (string_contains(file_being_lexed, S("global_headers.h")))
+    {
+      continue;
+    }
+
+    b32 continue_flag = false;;
+    for (u32 i = 0; i < dm->excluded_files_count; i += 1)
+    {
+      if (string_contains(file_being_lexed, dm->excluded_files[i]))
+      {
+        continue_flag = true;
+        break;
+      }
+    }
+    if (continue_flag)
     {
       continue;
     }
