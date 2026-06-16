@@ -1,6 +1,59 @@
 #ifndef CODE_GENERATION_H
 #define CODE_GENERATION_H
 
+/*
+  How to:
+
+  Create a table with any number of cols and rows with the following syntax:
+
+  ```cgen
+  @Table <Any_Table_Name> (col0 col1 col2 col3 col4 ...)
+  {
+    { col0_val col1_val col2_val col3_val col4_val ... }
+    { col0_val col1_val col2_val col3_val col4_val ... }
+    ...
+  }
+  ```
+
+  Generate code from each table
+
+  ````cgen
+  @Generator(<file_name>)
+  {
+    `This will generate an arbitrary string`
+
+    @foreach(<Any_Table_Name>) ` This line will be generated per row of <Any_Table_Name>. You can reference cells by their column like $(col0) which will give you the col0 value for this current row`
+  }
+  ```
+
+  Built in variables
+
+  @index
+  You can use $(@index) to get the index of the foreach (row number)
+
+  @datetime_now
+  You can use $(@datetime_now) to get a string with the current date and time
+
+  Built in functions
+
+  When referencing any row/cell inside a @foreach with $(col_name), you can call some functions on it.
+  Let's say $(col0) referes to a cell that has the string "code Generation".
+  And let's say we have this string in our code generator: `This is the value of $(col0)`
+  This will expand to "This is the value of code Generation"
+  You can call the following functions:
+
+  - to_upper:
+  `This is the value of $(col0.to_upper())` -> "This is the value of CODE GENERATION"
+  - to_lower:
+  `This is the value of $(col0.to_lower())` -> "This is the value of code generation"
+  - capitalize:
+  `This is the value of $(col0.capitalize())` -> "This is the value of Code Generation"
+  - to_snake_case
+  `This is the value of $(col0.to_snake_case())` -> "This is the value of code_generation"
+  - to_pascal_snake_case
+  `This is the value of $(col0.to_pascal_snake_case())` -> "This is the value of Code_Generation"
+*/
+
 #include "../Base.h"
 
 #include "String_Builder.h"
@@ -19,18 +72,44 @@
   raddbg_break(); \
   assert(0)
 
-typedef struct CGen_File CGen_File;
-typedef struct CGen_String_Argument CGen_String_Argument;
-typedef struct CGen_Table CGen_Table;
-typedef struct CGen_Table_Row CGen_Table_Row;
-typedef struct CGen_Command CGen_Command;
-typedef struct CGen_Generator CGen_Generator;
+// Functions that you can call on a string variable, when you refer to it in a generator. 
+// For example, you have a column called name and you would refer to it as $(name) which would resolve to, let's say, francisco.
+// For the function capitalize(), you would call it like $(name.capitalize()), which would then resolve to Francisco
+typedef enum
+{
+  CGen_Builtin_Function_None,
+  CGen_Builtin_Function_Capitalize,           // Capitalize
+  CGen_Builtin_Function_To_Lower,             // to_lower
+  CGen_Builtin_Function_To_Upper,             // TO_UPPER
+  CGen_Builtin_Function_To_Snake_Case,        // snake_case
+  CGen_Builtin_Function_To_Pascal_Snake_Case, // Pascal_Snake_Case
+} CGen_Builtin_Function;
 
+typedef enum
+{
+  CGen_Command_Kind_None = 0,
+  CGen_Command_Kind_String, /* Just pasts the string */
+  CGen_Command_Kind_Foreach, /* Runs the string for each row in the table */
+} CGen_Command_Kind;
+
+// @NOTE(fz): Keep synced with CGen_Builtin_Function !!
+global const char* cgen_builtin_function_names[] = {
+  "capitalize",
+  "to_lower",
+  "to_upper",
+  "to_snake_case",
+  "to_pascal_snake_case"
+};
+
+
+typedef struct CGen_String_Argument CGen_String_Argument;
 struct CGen_String_Argument
 {
   String name; /* Name of the argument. E.g. for $(location), name is "location" */
   u32 start_index; /* Start index of this argument. E.g. for $(location), start_index is the index of '$' */
   u32 length; /* Length of the whole argument. E.g. for $(location), length is the size of the string "$(location)" */
+
+  CGen_Builtin_Function builtin_function;
 };
 
 typedef struct CGen_String CGen_String; /* Used to define a string that has arguments to be replaced. */
@@ -43,6 +122,7 @@ struct CGen_String
   u64 arguments_capacity;
 };
 
+typedef struct CGen_Table_Row CGen_Table_Row;
 struct CGen_Table_Row
 {
   String *entries;
@@ -50,6 +130,7 @@ struct CGen_Table_Row
   u64 entries_capacity;
 };
 
+typedef struct CGen_Table CGen_Table;
 struct CGen_Table
 {
   String name;
@@ -63,13 +144,7 @@ struct CGen_Table
   u64 rows_capacity;
 };
 
-typedef enum
-{
-  CGen_Command_Kind_None = 0,
-  CGen_Command_Kind_String, /* Just pasts the string */
-  CGen_Command_Kind_Foreach, /* Runs the string for each row in the table */
-} CGen_Command_Kind;
-
+typedef struct CGen_Command CGen_Command;
 struct CGen_Command
 {
   CGen_Command_Kind kind;
@@ -77,6 +152,7 @@ struct CGen_Command
   CGen_String string;
 };
 
+typedef struct CGen_Generator CGen_Generator;
 struct CGen_Generator
 {
   CGen_Command *commands;
@@ -86,6 +162,7 @@ struct CGen_Generator
   String custom_file_name;
 };
 
+typedef struct CGen_File CGen_File;
 struct CGen_File
 {
   String name;
@@ -596,15 +673,13 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 function CGen_String
 _cgen_string_from_string(Arena *arena, String str)
 {
-  Scratch scratch = scratch_begin(0,0);
-
-  str = string_replace_backslash_n(scratch.arena, str);
+  Scratch scratch = scratch_begin(0, 0);
 
   CGen_String result;
   memory_zero_struct(&result);
 
+  str = string_replace_backslash_n(scratch.arena, str);
   result.data = string_copy(arena, str);
-
   array_init_with_arena(arena, result.arguments, CGen_String_Argument, CGEN_STRING_ARGUMENTS_CAPACITY);
 
   for (u32 i = 0; i < str.count; i += 1)
@@ -614,37 +689,97 @@ _cgen_string_from_string(Arena *arena, String str)
       u32 start_index = i;
 
       u32 name_start = i + 2;
-      u32 name_end = name_start;
+      u32 name_end   = name_start;
+      u32 arg_end    = 0;
+
       b32 found_close = false;
+
+      String variable_name = {0};
+      String function_name = {0};
+
+      u32 paren_depth = 1;
 
       for (u32 j = name_start; j < str.count; j += 1)
       {
-        if (str.cstring[j] == ')')
+        if (str.cstring[j] == '.')
         {
           name_end = j;
-          found_close = true;
+
+          variable_name.cstring = str.cstring + name_start;
+          variable_name.count   = j - name_start;
+
+          u32 function_start = j + 1;
+          u32 function_end   = function_start;
+
+          while (function_end < str.count && str.cstring[function_end] != '(' && str.cstring[function_end] != ')')
+          {
+            function_end += 1;
+          }
+
+          function_name.cstring = str.cstring + function_start;
+          function_name.count   = function_end - function_start;
+
+          j = function_end - 1;
+          continue;
+        }
+
+        if (str.cstring[j] == '(')
+        {
+          paren_depth += 1;
+        }
+        else if (str.cstring[j] == ')')
+        {
+          paren_depth -= 1;
+
+          if (paren_depth == 0)
+          {
+            if (variable_name.count == 0)
+            {
+              variable_name.cstring = str.cstring + name_start;
+              variable_name.count   = j - name_start;
+            }
+
+            arg_end = j;
+
+            if (name_end == name_start)
+            {
+              name_end = j;
+            }
+
+            found_close = true;
+            break;
+          }
+        }
+      }
+
+      if (!found_close)
+      {
+        _cgen_error(S("Failed to find closing ')' for argument."));
+      }
+
+      u8 *name_str = push_array(arena, u8, variable_name.count + 1);
+      memory_copy(name_str, variable_name.cstring, variable_name.count);
+      name_str[variable_name.count] = 0;
+
+      CGen_String_Argument *arg;
+      array_add(arg, result.arguments);
+
+      arg->name.count   = variable_name.count;
+      arg->name.cstring = name_str;
+      arg->builtin_function = CGen_Builtin_Function_None;
+
+      for (u32 builtin_func = 0; builtin_func < array_count(cgen_builtin_function_names); builtin_func += 1)
+      {
+        if (string_equals(function_name, string_from_cstring((u8*)cgen_builtin_function_names[builtin_func]), true))
+        {
+          arg->builtin_function = (CGen_Builtin_Function)(builtin_func + 1);
           break;
         }
       }
 
-      if (found_close)
-      {
-        u32 name_length = name_end - name_start;
-
-        u8 *name_str = push_array(arena, u8, name_length + 1);
-        memory_copy(name_str, str.cstring + name_start, name_length);
-        name_str[name_length] = 0;
-
-        CGen_String_Argument *arg;
-        array_add(arg, result.arguments);
-
-        arg->name.count = name_length;
-        arg->name.cstring = name_str;
-        arg->start_index = start_index;
-        arg->length = name_end - start_index + 1; // include ')'
-
-        i = name_end;
-      }
+      arg->start_index = start_index;
+      arg->length      = arg_end - start_index + 1;
+      i = arg_end;
     }
   }
 
@@ -656,43 +791,143 @@ function String
 _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index)
 {
   Scratch scratch = scratch_begin(&arena, 1);
-  
+
   if (row_index >= table->rows_count)
   {
-    _cgen_error(Sf(scratch.arena, "Row index %llu out of bounds for table '"S_FMT"'\n", row_index, S_ARG(table->name)));
+    _cgen_error(Sf(scratch.arena, "Row index %llu out of bounds for table '" S_FMT "'", row_index, S_ARG(table->name)));
   }
-  
+
   String result = string_copy(arena, cgen_str.data);
+
   CGen_Table_Row *row = &table->rows[row_index];
-  
+
   for (s64 i = cgen_str.arguments_count - 1; i >= 0; i -= 1)
   {
     CGen_String_Argument *arg = &cgen_str.arguments[i];
-    
-    s64 column_index = -1;
-    for (u64 j = 0; j < table->columns_count; j += 1)
+    String replacement = {0};
+
+    if (string_equals(arg->name, S("@index"), true))
     {
-      if (string_equals(table->columns[j], arg->name, true))
+      replacement = Sf(arena, "%llu", row_index);
+    }
+    else if (string_equals(arg->name, S("@datetime_now"), true))
+    {
+      replacement = datetime_to_string(arena, datetime_now(), false);
+    }
+    else
+    {
+      s64 column_index = -1;
+
+      for (u64 j = 0; j < table->columns_count; j += 1)
       {
-        column_index = j;
-        break;
+        if (string_equals(table->columns[j], arg->name, true))
+        {
+          column_index = (s64)j;
+          break;
+        }
       }
+
+      if (column_index == -1)
+      {
+        _cgen_error(Sf(scratch.arena, "Column '" S_FMT "' not found in table '" S_FMT "'", S_ARG(arg->name), S_ARG(table->name)));
+      }
+
+      replacement = string_copy(arena, row->entries[column_index]);
     }
-    
-    if (column_index == -1)
+
+    switch (arg->builtin_function)
     {
-      _cgen_error(Sf(scratch.arena, "Column '"S_FMT"' not found in table '"S_FMT"'\n", S_ARG(arg->name), S_ARG(table->name)));
+      case CGen_Builtin_Function_To_Upper:
+      {
+        for (u32 c = 0; c < replacement.count; c += 1)
+        {
+          if (char_is_alpha_lower(replacement.cstring[c]))
+          {
+            replacement.cstring[c] = char_to_upper(replacement.cstring[c]);
+          }
+        }
+      } break;
+
+      case CGen_Builtin_Function_To_Lower:
+      {
+        for (u32 c = 0; c < replacement.count; c += 1)
+        {
+          if (char_is_alpha_upper(replacement.cstring[c]))
+          {
+            replacement.cstring[c] = char_to_lower(replacement.cstring[c]);
+          }
+        }
+      } break;
+
+      case CGen_Builtin_Function_Capitalize:
+      {
+        if (char_is_alpha_lower(replacement.cstring[0]))
+        {
+          replacement.cstring[0] = char_to_upper(replacement.cstring[0]);
+        }
+      } break;
+
+      case CGen_Builtin_Function_To_Snake_Case:
+      {
+        for (u32 c = 0; c < replacement.count; c += 1)
+        {
+          if (replacement.cstring[c] == ' ')
+          {
+            replacement.cstring[c] = '_';
+          }
+          if (char_is_alpha_upper(replacement.cstring[c]))
+          {
+            replacement.cstring[c] = char_to_lower(replacement.cstring[c]);
+          }
+        }
+      } break;
+
+      case CGen_Builtin_Function_To_Pascal_Snake_Case:
+      {
+        b32 capitalize_next = true;
+
+        for (u32 c = 0; c < replacement.count; c += 1)
+        {
+          if (replacement.cstring[c] == ' ')
+          {
+            replacement.cstring[c] = '_';
+            capitalize_next = true;
+            continue;
+          }
+
+          if (replacement.cstring[c] == '_')
+          {
+            capitalize_next = true;
+            continue;
+          }
+
+          if (capitalize_next)
+          {
+            if (char_is_alpha_lower(replacement.cstring[c]))
+            {
+              replacement.cstring[c] = char_to_upper(replacement.cstring[c]);
+            }
+            capitalize_next = false;
+          }
+          else
+          {
+            if (char_is_alpha_upper(replacement.cstring[c]))
+            {
+              replacement.cstring[c] = char_to_lower(replacement.cstring[c]);
+            }
+          }
+        }
+      } break;
+
+      case CGen_Builtin_Function_None: case_fallthrough
+      default:
+      {
+      } break;
     }
-    
-    if (column_index >= (s64)row->entries_count)
-    {
-      _cgen_error(Sf(scratch.arena, "Column index %lld out of bounds for row %llu in table '"S_FMT"'\n", column_index, row_index, S_ARG(table->name)));
-    }
-    
-    String replacement = row->entries[column_index];
+
     result = string_replace_range(arena, result, arg->start_index, arg->length, replacement);
   }
-  
+
   scratch_end(&scratch);
   return result;
 }
