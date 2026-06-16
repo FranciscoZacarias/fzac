@@ -1,15 +1,7 @@
-typedef struct UI_Defer_Windoow_State UI_Defer_Windoow_State;
-struct UI_Defer_Windoow_State
-{
-  u32 index;
-  UI_Signal signal;
-};
-#define defer_window(begin, end) for(UI_Defer_Windoow_State _dw = {0, (begin)}; !_dw.index; _dw.index = 1, (end))
-#define ui_window_wants_to_close() ui_close((_dw.signal))
-#define ui_window_node() (_dw.signal.node)
+#define ui_window(text, x, y, width, height) defer_loop(ui_window_begin((text), (x), (y), (width), (height)), ui_window_end())
 
 function UI_Signal ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height);
-function void ui_window_end();
+function void      ui_window_end();
 function UI_Signal ui_button(String text);
 function UI_Signal ui_text(String text);
 function UI_Signal ui_textf(String fmt, ...);
@@ -1346,11 +1338,6 @@ ui_draw_debug_window()
 
   ui_window(S("UI Debug"), UIContext.window_width-255, 5, 250, 400)
   {
-    if (ui_window_wants_to_close())
-    {
-      UIContext.debug.draw_debug_window = false;
-    }
-
     ui_text(S("Debug --- "));
     ui_checkbox(S("Draw clip"), &UIContext.debug.draw_clip);
     ui_checkbox(S("Draw cursor"), &UIContext.debug.draw_cursor);

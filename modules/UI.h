@@ -388,9 +388,6 @@ read_only global UI_Node UINodeNilSentinel =
   .parent   = &UINodeNilSentinel,
 };
 
-// Widgets
-#define ui_window(text, x, y, width, height) defer_window(ui_window_begin((text),(x), (y), (width), (height)), ui_window_end())
-
 function void            ui_init(UI_Font font);
 function void            ui_begin(u32 window_width, u32 window_height, u32 mouse_x, u32 mouse_y, u32 mouse_delta_x, u32 mouse_delta_y, f32 delta_time, u64 frame_count);
 function void            ui_end();
