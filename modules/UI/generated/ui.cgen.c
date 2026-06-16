@@ -128,13 +128,13 @@ function b32  ui_stack_color_theme_style_is_at_bottom() { return ui_stack_is_at_
 function void ui_stack_color_theme_style_assert_top_at(u32 at) { ui_stack_assert_top_at(color_theme_style, at); }
 #define ui_color_theme_style(val) defer_loop(ui_stack_color_theme_style_push(val), ui_stack_color_theme_style_pop())
 
-function void ui_stack_display_image_index_init(s32 bot_val) { ui_stack_init(display_image_index, bot_val); }
-function void ui_stack_display_image_index_push(s32 val) { ui_stack_push(display_image_index, val); }
-function s32 ui_stack_display_image_index_pop() { return ui_stack_pop(display_image_index); }
-function s32 ui_stack_display_image_index_top() { return ui_stack_top(display_image_index); }
-function b32  ui_stack_display_image_index_is_at_bottom() { return ui_stack_is_at_bottom(display_image_index); }
-function void ui_stack_display_image_index_assert_top_at(u32 at) { ui_stack_assert_top_at(display_image_index, at); }
-#define ui_display_image_index(val) defer_loop(ui_stack_display_image_index_push(val), ui_stack_display_image_index_pop())
+function void ui_stack_texture_init(UI_Texture bot_val) { ui_stack_init(texture, bot_val); }
+function void ui_stack_texture_push(UI_Texture val) { ui_stack_push(texture, val); }
+function UI_Texture ui_stack_texture_pop() { return ui_stack_pop(texture); }
+function UI_Texture ui_stack_texture_top() { return ui_stack_top(texture); }
+function b32  ui_stack_texture_is_at_bottom() { return ui_stack_is_at_bottom(texture); }
+function void ui_stack_texture_assert_top_at(u32 at) { ui_stack_assert_top_at(texture, at); }
+#define ui_texture(val) defer_loop(ui_stack_texture_push(val), ui_stack_texture_pop())
 
 function void ui_stack_text_color_init(V4f32 bot_val) { ui_stack_init(text_color, bot_val); }
 function void ui_stack_text_color_push(V4f32 val) { ui_stack_push(text_color, val); }
@@ -184,11 +184,11 @@ function b32  ui_stack_border_thickness_is_at_bottom() { return ui_stack_is_at_b
 function void ui_stack_border_thickness_assert_top_at(u32 at) { ui_stack_assert_top_at(border_thickness, at); }
 #define ui_border_thickness(val) defer_loop(ui_stack_border_thickness_push(val), ui_stack_border_thickness_pop())
 
-function void ui_stack_corner_roundness_factor_init(f32 bot_val) { ui_stack_init(corner_roundness_factor, bot_val); }
-function void ui_stack_corner_roundness_factor_push(f32 val) { ui_stack_push(corner_roundness_factor, val); }
-function f32 ui_stack_corner_roundness_factor_pop() { return ui_stack_pop(corner_roundness_factor); }
-function f32 ui_stack_corner_roundness_factor_top() { return ui_stack_top(corner_roundness_factor); }
-function b32  ui_stack_corner_roundness_factor_is_at_bottom() { return ui_stack_is_at_bottom(corner_roundness_factor); }
-function void ui_stack_corner_roundness_factor_assert_top_at(u32 at) { ui_stack_assert_top_at(corner_roundness_factor, at); }
-#define ui_corner_roundness_factor(val) defer_loop(ui_stack_corner_roundness_factor_push(val), ui_stack_corner_roundness_factor_pop())
+function void ui_stack_corner_roundness_px_init(s32 bot_val) { ui_stack_init(corner_roundness_px, bot_val); }
+function void ui_stack_corner_roundness_px_push(s32 val) { ui_stack_push(corner_roundness_px, val); }
+function s32 ui_stack_corner_roundness_px_pop() { return ui_stack_pop(corner_roundness_px); }
+function s32 ui_stack_corner_roundness_px_top() { return ui_stack_top(corner_roundness_px); }
+function b32  ui_stack_corner_roundness_px_is_at_bottom() { return ui_stack_is_at_bottom(corner_roundness_px); }
+function void ui_stack_corner_roundness_px_assert_top_at(u32 at) { ui_stack_assert_top_at(corner_roundness_px, at); }
+#define ui_corner_roundness_px(val) defer_loop(ui_stack_corner_roundness_px_push(val), ui_stack_corner_roundness_px_pop())
 

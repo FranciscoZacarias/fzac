@@ -1,5 +1,62 @@
+@Table UI_Node_Flags_Table (name documentation)
+{
+  { UI_Node_Flags_Mouse_Clickable  `Makes this node emit a signal when clicked`                                                                       }
+  { UI_Node_Flags_Draggable_Panel  `Enables this node to be dragged (and all of their children) by any children or itself, that are draggbale.`       }
+  { UI_Node_Flags_Draggable        `Makes this node emit a signal when dragged`                                                                       }
+  { UI_Node_Flags_Hoverable        `Makes this node emit a signal when hovered`                                                                       }
+  { UI_Node_Flags_Text_Display     `The UI_Node will display the text on the cursor's position and skip the cursor relative to UI_Alignment_Kind`     }
+  { UI_Node_Flags_Text_Center_X    `If text is displayed, centers the text horizontally in the node `                                                 }
+  { UI_Node_Flags_Text_Center_Y    `If text is displayed, centers the text vertically in the node `                                                   }
+  { UI_Node_Flags_Text_Ignore_Clip `Drawing text will simply be aligned by the sizes of it's node `                                                   }
+  { UI_Node_Flags_Resizable        `Node can be resized`                                                                                              }
+  { UI_Node_Flags_Float_On_Parent  `Overrides parent's alignemnt rules to float on top of parent. Use top left to set the position within the parent` }
+}
 
-@Table Stack_Table (name type default_value max debug_bottom_expected documentation)
+@Table UI_Signal_Flags_Table (name documentation)
+{
+  { UI_Signal_Flags_Left_Pressed    `Emits signal if LMB is down`                 }
+  { UI_Signal_Flags_Middle_Pressed  `Emits build signal if MMB is down`           }
+  { UI_Signal_Flags_Right_Pressed   `Emits signal if RMB is down`                 }
+  { UI_Signal_Flags_Left_Clicked    `Emits signal if LMB is clicked`              }
+  { UI_Signal_Flags_Middle_Clicked  `Emits signal if MMB is clicked`              }
+  { UI_Signal_Flags_Right_Clicked   `Emits signal if RMB is clicked`              }
+  { UI_Signal_Flags_Mouse_Hovered   `Emits signal if cursor is hovering`          }
+  { UI_Signal_Flags_Close           `Emits a signal that the node wants to close` }
+}
+
+@Table UI_Size_Kind_Table (name documentation)
+{
+  { UI_Size_Kind_Relative `Sets the side of the node to be done relative to the parent's available clip space. I.e. If parent has 100 of height and it already had a node put in with 50 height, and we set the next child node to be 50% relative, this child node's height will be 25, as per the 50 height available. ` }
+  { UI_Size_Kind_Fixed    `Sets the side of the node to be fixed (within parent's clip space) `                                                                                                                                                                                                                            }
+  { UI_Size_Kind_Copy_X   `Copies the value of X, mutually exclusive with UI_Size_Kind_Copy_Y`                                                                                                                                                                                                                             }
+  { UI_Size_Kind_Copy_Y   `Copies the value of Y, mutually exclusive with UI_Size_Kind_Copy_X`                                                                                                                                                                                                                             }
+}
+
+@Table UI_Alignment_Kind_Table (name documentation)
+{
+  { UI_Alignment_Kind_Y     `After a node is placed, the cursor is moved vertically by the height of the node`   }
+  { UI_Alignment_Kind_X     `After a node is placed, the cursor is moved horizontally by the width of the node`  }
+  { UI_Alignment_Kind_Float `AFter a node is placed, the cursor is not moved`                                    }
+}
+
+@Table UI_Layout_Kind_Table (name documentation)
+{
+  { UI_Layout_Kind_Row          `Layout with fixed height and 100% relative width` }
+  { UI_Layout_Kind_Row_Fixed    `Row layout with fixed width`                      }
+  { UI_Layout_Kind_Column       `Layout with fixed width and 100% relative height` }
+  { UI_Layout_Kind_Column_Fixed `Column layout with fixed height`                  }
+}
+
+@Table UI_Color_Theme_Style_Table (name documentation)
+{
+  { UI_Color_Theme_No_Background      ``                                            } 
+  { UI_Color_Theme_White              ``                                            } 
+  { UI_Color_Theme_Dark               ``                                            } 
+  { UI_Color_Theme_Interactable       `Borders show interactiveness`                } 
+  { UI_Color_Theme_Interactable_Solid `Backgrounda and border show interactiveness` } 
+}
+
+@Table UI_Stack_Table (name type default_value max debug_bottom_expected documentation)
 {
   { parent                 `UI_Node*`            `&UINodeNilSentinel`               8 1 `Parent node of current node`                                                               }
   { top_left                V2s32                `v2s32(0, 0)`                      8 0 `Top left position relative to parent's cursor`                                             }
@@ -19,7 +76,7 @@
 
   { color_theme_style       UI_Color_Theme_Style  UI_Color_Theme_Light              8 0 `Node's colors from UI_Node_COlor_Theme`                                                    }
 
-  { display_image_index     s32                  `-1`                               8 0 `Display this image on the node`                                                            }
+  { texture                 UI_Texture           `(UI_Texture){-1}`                 8 0 `Display this image on the node`                                                            }
 
   { text_color              V4f32                `COLOR_CLEAR`                      8 0 `` }
 
@@ -30,16 +87,76 @@
   { border_transparency     f32                  `1.0f`                             8 0 `` }
   { border_thickness        s32                  `1`                                8 0 `Border thickness`                                                                          }
   
-  { corner_roundness_factor f32                  `1.0f`                             8 0 `How much of this color theme's border roundness we're gonna apply to this node.`           }
+  { corner_roundness_px     s32                  `0.0f`                             8 0 `How many pixels will the border be rounded around.`                                        }
 }
 
 @Generator(ui.cgen.h)
 {
   `#ifndef UI_GENERATED_H\n#define UI_GENERATED_H\n\n`
 
+  // Generate enums
+  `typedef enum\n`
+  `{\n`
+  `  UI_Node_Flags_None = 0,\n`
+  @foreach(UI_Node_Flags_Table) `  $(name) = (1 << $(@index)), /* $(documentation) */\n`
+  `} UI_Node_Flags;\n`
+
+  `\n`
+
+  `typedef enum\n`
+  `{\n`
+  `  UI_Signal_Flags_None = 0,\n`
+  @foreach(UI_Signal_Flags_Table) `  $(name) = (1 << $(@index)), /* $(documentation) */\n`
+  `} UI_Signal_Flags;\n`
+
+  `\n`
+
+  `typedef enum\n`
+  `{\n`
+  `  UI_Size_Kind_None = 0,\n`
+  @foreach(UI_Size_Kind_Table) `  $(name), /* $(documentation) */\n`
+  `} UI_Size_Kind;\n`
+  `const char *ui_size_kind_to_string[] = {`
+   @foreach(UI_Size_Kind_Table) `"$(name)",`
+   `};\n`
+   `#define ui_size_kind_not_handled(arena, kind) ui_error(Sf(arena, "Unhandled UI_Size_Kind kind: %s", ui_size_kind_to_string[kind]));\n`
+
+   `\n`
+
+  `typedef enum\n`
+  `{\n`
+  `  UI_Alignment_Kind_None = 0,\n`
+  @foreach(UI_Alignment_Kind_Table) `  $(name), /* $(documentation) */\n`
+  `} UI_Alignment_Kind;\n`
+  `const char *ui_alignment_kind_to_string[] = {`
+   @foreach(UI_Alignment_Kind_Table) `"$(name)",`
+   `};\n`
+   `#define ui_alignment_kind_not_handled(arena, kind) ui_error(Sf(arena, "Unhandled UI_Alignment_Kind kind: %s", ui_alignment_kind_to_string[kind]));\n`
+
+  `\n`
+
+  `typedef enum\n`
+  `{\n`
+  `  UI_Layout_Kind_None = 0,\n`
+  @foreach(UI_Layout_Kind_Table) `  $(name), /* $(documentation) */\n`
+  `} UI_Layout_Kind;\n`
+  `const char *ui_layout_kind_to_string[] = {`
+   @foreach(UI_Layout_Kind_Table) `"$(name)",`
+   `};\n`
+   `#define ui_layout_kind_not_handled(arena, kind) ui_error(Sf(arena, "Unhandled UI_Layout_Kind kind: %s", ui_layout_kind_to_string[kind]));\n`
+   
+   `\n`
+
+  `typedef enum\n`
+  `{\n`
+  `  UI_Color_Theme_Light = 0,\n`
+  @foreach(UI_Color_Theme_Style_Table) `  $(name), /* $(documentation) */\n`
+  `} UI_Color_Theme_Style;\n`
+
+  // Generate stacks
   `\n// Initializes all stack structures\n`
   `#define ui_init_stacks(ctx) \\n`
-  @foreach(Stack_Table) `  ctx.$(name)_stack.top_index = 0; ctx.$(name)_stack.bottom_val = $(default_value); \\n`
+  @foreach(UI_Stack_Table) `  ctx.$(name)_stack.top_index = 0; ctx.$(name)_stack.bottom_val = $(default_value); \\n`
 
   `\n`
 
@@ -47,14 +164,14 @@
   `#define ui_config_stacks \\n`
   `  struct \\n`
   `  { \\n`
-	@foreach(Stack_Table) `    struct UI_$(name.capitalize())_stack { $(type) data[$(max)]; u32 top_index; $(type) bottom_val; } $(name)_stack; /* $(documentation) */ \\n`
+	@foreach(UI_Stack_Table) `    struct UI_$(name.capitalize())_stack { $(type) data[$(max)]; u32 top_index; $(type) bottom_val; } $(name)_stack; /* $(documentation) */ \\n`
   `  }\n`
 
   `\n`
 
   `// Debug: Serves to check if all stacks are at the bottom by the end of the frame\n`
   `#define ui_debug_stacks_at_bottom \\n`
-  @foreach(Stack_Table) `  ui_stack_assert_top_at($(name),$(debug_bottom_expected)); \\n`
+  @foreach(UI_Stack_Table) `  ui_stack_assert_top_at($(name),$(debug_bottom_expected)); \\n`
 
   `\n`
 
@@ -63,7 +180,7 @@
 
 @Generator(ui.cgen.c)
 {
-  @foreach(Stack_Table) `function void ui_stack_$(name)_init($(type) bot_val) { ui_stack_init($(name), bot_val); }
+  @foreach(UI_Stack_Table) `function void ui_stack_$(name)_init($(type) bot_val) { ui_stack_init($(name), bot_val); }
 function void ui_stack_$(name)_push($(type) val) { ui_stack_push($(name), val); }
 function $(type) ui_stack_$(name)_pop() { return ui_stack_pop($(name)); }
 function $(type) ui_stack_$(name)_top() { return ui_stack_top($(name)); }

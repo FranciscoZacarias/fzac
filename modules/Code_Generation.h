@@ -655,6 +655,11 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
       lexer_eat_token(lexer);
       token = lexer_peek_token(lexer);
     }
+    else if (token->kind == Token_Comment_Line)
+    {
+      lexer_eat_token(lexer);
+      token = lexer_peek_token(lexer);
+    }
     else
     {
       _cgen_error(Sf(scratch.arena, "Expected 'foreach' or backtick string in generator body, got: "S_FMT"\n", S_ARG(token->value)));
