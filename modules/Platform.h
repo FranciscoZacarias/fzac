@@ -22,7 +22,9 @@ typedef enum Cursor_Type
 } Cursor_Type;
 
 function V2f32 cursor_get_position(Window *window);
-function void  cursor_lock(Window *window, b32 lock);
+function void  cursor_lock(Window *window);
+function void  cursor_unlock();
+function b32   cursor_is_locked();
 function void  cursor_hide(b32 hide);
 function void  cursor_set_position(Window *window, s32 x, s32 y);
 function void  cursor_set_icon(Cursor_Type type);

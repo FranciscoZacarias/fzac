@@ -182,6 +182,7 @@ struct Mouse_State
 {
   V2s32 screen_space;
   V2s32 delta;
+  V2s32 raw_delta;
   s32 wheel_delta; 
   b8 buttons[Mouse_Button_Count];
 };
@@ -193,6 +194,7 @@ struct Input_State
   Keyboard_State keyboard_previous;
   Mouse_State    mouse_current;
   Mouse_State    mouse_previous;
+  b32 is_cursor_locked;
 };
 
 function void _input_init(); /* Initializes input state (clears previous + current states) */
@@ -277,11 +279,11 @@ struct Window
 {
   String title;
 
-  u32 width;
-  u32 height;
+  s32 width;
+  s32 height;
 
-  u32 x;
-  u32 y;
+  s32 x;
+  s32 y;
 
   b8 is_focused;
   b8 should_close;
@@ -311,13 +313,13 @@ struct Window
 # error Operating System not supported
 #endif
 
-function u32   get_window_width();
-function u32   get_window_height();
-function V2u32 get_window_center();
-function V2u32 get_window_dimensions();
-function u32   get_window_x();
-function u32   get_window_y();
-function V2u32 get_window_position();
+function s32   get_window_width();
+function s32   get_window_height();
+function V2s32 get_window_center();
+function V2s32 get_window_dimensions();
+function s32   get_window_x();
+function s32   get_window_y();
+function V2s32 get_window_position();
 function b32   is_window_focused();
 
 #endif // WINDOW_CREATION

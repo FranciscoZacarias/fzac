@@ -3,17 +3,36 @@
 
 #include "Platform.h"
 #include "Window.h"
+#include "Files.h"
 
 #include "OpenGL/OpenGL_Constants.h"
 #include "OpenGL/generated/Opengl.cgen.h"
 
+typedef struct Opengl_Shader_Program Opengl_Shader_Program;
+struct Opengl_Shader_Program
+{
+  String label;
+  GLenum type;
+  GLuint handle;
+};
+
+typedef struct Opengl_Compile_Shader_Result Opengl_Compile_Shader_Result;
+struct Opengl_Compile_Shader_Result
+{
+  Opengl_Shader_Program shader_program;
+  b32 result;
+  String error_log;
+};
+
 // @Section: Opengl entry point
-function b32   opengl_init(); /* Initializes opengl context */
+function b32   opengl_init(b32 set_vsync); /* Initializes opengl context */
 function void  opengl_end();  /* Deletes opengl context */
+function Opengl_Compile_Shader_Result opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type);
+function Opengl_Compile_Shader_Result opengl_compile_shader_from_file(Arena *arena, String label, String file_path, GLenum shader_type);
 #define opengl_check_errors() _opengl_check_error(S(__FILE__), __LINE__)
 
 // @Section: Settings
-function void window_set_vsync(b32 state); /* Enables vsync */
+function void opengl_set_vsync(b32 state); /* Enables vsync */
 
 // @Section: Opengl helpers
 function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
@@ -22,6 +41,64 @@ function void*          _load_gl_function(const char *name); /* Helper to load a
 
 // @Section: Implementation
 #include "OpenGL/generated/Opengl.cgen.c"
+
+function Opengl_Compile_Shader_Result 
+opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type)
+{
+  Opengl_Compile_Shader_Result result = {0}; 
+  if (!source.cstring || source.count == 0)
+  {
+    result.result = false;
+    result.error_log = S("Unable to compile shader. Shader source is empty.");
+    return result;
+  }
+
+  const char *source_cstr = (const char *)source.cstring;
+  u32 program = glCreateShaderProgramv(shader_type, 1, &source_cstr);
+  opengl_check_errors();
+
+  GLint link_status = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+
+  if (!link_status)
+  {
+    GLint log_length = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+    GLchar *log = push_array(arena, GLchar, log_length + 1);
+    glGetProgramInfoLog(program, log_length, 0, log);
+    
+    result.result = false;
+    result.error_log = Sf(arena, "Shader "S_FMT" compile/link failed:\n%s", S_ARG(label), log);
+  }
+  else
+  {
+    result.result = true;
+    result.shader_program.label  = string_copy(arena, label);
+    result.shader_program.type   = shader_type;
+    result.shader_program.handle = program;
+  }
+
+  return result;
+}
+
+function Opengl_Compile_Shader_Result 
+opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GLenum shader_type)
+{
+  Opengl_Compile_Shader_Result result = {0};
+  Scratch scratch = scratch_begin(0,0);
+  String shader_source = file_load(scratch.arena, file_path);
+  if (shader_source.count > 0)
+  {
+    result = opengl_compile_shader_from_source(arena, label, shader_source, shader_type);
+  }
+  else
+  {
+    result.result = false;
+    result.error_log = Sf(arena, "Unable to compile shader. Could not to load file path \""S_FMT"\"", S_ARG(file_path));
+  }
+  scratch_end(&scratch);
+  return result;
+}
 
 function void
 _opengl_check_error(String file, u32 line)

@@ -107,45 +107,55 @@ cursor_get_position(Window *window)
   return result;
 }
 
-function void 
-cursor_lock(Window *window, b32 lock)
+function void
+cursor_lock(Window *window)
 {
-  if (lock)
+  if (window->input.is_cursor_locked)
   {
-    RECT rect;
-    GetClientRect(window->hwnd, &rect);
-
-    POINT ul = { rect.left, rect.top };
-    POINT lr = { rect.right, rect.bottom };
-
-    ClientToScreen(window->hwnd, &ul);
-    ClientToScreen(window->hwnd, &lr);
-
-    RECT clip =
-    {
-      ul.x,
-      ul.y,
-      lr.x,
-      lr.y
-    };
-
-    ClipCursor(&clip);
-
-    ShowCursor(FALSE);
-
-    POINT center =
-    {
-      (ul.x + lr.x) / 2,
-      (ul.y + lr.y) / 2
-    };
-
-    SetCursorPos(center.x, center.y);
+    return;
   }
-  else
+
+  RECT rect;
+  GetClientRect(window->hwnd, &rect);
+
+  POINT top_left  = { rect.left,  rect.top };
+  POINT bot_right = { rect.right, rect.bottom };
+
+  ClientToScreen(window->hwnd, &top_left);
+  ClientToScreen(window->hwnd, &bot_right);
+
+  RECT clip =
   {
-    ClipCursor(0);
-    ShowCursor(TRUE);
+    top_left.x,
+    top_left.y,
+    bot_right.x,
+    bot_right.y
+  };
+
+  ClipCursor(&clip);
+
+  window->input.is_cursor_locked = true;
+}
+
+function void
+cursor_unlock()
+{
+  Window *window = &GlobalWindow;
+
+  if (!window->input.is_cursor_locked)
+  {
+    return;
   }
+
+  ClipCursor(NULL);
+
+  window->input.is_cursor_locked = false;
+}
+
+function b32
+cursor_is_locked()
+{
+  return GlobalWindow.input.is_cursor_locked;
 }
 
 function void

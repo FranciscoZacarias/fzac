@@ -86,9 +86,10 @@ function b32   v4f32_equals(V4f32 p, V4f32 q); /* Returns true if two 4D vectors
 // @Section: Matrix3
 struct Matrix3
 {
-  f32 m0, m3, m6,
-  m1, m4, m7,
-  m2, m5, m8;
+  // Column-major: m0..m2 = col0, m3..m5 = col1, m6..m8 = col2
+  f32 m0, m1, m2,  // column 0
+      m3, m4, m5,  // column 1
+      m6, m7, m8;  // column 2
 };
 #define matrix3(diagonal)   \
   (Matrix3){                \
@@ -109,10 +110,11 @@ function Matrix3 matrix3_inverse(Matrix3 m);
 // @Section: Matrix4
 struct Matrix4
 {
-  f32 m0,  m4,  m8,  m12,
-      m1,  m5,  m9,  m13,
-      m2,  m6,  m10, m14,
-      m3,  m7,  m11, m15;
+  // Column-major: m0..m3 = col0, m4..m7 = col1, m8..m11 = col2, m12..m15 = col3
+  f32 m0,  m1,  m2,  m3,   // column 0
+      m4,  m5,  m6,  m7,   // column 1
+      m8,  m9,  m10, m11,  // column 2
+      m12, m13, m14, m15;  // column 3
 };
 #define matrix4(diagonal)          \
   (Matrix4){                       \
@@ -142,7 +144,7 @@ function Matrix4 matrix4_perspective(f64 fovY, f32 window_width, f32 window_heig
 function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane); /* Creates an orthographic projection matrix defined by the given planes */
 function Matrix4 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
 function Matrix4 matrix4_from_quaternion(Quaternion q); /* Creates a Matrix4 from the given quaternion */
-function V3f32   matrix4_multiply_v3f32(Matrix4 matrix, V3f32 v);
+function Matrix4 matrix4_from_transform(Transform t); /* Creates a Matrix4 from the given transform */
 
 // @Section: Quaternion
 struct Quaternion { f32 x, y, z, w; };
@@ -181,6 +183,7 @@ struct Transform
   V3f32 scale;
 };
 #define transform(t,r,s) (Transform){t,r,s}
+#define transform_identity() transform(v3f32_zero(), quaternion_identity(), v3f32(1.0f, 1.0f, 1.0f))
 
 // @Section: Implementation
 
@@ -697,23 +700,24 @@ v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view)
   V3f32 result = { 0 };
 
   // Calculate unprojected matrix (multiply view matrix by projection matrix) and invert it
-  Matrix4 mat_view_proj = { // matrix4_mul(view, projection);
-    view.m0*projection.m0 + view.m1*projection.m4 + view.m2*projection.m8 + view.m3*projection.m12,
-    view.m0*projection.m1 + view.m1*projection.m5 + view.m2*projection.m9 + view.m3*projection.m13,
-    view.m0*projection.m2 + view.m1*projection.m6 + view.m2*projection.m10 + view.m3*projection.m14,
-    view.m0*projection.m3 + view.m1*projection.m7 + view.m2*projection.m11 + view.m3*projection.m15,
-    view.m4*projection.m0 + view.m5*projection.m4 + view.m6*projection.m8 + view.m7*projection.m12,
-    view.m4*projection.m1 + view.m5*projection.m5 + view.m6*projection.m9 + view.m7*projection.m13,
-    view.m4*projection.m2 + view.m5*projection.m6 + view.m6*projection.m10 + view.m7*projection.m14,
-    view.m4*projection.m3 + view.m5*projection.m7 + view.m6*projection.m11 + view.m7*projection.m15,
-    view.m8*projection.m0 + view.m9*projection.m4 + view.m10*projection.m8 + view.m11*projection.m12,
-    view.m8*projection.m1 + view.m9*projection.m5 + view.m10*projection.m9 + view.m11*projection.m13,
-    view.m8*projection.m2 + view.m9*projection.m6 + view.m10*projection.m10 + view.m11*projection.m14,
-    view.m8*projection.m3 + view.m9*projection.m7 + view.m10*projection.m11 + view.m11*projection.m15,
-    view.m12*projection.m0 + view.m13*projection.m4 + view.m14*projection.m8 + view.m15*projection.m12,
-    view.m12*projection.m1 + view.m13*projection.m5 + view.m14*projection.m9 + view.m15*projection.m13,
-    view.m12*projection.m2 + view.m13*projection.m6 + view.m14*projection.m10 + view.m15*projection.m14,
-    view.m12*projection.m3 + view.m13*projection.m7 + view.m14*projection.m11 + view.m15*projection.m15 };
+  // matrix4_multiply(view, projection)
+  Matrix4 mat_view_proj = { 0 };
+  mat_view_proj.m0  = view.m0*projection.m0  + view.m1*projection.m4  + view.m2*projection.m8  + view.m3*projection.m12;
+  mat_view_proj.m1  = view.m0*projection.m1  + view.m1*projection.m5  + view.m2*projection.m9  + view.m3*projection.m13;
+  mat_view_proj.m2  = view.m0*projection.m2  + view.m1*projection.m6  + view.m2*projection.m10 + view.m3*projection.m14;
+  mat_view_proj.m3  = view.m0*projection.m3  + view.m1*projection.m7  + view.m2*projection.m11 + view.m3*projection.m15;
+  mat_view_proj.m4  = view.m4*projection.m0  + view.m5*projection.m4  + view.m6*projection.m8  + view.m7*projection.m12;
+  mat_view_proj.m5  = view.m4*projection.m1  + view.m5*projection.m5  + view.m6*projection.m9  + view.m7*projection.m13;
+  mat_view_proj.m6  = view.m4*projection.m2  + view.m5*projection.m6  + view.m6*projection.m10 + view.m7*projection.m14;
+  mat_view_proj.m7  = view.m4*projection.m3  + view.m5*projection.m7  + view.m6*projection.m11 + view.m7*projection.m15;
+  mat_view_proj.m8  = view.m8*projection.m0  + view.m9*projection.m4  + view.m10*projection.m8  + view.m11*projection.m12;
+  mat_view_proj.m9  = view.m8*projection.m1  + view.m9*projection.m5  + view.m10*projection.m9  + view.m11*projection.m13;
+  mat_view_proj.m10 = view.m8*projection.m2  + view.m9*projection.m6  + view.m10*projection.m10 + view.m11*projection.m14;
+  mat_view_proj.m11 = view.m8*projection.m3  + view.m9*projection.m7  + view.m10*projection.m11 + view.m11*projection.m15;
+  mat_view_proj.m12 = view.m12*projection.m0 + view.m13*projection.m4 + view.m14*projection.m8  + view.m15*projection.m12;
+  mat_view_proj.m13 = view.m12*projection.m1 + view.m13*projection.m5 + view.m14*projection.m9  + view.m15*projection.m13;
+  mat_view_proj.m14 = view.m12*projection.m2 + view.m13*projection.m6 + view.m14*projection.m10 + view.m15*projection.m14;
+  mat_view_proj.m15 = view.m12*projection.m3 + view.m13*projection.m7 + view.m14*projection.m11 + view.m15*projection.m15;
 
   // Calculate inverted matrix -> Matrix4_invert(mat_view_proj);
   // Cache the matrix values (speed optimization)
@@ -1213,10 +1217,10 @@ matrix4_multiply(Matrix4 left, Matrix4 right)
 function Matrix4
 matrix4_translate(f32 x, f32 y, f32 z)
 {
-  Matrix4 result = { 1.0f, 0.0f, 0.0f, x,
-                   0.0f, 1.0f, 0.0f, y,
-                   0.0f, 0.0f, 1.0f, z,
-                   0.0f, 0.0f, 0.0f, 1.0f };
+  Matrix4 result = matrix4_identity();
+  result.m12 = x;
+  result.m13 = y;
+  result.m14 = z;
   return result;
 }
 
@@ -1357,11 +1361,10 @@ matrix4_rotate_ZYX(V3f32 angle)
 function Matrix4
 matrix4_scale(f32 x, f32 y, f32 z)
 {
-  Matrix4 result = { x,    0.0f, 0.0f, 0.0f,
-                   0.0f, y,    0.0f, 0.0f,
-                   0.0f, 0.0f, z,    0.0f,
-                   0.0f, 0.0f, 0.0f, 1.0f };
-
+  Matrix4 result = matrix4_identity();
+  result.m0  = x;
+  result.m5  = y;
+  result.m10 = z;
   return result;
 }
 
@@ -1531,27 +1534,43 @@ matrix4_from_quaternion(Quaternion q)
   return result;
 }
 
-function V3f32
-matrix4_multiply_v3f32(Matrix4 matrix, V3f32 v)
+function Matrix4 
+matrix4_from_transform(Transform t)
 {
-  V3f32 result;
-  
-  f32 x = v.x;
-  f32 y = v.y;
-  f32 z = v.z;
-  
-  result.x = matrix.m0 * x + matrix.m1 * y + matrix.m2 * z + matrix.m3;
-  result.y = matrix.m4 * x + matrix.m5 * y + matrix.m6 * z + matrix.m7;
-  result.z = matrix.m8  * x + matrix.m9  * y + matrix.m10 * z + matrix.m11;
-  f32 w = matrix.m12 * x + matrix.m13 * y + matrix.m14 * z + matrix.m15;
-  
-  if (w != 0.0f && w != 1.0f)
+  f32 qx = t.rotation.x;
+  f32 qy = t.rotation.y;
+  f32 qz = t.rotation.z;
+  f32 qw = t.rotation.w;
+
+  f32 sx = t.scale.x;
+  f32 sy = t.scale.y;
+  f32 sz = t.scale.z;
+
+  // Quaternion basis vectors, pre-multiplied by scale
+  Matrix4 result =
   {
-    result.x /= w;
-    result.y /= w;
-    result.z /= w;
-  }
-  
+    // Column 0
+    sx * (1.0f - 2.0f*(qy*qy + qz*qz)),
+    sx * (       2.0f*(qx*qy + qz*qw)),
+    sx * (       2.0f*(qx*qz - qy*qw)),
+    0.0f,
+    // Column 1
+    sy * (       2.0f*(qx*qy - qz*qw)),
+    sy * (1.0f - 2.0f*(qx*qx + qz*qz)),
+    sy * (       2.0f*(qy*qz + qx*qw)),
+    0.0f,
+    // Column 2
+    sz * (       2.0f*(qx*qz + qy*qw)),
+    sz * (       2.0f*(qy*qz - qx*qw)),
+    sz * (1.0f - 2.0f*(qx*qx + qy*qy)),
+    0.0f,
+    // Column 3 (translation)
+    t.translation.x,
+    t.translation.y,
+    t.translation.z,
+    1.0f,
+  };
+
   return result;
 }
 

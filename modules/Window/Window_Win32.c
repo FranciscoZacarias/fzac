@@ -37,6 +37,14 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   window->hwnd = hwnd;
   window->dc   = GetDC(hwnd);
 
+  RAWINPUTDEVICE rid = {0};
+  rid.usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+  rid.usUsage     = 0x02; // HID_USAGE_GENERIC_MOUSE
+  rid.dwFlags     = 0;
+  rid.hwndTarget  = hwnd;
+
+  RegisterRawInputDevices(&rid, 1, sizeof(rid));
+
   window->frame_arena                = arena_alloc();
   window->events_this_frame.capacity = 4096;
   window->events_this_frame.data     =  push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
@@ -159,6 +167,29 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
       short delta = GET_WHEEL_DELTA_WPARAM(wparam);
       GlobalWindow.input.mouse_current.wheel_delta += delta;
+      return 0;
+    }
+    break;
+
+    case WM_INPUT:
+    {
+      UINT size = 0;
+      GetRawInputData((HRAWINPUT)lparam, RID_INPUT, 0, &size, sizeof(RAWINPUTHEADER));
+
+      u8 buffer[256];
+      if (size <= sizeof(buffer))
+      {
+        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, buffer, &size, sizeof(RAWINPUTHEADER));
+
+        RAWINPUT *raw = (RAWINPUT*)buffer;
+
+        if (raw->header.dwType == RIM_TYPEMOUSE)
+        {
+          GlobalWindow.input.mouse_current.raw_delta.x += raw->data.mouse.lLastX;
+          GlobalWindow.input.mouse_current.raw_delta.y += raw->data.mouse.lLastY;
+        }
+      }
+
       return 0;
     }
     break;
@@ -426,13 +457,13 @@ _input_init()
 function void
 _input_update()
 {
-  // Compute new deltas
-  GlobalWindow.input.mouse_current.delta.x = GlobalWindow.input.mouse_current.screen_space.x - GlobalWindow.input.mouse_previous.screen_space.x; 
-  GlobalWindow.input.mouse_current.delta.y = GlobalWindow.input.mouse_current.screen_space.y - GlobalWindow.input.mouse_previous.screen_space.y;
+  GlobalWindow.input.mouse_current.delta       = GlobalWindow.input.mouse_current.raw_delta;
+  GlobalWindow.input.mouse_current.raw_delta   = (V2s32){0};
   GlobalWindow.input.mouse_current.wheel_delta = 0;
 
-  memory_copy(&(GlobalWindow.input.keyboard_previous), &(GlobalWindow.input.keyboard_current), sizeof(Keyboard_State));
-  memory_copy(&(GlobalWindow.input.mouse_previous),    &(GlobalWindow.input.mouse_current),    sizeof(Mouse_State));
+  memory_copy(&GlobalWindow.input.keyboard_previous, &GlobalWindow.input.keyboard_current, sizeof(Keyboard_State));
+
+  memory_copy(&GlobalWindow.input.mouse_previous, &GlobalWindow.input.mouse_current, sizeof(Mouse_State));
 }
 
 function b8
@@ -472,10 +503,6 @@ is_key_clicked(Keyboard_Key key)
 function void
 _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed)
 {
-  // if (GlobalWindow.input.keyboard_current.keys[key] != is_pressed)
-  // {
-  //   GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
-  // }
   GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
 }
 
@@ -566,47 +593,47 @@ get_mouse_wheel_delta()
   return GlobalWindow.input.mouse_current.wheel_delta;
 }
 
-function u32
+function s32
 get_window_width()
 {
   return GlobalWindow.width;
 }
 
-function u32
+function s32
 get_window_height()
 {
   return GlobalWindow.height;
 }
 
-function V2u32
+function V2s32
 get_window_center(Window *window)
 {
-  V2u32 result = v2u32(get_window_width() / 2, get_window_height() / 2);
+  V2s32 result = v2s32(get_window_width() / 2, get_window_height() / 2);
   return result;
 }
 
-function V2u32
+function V2s32
 get_window_dimensions()
 {
-  return v2u32(GlobalWindow.width, GlobalWindow.height);
+  return v2s32(GlobalWindow.width, GlobalWindow.height);
 }
 
-function u32   
+function s32   
 get_window_x()
 {
   return GlobalWindow.x;
 }
 
-function u32   
+function s32   
 get_window_y()
 {
   return GlobalWindow.y;
 }
 
-function V2u32 
+function V2s32 
 get_window_position()
 {
-  return v2u32(GlobalWindow.x, GlobalWindow.y);
+  return v2s32(GlobalWindow.x, GlobalWindow.y);
 }
 
 function b32

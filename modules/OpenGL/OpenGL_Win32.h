@@ -98,7 +98,7 @@ function b32 _win32_load_wgl_functions(); /* Opens webgl functions */
 // @Section: Implementation
 
 function b32
-opengl_init()
+opengl_init(b32 set_vsync)
 {
   if (!WindowClassInited)
   {
@@ -235,6 +235,7 @@ opengl_init()
     printf("OpenGL error after init: 0x%x\n", error);
   }
 
+  opengl_set_vsync(set_vsync);
   return true;
 }
 
@@ -246,7 +247,7 @@ opengl_end(Window* window)
 }
 
 function void
-window_set_vsync(b32 state)
+opengl_set_vsync(b32 state)
 {
   wglSwapIntervalEXT(state);
 }

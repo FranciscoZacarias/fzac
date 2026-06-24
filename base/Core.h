@@ -66,7 +66,7 @@
 #define pointer_from_int(i) (void*)((u8*)0 + (i))
 
 #define member(T,m) (((T*)0)->m)
-#define offset_of_member(T,m) int_from_pointer(&member(T,m))
+#define offset_of(T,m) int_from_pointer(&member(T,m))
 
 #define case_fallthrough /* Used to explicitly say we want this switch case to fall through the next one */
 
