@@ -3,6 +3,10 @@
 
 #include "List_Todos.h"
 
+#define METAPROGRAM_GLOBAL_HEADERS_PATH "/global_headers.h"
+#define METAPROGRAM_METAPROGRAM_GLOBAL_HEADERS_PATH "/metaprogram_global_headers.h"
+#define METAPROGRAM_METAPROGRAM_GENERATED_PATH "/metaprogram_generated.h"
+
 #define METAPROGRAM_MAX_EXCLUDED_FILES 64
 #define METAPROGRAM_MAX_FILES 64
 #define METAPROGRAM_MAX_FUNTIONS 256
@@ -69,7 +73,7 @@ struct Default_Metaprogram
   u32 excluded_files_capacity;
 };
 
-function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory);
+function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
 function void default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name);
 
 function void 
@@ -86,7 +90,7 @@ default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram
 }
 
 function void
-default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory)
+default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data)
 {
   Scratch scratch = scratch_begin(0,0);
 
@@ -124,6 +128,14 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
     if (string_contains(file_being_lexed, S("global_headers.h")))
+    {
+      continue;
+    }
+    if (string_contains(file_being_lexed, S("metaprogram_global_headers.h")))
+    {
+      continue;
+    }
+    if (string_contains(file_being_lexed, S("metaprogram_generated.h")))
     {
       continue;
     }
@@ -515,16 +527,27 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
   }
 
-  String global_header_path = string_join(scratch.arena, src_directory, S("/global_headers.h"));
-
+  String global_header_path = string_join(scratch.arena, src_directory, S(METAPROGRAM_GLOBAL_HEADERS_PATH));
   if (file_exists(global_header_path))
   {
     file_delete(global_header_path);
   }
   file_create(global_header_path);
+  String_Builder global_header_builder = string_builder_init(kilobytes(64));
+  string_builder_push(&global_header_builder, "#ifndef GLOBAL_HEADERS_H\n#define GLOBAL_HEADERS_H\n\n/* Generated File */\n");
 
-  String_Builder builder = string_builder_init(kilobytes(64));
-  string_builder_push(&builder, "#ifndef GLOBAL_HEADERS_H\n#define GLOBAL_HEADERS_H\n\n/* Generated File */\n");
+  String metaprogram_global_header_path = string_join(scratch.arena, src_directory, S(METAPROGRAM_METAPROGRAM_GLOBAL_HEADERS_PATH));
+  if (file_exists(metaprogram_global_header_path))
+  {
+    file_delete(metaprogram_global_header_path);
+  }
+  file_create(metaprogram_global_header_path);
+  String_Builder metaprogram_global_header_builder = string_builder_init(kilobytes(64));
+  string_builder_push(&metaprogram_global_header_builder, "#ifndef METAPROGRAM_GLOBAL_HEADERS_H\n#define METAPROGRAM_GLOBAL_HEADERS_H\n\n/* Generated File */\n");
+
+  //
+  // @TODO(Fz): We don't need to separate the headers and the implementation into two different loops. 
+  //
 
   // Just headers
   for (u32 file_index = 0; file_index < dm->files_count; file_index += 1)
@@ -541,29 +564,35 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
 
-    string_builder_pushf(&builder, "\n/* File: "S_FMT" */\n", S_ARG(file->name));
+    String_Builder *builder = &global_header_builder;
+    if (string_contains(file->name, S("metaprogram_")))
+    {
+      builder = &metaprogram_global_header_builder;
+    }
+
+    string_builder_pushf(builder, "\n/* File: "S_FMT" */\n", S_ARG(file->name));
 
     for (u32 enums_index = 0; enums_index < file->enum_definitions_count; enums_index += 1)
     {
       DM_Code_Enum *code_enum = &file->enum_definitions[enums_index];
-      string_builder_pushf(&builder, "typedef "S_FMT" "S_FMT";\n", S_ARG(code_enum->type), S_ARG(code_enum->name));
+      string_builder_pushf(builder, "typedef "S_FMT" "S_FMT";\n", S_ARG(code_enum->type), S_ARG(code_enum->name));
       if (code_enum->to_string)
       {
-        string_builder_pushf(&builder, "const char* "S_FMT"_to_string[] = { ", S_ARG(string_to_lower(scratch.arena, code_enum->name)));
+        string_builder_pushf(builder, "const char* "S_FMT"_to_string[] = { ", S_ARG(string_to_lower(scratch.arena, code_enum->name)));
         for (u32 enum_values_index = 0; enum_values_index < code_enum->values_count; enum_values_index += 1)
         {
-          string_builder_pushf(&builder, "\""S_FMT"\", ", S_ARG(code_enum->values[enum_values_index]));
+          string_builder_pushf(builder, "\""S_FMT"\", ", S_ARG(code_enum->values[enum_values_index]));
         }
-        string_builder_push(&builder, "};\n");
+        string_builder_push(builder, "};\n");
       }
     }
 
     for (u32 structs_index = 0; structs_index < file->struct_definitions_count; structs_index += 1)
     {
       DM_Code_Struct *code_struct = &file->struct_definitions[structs_index];
-      string_builder_pushf(&builder, "typedef struct "S_FMT" "S_FMT";\n", S_ARG(code_struct->name), S_ARG(code_struct->name));
+      string_builder_pushf(builder, "typedef struct "S_FMT" "S_FMT";\n", S_ARG(code_struct->name), S_ARG(code_struct->name));
     }
-    string_builder_push(&builder, " ");
+    string_builder_push(builder, " ");
 
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
     {
@@ -572,12 +601,12 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       {
         continue;
       }
-      string_builder_pushf(&builder, "function %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
+      string_builder_pushf(builder, "function %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
-        string_builder_pushf(&builder, "%s", code_function->arguments.cstring);
+        string_builder_pushf(builder, "%s", code_function->arguments.cstring);
       }
-      string_builder_push(&builder, ");\n");
+      string_builder_push(builder, ");\n");
     }
   }
 
@@ -596,11 +625,33 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
 
-    string_builder_pushf(&builder, "\n/* File: "S_FMT" */\n", S_ARG(file->name));
+    String_Builder *builder = &global_header_builder;
+    if (string_contains(file->name, S("metaprogram_")))
+    {
+      builder = &metaprogram_global_header_builder;
+    }
+
+    string_builder_pushf(builder, "\n/* File: "S_FMT" */\n", S_ARG(file->name));
+
+    for (u32 enums_index = 0; enums_index < file->enum_definitions_count; enums_index += 1)
+    {
+      DM_Code_Enum *code_enum = &file->enum_definitions[enums_index];
+      string_builder_pushf(builder, "typedef "S_FMT" "S_FMT";\n", S_ARG(code_enum->type), S_ARG(code_enum->name));
+      if (code_enum->to_string)
+      {
+        string_builder_pushf(builder, "const char* "S_FMT"_to_string[] = { ", S_ARG(string_to_lower(scratch.arena, code_enum->name)));
+        for (u32 enum_values_index = 0; enum_values_index < code_enum->values_count; enum_values_index += 1)
+        {
+          string_builder_pushf(builder, "\""S_FMT"\", ", S_ARG(code_enum->values[enum_values_index]));
+        }
+        string_builder_push(builder, "};\n");
+      }
+    }
+
     for (u32 structs_index = 0; structs_index < file->struct_definitions_count; structs_index += 1)
     {
       DM_Code_Struct *code_struct = &file->struct_definitions[structs_index];
-      string_builder_pushf(&builder, "typedef struct "S_FMT" "S_FMT";\n", S_ARG(code_struct->name), S_ARG(code_struct->name));
+      string_builder_pushf(builder, "typedef struct "S_FMT" "S_FMT";\n", S_ARG(code_struct->name), S_ARG(code_struct->name));
     }
 
     for (u32 function_index = 0; function_index < file->function_definitions_count; function_index += 1)
@@ -610,25 +661,62 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       {
         continue;
       }
-      string_builder_pushf(&builder, "function %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
+      string_builder_pushf(builder, "function %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
-        string_builder_pushf(&builder, "%s", code_function->arguments.cstring);
+        string_builder_pushf(builder, "%s", code_function->arguments.cstring);
       }
-      string_builder_push(&builder, ");\n");
+      string_builder_push(builder, ");\n");
     }
   }
 
-  string_builder_push(&builder, "\n#endif // GLOBAL_HEADERS_H");
+  string_builder_push(&global_header_builder, "\n#endif // GLOBAL_HEADERS_H");
   
-  String final_string = string_builder_to_string(scratch.arena, &builder);
+  String final_string = string_builder_to_string(scratch.arena, &global_header_builder);
   u32 written = file_write(global_header_path, final_string.cstring, final_string.count);
   if (written == 0)
   {
     message_box(S("Default Metaprogram"), S("Error writing buffer to file"), S(__FILE__), __LINE__);
   }
 
-  string_builder_free(&builder);
+  string_builder_free(&global_header_builder);
+
+  // Metaprogram global headers
+  
+  string_builder_push(&metaprogram_global_header_builder, "\n#endif // METAPROGRAM_GLOBAL_HEADERS_H");
+  
+  String metaprogram_final_string = string_builder_to_string(scratch.arena, &metaprogram_global_header_builder);
+  u32 metaprogram_written = file_write(metaprogram_global_header_path, metaprogram_final_string.cstring, metaprogram_final_string.count);
+  if (metaprogram_written == 0)
+  {
+    message_box(S("Default Metaprogram"), S("Error writing buffer to file"), S(__FILE__), __LINE__);
+  }
+
+  string_builder_free(&metaprogram_global_header_builder);
+
+  // Metaprogram generated code
+  String_Builder metaprogram_generated_builder = string_builder_init(thousand(5));
+
+  string_builder_push(&metaprogram_generated_builder, "#ifndef METAPROGRAM_GENERATED\n#define METAPROGRAM_GENERATED\n\n/* Extra coded passed by the user metaprogram */\n\n");
+  string_builder_push_string(&metaprogram_generated_builder, *global_headers_extra_data);
+  string_builder_push(&metaprogram_generated_builder, "#endif // METAPROGRAM_GENERATED");
+
+  String result = string_builder_to_string(scratch.arena, &metaprogram_generated_builder);
+
+  String metaprogram_generated_path = string_join(scratch.arena, src_directory, S(METAPROGRAM_METAPROGRAM_GENERATED_PATH));
+  if (file_exists(metaprogram_generated_path))
+  {
+    file_delete(metaprogram_generated_path);
+  }
+  file_create(metaprogram_generated_path);
+
+  written = file_write(metaprogram_generated_path, result.cstring, result.count);
+  if (written == 0)
+  {
+    message_box(S("Default Metaprogram"), S("Error writing to metaprogram_generated.h"), S(__FILE__), __LINE__);
+  }
+    
+  string_builder_free(&metaprogram_generated_builder);
 
   scratch_end(&scratch);
 
@@ -676,6 +764,19 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
           string_builder_pushf(&loc_builder, "+----------------------------------+--------+--------+--------+\n");
 
           String final_str = string_builder_to_string(scratch.arena, &loc_builder);
+          string_print(final_str);
+        }
+        else if (string_equals(arg.value, S("h"), true) || string_equals(arg.value, S("help"), true))
+        {
+          String_Builder builder = string_builder_init(thousand(1));
+          string_builder_push(&builder, 
+          "\nUsage:\n"
+          "No args: Runs userspace metaprogram + default metaprogram"
+          "-loc: Shows lines of code\n"
+          "-cgen: Run Code Generator module on all .cgen files\n"
+          "-list-todos: Lists all todos in the whole codebase\n"
+          "\n");
+          String final_str = string_builder_to_string(scratch.arena, &builder);
           string_print(final_str);
         }
   		}

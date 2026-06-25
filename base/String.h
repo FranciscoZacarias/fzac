@@ -21,6 +21,7 @@ struct String
   u8* cstring;  /* Null-terminated string */
 };
 #define S(s) (String){sizeof(s)-1,(u8*)(s)}
+#define S_Const(s) {sizeof(s)-1,(u8*)(s)}
 #define Sf(arena,fmt,...) string_from_format(arena, fmt, __VA_ARGS__)
 #define St(fmt,...)       string_from_format(get_temporary_storage(), fmt, __VA_ARGS__)
 
@@ -44,11 +45,11 @@ struct String_List
 };
 
 function String string_zero(); /* Initilizese a string with memory zero'd out */
-function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer (allocates and null-terminates). */
+function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */
 function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
 function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
 function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
-function b8     string_begins_with(String str, String begins_with); /* Checks if str begins with begins_with */
+function b8     string_starts_with(String str, String begins_with); /* Checks if str begins with begins_with */
 function b8     string_ends_with(String str, String ends_with); /* Checks if str ends with ends_with */
 function String string_replace_first(Arena* arena, String str, String a, String b); /* Replaces string a with string c in string str */
 function String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
@@ -66,6 +67,8 @@ function b32    string_equals(String a, String b, b32 case_sensitive); /* Compar
 function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
 function u64    string_hash(String str); /* Hashes a string into a u64 */
 function void   string_print(String str); /* Prints a string */
+
+function u32    u32_from_string(String str); /* Converts a string to u32 */
 
 function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
 function String_List string_list_new(); /* Create new list with single string element. */
@@ -217,7 +220,7 @@ string_join(Arena* arena, String a, String b)
 }
 
 function b8
-string_begins_with(String str, String begins_with)
+string_starts_with(String str, String begins_with)
 {
   b8 result = false;
 
@@ -570,6 +573,24 @@ function void
 string_print(String str)
 {
   printf(S_FMT, S_ARG(str));
+  
+}
+
+function u32
+u32_from_string(String string)
+{
+  u32 result = 0;
+  if (string.count == 0) return 0;
+  if (string.cstring[0] == '-')
+  {
+    string.cstring += 1;
+    string.count   -= 1;
+  }
+  for (u64 char_index = 0; char_index < string.count; char_index += 1)
+  {
+    result = result * 10 + (string.cstring[char_index] - '0');
+  }
+  return result;
 }
 
 function String_List

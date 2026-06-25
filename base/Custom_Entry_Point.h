@@ -13,7 +13,7 @@
   
   // Metaprogram
   #define METAPROGRAM_SRC_DIRECTORY S("../src")
-  function void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram); /* Metaprogram entry point, defined by user. */
+  function void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data);  /* Metaprogram entry point, defined by user. */
   raddbg_entry_point(metaprogram_entry_point);
   function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
   
@@ -31,13 +31,22 @@
   
     // Metaprogram optional flags
     // Default Metaprogram
-    b32 run_default_metaprogram = true;
+    
+    // User can toggle this off if doesn't want to run default metaprogram
+    b32 run_default_metaprogram = true; 
+
+    // If this string pointer is not NULL, it will be added to global headers. 
+    // Must be allocated by the user and not cleaned up, so the metaprogram can use it.
+    // Only writes to global_headers.h!! The metaprogram_global_headers cannot be modified
+    String global_headers_extra_data = S(""); 
+
     // @TODO(fz): project_path should pass the full path, not relative
-    metaprogram_entry_point(&DefaultMetaprogram, &cmd_line, S("../src"), &run_default_metaprogram);
+    metaprogram_entry_point(&DefaultMetaprogram, &cmd_line, S("../src"), &run_default_metaprogram, &global_headers_extra_data);
     if (run_default_metaprogram)
     {
-      default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY);  
+      default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY, &global_headers_extra_data);  
     }
+    printf("Metaprogram Finished!\n");
     arena_free(DefaultMetaprogram.arena);
   }
 #else
