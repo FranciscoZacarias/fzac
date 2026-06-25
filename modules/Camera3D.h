@@ -44,7 +44,7 @@ camera3d_init(Camera3D *camera, u32 speed)
 {
   memory_zero_struct(camera);
   camera->position    = v3f32(0.0f, 0.0f, 5.0f);
-  camera->fov         = 90.0f;
+  camera->fov         = 60.0f;
   camera->speed       = (f32)speed;
   camera->sensitivity = 0.1f;
   camera->pitch       = 0.0f;
