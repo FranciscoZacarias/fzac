@@ -11,6 +11,9 @@ function inline void
 glProgramUniform1i (GLuint program, GLint location, GLint v0)
 {
   __glProgramUniform1i (program, location, v0);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniform1fPROC)(GLuint program, GLint location, GLfloat v0);
@@ -19,6 +22,9 @@ function inline void
 glProgramUniform1f (GLuint program, GLint location, GLfloat v0)
 {
   __glProgramUniform1f (program, location, v0);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniform2fPROC)(GLuint program, GLint location, GLfloat v0, GLfloat v1);
@@ -27,6 +33,9 @@ function inline void
 glProgramUniform2f (GLuint program, GLint location, GLfloat v0, GLfloat v1)
 {
   __glProgramUniform2f (program, location, v0, v1);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniform3fPROC)(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
@@ -35,6 +44,9 @@ function inline void
 glProgramUniform3f (GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 {
   __glProgramUniform3f (program, location, v0, v1, v2);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniform4fPROC)(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
@@ -43,6 +55,9 @@ function inline void
 glProgramUniform4f (GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
   __glProgramUniform4f (program, location, v0, v1, v2, v3);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniformMatrix4fvPROC)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -51,6 +66,9 @@ function inline void
 glProgramUniformMatrix4fv (GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
   __glProgramUniformMatrix4fv (program, location, count, transpose, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniformMatrix2fvPROC)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -59,6 +77,9 @@ function inline void
 glProgramUniformMatrix2fv (GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
   __glProgramUniformMatrix2fv (program, location, count, transpose, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglAttachShaderPROC)(GLuint program, GLuint shader);
@@ -67,6 +88,9 @@ function inline void
 glAttachShader (GLuint program, GLuint shader)
 {
   __glAttachShader (program, shader);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglLinkProgramPROC)(GLuint program);
@@ -75,6 +99,9 @@ function inline void
 glLinkProgram (GLuint program)
 {
   __glLinkProgram (program);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteShaderPROC)(GLuint shader);
@@ -83,6 +110,9 @@ function inline void
 glDeleteShader (GLuint shader)
 {
   __glDeleteShader (shader);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteProgramPROC)(GLuint program);
@@ -91,6 +121,9 @@ function inline void
 glDeleteProgram (GLuint program)
 {
   __glDeleteProgram (program);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetProgramivPROC)(GLuint program, GLenum pname, GLint *params);
@@ -99,6 +132,9 @@ function inline void
 glGetProgramiv (GLuint program, GLenum pname, GLint *params)
 {
   __glGetProgramiv (program, pname, params);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetProgramInfoLogPROC)(GLuint program, GLsizei bufSize, GLsizei *length, char *infoLog);
@@ -107,6 +143,9 @@ function inline void
 glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, char *infoLog)
 {
   __glGetProgramInfoLog (program, bufSize, length, infoLog);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGenProgramPipelinesPROC)(GLsizei n, GLuint *pipelines);
@@ -115,6 +154,9 @@ function inline void
 glGenProgramPipelines (GLsizei n, GLuint *pipelines)
 {
   __glGenProgramPipelines (n, pipelines);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindProgramPipelinePROC)(GLuint pipeline);
@@ -123,6 +165,9 @@ function inline void
 glBindProgramPipeline (GLuint pipeline)
 {
   __glBindProgramPipeline (pipeline);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglUseProgramStagesPROC)(GLuint pipeline, GLbitfield stages, GLuint program);
@@ -131,6 +176,9 @@ function inline void
 glUseProgramStages (GLuint pipeline, GLbitfield stages, GLuint program)
 {
   __glUseProgramStages (pipeline, stages, program);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteProgramPipelinesPROC)(GLsizei n, const GLuint *pipelines);
@@ -139,6 +187,9 @@ function inline void
 glDeleteProgramPipelines (GLsizei n, const GLuint *pipelines)
 {
   __glDeleteProgramPipelines (n, pipelines);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglCreateBuffersPROC)(GLsizei n, GLuint *buffers);
@@ -147,6 +198,9 @@ function inline void
 glCreateBuffers (GLsizei n, GLuint *buffers)
 {
   __glCreateBuffers (n, buffers);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglNamedBufferDataPROC)(GLuint buffer, GLsizeiptr size, const void *data, GLenum usage);
@@ -155,6 +209,9 @@ function inline void
 glNamedBufferData (GLuint buffer, GLsizeiptr size, const void *data, GLenum usage)
 {
   __glNamedBufferData (buffer, size, data, usage);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglNamedBufferSubDataPROC)(GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data);
@@ -163,6 +220,9 @@ function inline void
 glNamedBufferSubData (GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data)
 {
   __glNamedBufferSubData (buffer, offset, size, data);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteBuffersPROC)(GLsizei n, const GLuint *buffers);
@@ -171,6 +231,9 @@ function inline void
 glDeleteBuffers (GLsizei n, const GLuint *buffers)
 {
   __glDeleteBuffers (n, buffers);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindBufferPROC)(GLenum target, GLuint buffer);
@@ -179,6 +242,9 @@ function inline void
 glBindBuffer (GLenum target, GLuint buffer)
 {
   __glBindBuffer (target, buffer);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglNamedBufferStoragePROC)(GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags);
@@ -187,6 +253,9 @@ function inline void
 glNamedBufferStorage (GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags)
 {
   __glNamedBufferStorage (buffer, size, data, flags);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglCreateProgramPipelinesPROC)(GLsizei n, GLuint *pipelines);
@@ -195,6 +264,9 @@ function inline void
 glCreateProgramPipelines (GLsizei n, GLuint *pipelines)
 {
   __glCreateProgramPipelines (n, pipelines);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglCreateVertexArraysPROC)(GLsizei n, GLuint *arrays);
@@ -203,6 +275,9 @@ function inline void
 glCreateVertexArrays (GLsizei n, GLuint *arrays)
 {
   __glCreateVertexArrays (n, arrays);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayVertexBufferPROC)(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
@@ -211,6 +286,9 @@ function inline void
 glVertexArrayVertexBuffer (GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
 {
   __glVertexArrayVertexBuffer (vaobj, bindingindex, buffer, offset, stride);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglEnableVertexArrayAttribPROC)(GLuint vaobj, GLuint index);
@@ -219,6 +297,9 @@ function inline void
 glEnableVertexArrayAttrib (GLuint vaobj, GLuint index)
 {
   __glEnableVertexArrayAttrib (vaobj, index);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayAttribFormatPROC)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset);
@@ -227,6 +308,9 @@ function inline void
 glVertexArrayAttribFormat (GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
 {
   __glVertexArrayAttribFormat (vaobj, attribindex, size, type, normalized, relativeoffset);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayAttribBindingPROC)(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
@@ -235,6 +319,9 @@ function inline void
 glVertexArrayAttribBinding (GLuint vaobj, GLuint attribindex, GLuint bindingindex)
 {
   __glVertexArrayAttribBinding (vaobj, attribindex, bindingindex);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindVertexArrayPROC)(GLuint array);
@@ -243,6 +330,9 @@ function inline void
 glBindVertexArray (GLuint array)
 {
   __glBindVertexArray (array);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteVertexArraysPROC)(GLsizei n, const GLuint *arrays);
@@ -251,6 +341,9 @@ function inline void
 glDeleteVertexArrays (GLsizei n, const GLuint *arrays)
 {
   __glDeleteVertexArrays (n, arrays);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayBindingDivisorPROC)(GLuint vaobj, GLuint bindingindex, GLuint divisor);
@@ -259,6 +352,9 @@ function inline void
 glVertexArrayBindingDivisor (GLuint vaobj, GLuint bindingindex, GLuint divisor)
 {
   __glVertexArrayBindingDivisor (vaobj, bindingindex, divisor);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglCreateTexturesPROC)(GLenum target, GLsizei n, GLuint *textures);
@@ -267,6 +363,9 @@ function inline void
 glCreateTextures (GLenum target, GLsizei n, GLuint *textures)
 {
   __glCreateTextures (target, n, textures);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglTextureStorage2DPROC)(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
@@ -275,6 +374,9 @@ function inline void
 glTextureStorage2D (GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
   __glTextureStorage2D (texture, levels, internalformat, width, height);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglTextureSubImage2DPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
@@ -283,6 +385,9 @@ function inline void
 glTextureSubImage2D (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels)
 {
   __glTextureSubImage2D (texture, level, xoffset, yoffset, width, height, format, type, pixels);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglTextureParameteriPROC)(GLuint texture, GLenum pname, GLint param);
@@ -291,6 +396,9 @@ function inline void
 glTextureParameteri (GLuint texture, GLenum pname, GLint param)
 {
   __glTextureParameteri (texture, pname, param);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindTextureUnitPROC)(GLuint unit, GLuint texture);
@@ -299,6 +407,9 @@ function inline void
 glBindTextureUnit (GLuint unit, GLuint texture)
 {
   __glBindTextureUnit (unit, texture);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteTexturesPROC)(GLsizei n, const GLuint *textures);
@@ -307,6 +418,9 @@ function inline void
 glDeleteTextures (GLsizei n, const GLuint *textures)
 {
   __glDeleteTextures (n, textures);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglCreateFramebuffersPROC)(GLsizei n, GLuint *framebuffers);
@@ -315,6 +429,9 @@ function inline void
 glCreateFramebuffers (GLsizei n, GLuint *framebuffers)
 {
   __glCreateFramebuffers (n, framebuffers);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglNamedFramebufferTexturePROC)(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level);
@@ -323,6 +440,9 @@ function inline void
 glNamedFramebufferTexture (GLuint framebuffer, GLenum attachment, GLuint texture, GLint level)
 {
   __glNamedFramebufferTexture (framebuffer, attachment, texture, level);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglNamedFramebufferRenderbufferPROC)(GLuint framebuffer, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
@@ -331,6 +451,9 @@ function inline void
 glNamedFramebufferRenderbuffer (GLuint framebuffer, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
 {
   __glNamedFramebufferRenderbuffer (framebuffer, attachment, renderbuffertarget, renderbuffer);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDeleteFramebuffersPROC)(GLsizei n, const GLuint *framebuffers);
@@ -339,6 +462,9 @@ function inline void
 glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers)
 {
   __glDeleteFramebuffers (n, framebuffers);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindFramebufferPROC)(GLenum target, GLuint framebuffer);
@@ -347,6 +473,9 @@ function inline void
 glBindFramebuffer (GLenum target, GLuint framebuffer)
 {
   __glBindFramebuffer (target, framebuffer);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDrawArraysPROC)(GLenum mode, GLint first, GLsizei count);
@@ -355,6 +484,9 @@ function inline void
 glDrawArrays (GLenum mode, GLint first, GLsizei count)
 {
   __glDrawArrays (mode, first, count);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDrawElementsPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices);
@@ -363,6 +495,9 @@ function inline void
 glDrawElements (GLenum mode, GLsizei count, GLenum type, const void *indices)
 {
   __glDrawElements (mode, count, type, indices);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDrawArraysInstancedPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
@@ -371,6 +506,9 @@ function inline void
 glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
 {
   __glDrawArraysInstanced (mode, first, count, instancecount);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDrawElementsInstancedPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
@@ -379,6 +517,9 @@ function inline void
 glDrawElementsInstanced (GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount)
 {
   __glDrawElementsInstanced (mode, count, type, indices, instancecount);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglClearColorPROC)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -387,6 +528,9 @@ function inline void
 glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
   __glClearColor (red, green, blue, alpha);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDebugMessageCallbackPROC)(GLDEBUGPROC callback, const void *userParam);
@@ -395,6 +539,9 @@ function inline void
 glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam)
 {
   __glDebugMessageCallback (callback, userParam);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglEnablePROC)(GLenum cap);
@@ -403,6 +550,9 @@ function inline void
 glEnable (GLenum cap)
 {
   __glEnable (cap);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetIntegervPROC)(GLenum pname, GLint *data);
@@ -411,6 +561,9 @@ function inline void
 glGetIntegerv (GLenum pname, GLint *data)
 {
   __glGetIntegerv (pname, data);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayAttribIFormatPROC)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
@@ -419,6 +572,9 @@ function inline void
 glVertexArrayAttribIFormat (GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
 {
   __glVertexArrayAttribIFormat (vaobj, attribindex, size, type, relativeoffset);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglUniform1ivPROC)(GLint location, GLsizei count, const GLint *value);
@@ -427,6 +583,9 @@ function inline void
 glUniform1iv (GLint location, GLsizei count, const GLint *value)
 {
   __glUniform1iv (location, count, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglUseProgramPROC)(GLuint program);
@@ -435,6 +594,9 @@ function inline void
 glUseProgram (GLuint program)
 {
   __glUseProgram (program);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniform1ivPROC)(GLuint program, GLint location, GLsizei count, const GLint *value);
@@ -443,6 +605,9 @@ function inline void
 glProgramUniform1iv (GLuint program, GLint location, GLsizei count, const GLint *value)
 {
   __glProgramUniform1iv (program, location, count, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglPolygonModePROC)(GLenum face, GLenum mode);
@@ -451,6 +616,9 @@ function inline void
 glPolygonMode (GLenum face, GLenum mode)
 {
   __glPolygonMode (face, mode);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDepthRangefPROC)(GLfloat n, GLfloat f);
@@ -459,6 +627,9 @@ function inline void
 glDepthRangef (GLfloat n, GLfloat f)
 {
   __glDepthRangef (n, f);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglLineWidthPROC)(GLfloat width);
@@ -467,6 +638,9 @@ function inline void
 glLineWidth (GLfloat width)
 {
   __glLineWidth (width);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglVertexArrayElementBufferPROC)(GLuint vaobj, GLuint buffer);
@@ -475,6 +649,9 @@ function inline void
 glVertexArrayElementBuffer (GLuint vaobj, GLuint buffer)
 {
   __glVertexArrayElementBuffer (vaobj, buffer);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglProgramUniformMatrix3fvPROC)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -483,6 +660,9 @@ function inline void
 glProgramUniformMatrix3fv (GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
   __glProgramUniformMatrix3fv (program, location, count, transpose, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglViewportPROC)(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -491,6 +671,9 @@ function inline void
 glViewport (GLint x, GLint y, GLsizei width, GLsizei height)
 {
   __glViewport (x, y, width, height);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBlendFuncPROC)(GLenum sfactor, GLenum dfactor);
@@ -499,6 +682,9 @@ function inline void
 glBlendFunc (GLenum sfactor, GLenum dfactor)
 {
   __glBlendFunc (sfactor, dfactor);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglClearPROC)(GLbitfield mask);
@@ -507,6 +693,9 @@ function inline void
 glClear (GLbitfield mask)
 {
   __glClear (mask);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglValidateProgramPipelinePROC)(GLuint pipeline);
@@ -515,6 +704,9 @@ function inline void
 glValidateProgramPipeline (GLuint pipeline)
 {
   __glValidateProgramPipeline (pipeline);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetProgramPipelineivPROC)(GLuint pipeline, GLenum pname, GLint *params);
@@ -523,6 +715,9 @@ function inline void
 glGetProgramPipelineiv (GLuint pipeline, GLenum pname, GLint *params)
 {
   __glGetProgramPipelineiv (pipeline, pname, params);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetProgramPipelineInfoLogPROC)(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -531,6 +726,9 @@ function inline void
 glGetProgramPipelineInfoLog (GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
   __glGetProgramPipelineInfoLog (pipeline, bufSize, length, infoLog);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDepthMaskPROC)(GLboolean flag);
@@ -539,6 +737,9 @@ function inline void
 glDepthMask (GLboolean flag)
 {
   __glDepthMask (flag);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglUniformMatrix4fvPROC)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -547,6 +748,9 @@ function inline void
 glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
   __glUniformMatrix4fv (location, count, transpose, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglUniform1iPROC)(GLint location, GLint v0);
@@ -555,6 +759,9 @@ function inline void
 glUniform1i (GLint location, GLint v0)
 {
   __glUniform1i (location, v0);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDepthFuncPROC)(GLenum func);
@@ -563,6 +770,9 @@ function inline void
 glDepthFunc (GLenum func)
 {
   __glDepthFunc (func);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGenTexturesPROC)(GLsizei n, GLuint *textures);
@@ -571,6 +781,9 @@ function inline void
 glGenTextures (GLsizei n, GLuint *textures)
 {
   __glGenTextures (n, textures);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBindTexturePROC)(GLenum target, GLuint texture);
@@ -579,6 +792,9 @@ function inline void
 glBindTexture (GLenum target, GLuint texture)
 {
   __glBindTexture (target, texture);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglTexImage2DPROC)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
@@ -587,6 +803,9 @@ function inline void
 glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)
 {
   __glTexImage2D (target, level, internalformat, width, height, border, format, type, pixels);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglTexParameteriPROC)(GLenum target, GLenum pname, GLint param);
@@ -595,6 +814,9 @@ function inline void
 glTexParameteri (GLenum target, GLenum pname, GLint param)
 {
   __glTexParameteri (target, pname, param);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglPixelStoreiPROC)(GLenum pname, GLint param);
@@ -603,6 +825,9 @@ function inline void
 glPixelStorei (GLenum pname, GLint param)
 {
   __glPixelStorei (pname, param);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGenerateMipmapPROC)(GLenum target);
@@ -611,6 +836,9 @@ function inline void
 glGenerateMipmap (GLenum target)
 {
   __glGenerateMipmap (target);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglDisablePROC)(GLenum cap);
@@ -619,6 +847,9 @@ function inline void
 glDisable (GLenum cap)
 {
   __glDisable (cap);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGenFramebuffersPROC)(GLsizei n, GLuint *framebuffers);
@@ -627,6 +858,9 @@ function inline void
 glGenFramebuffers (GLsizei n, GLuint *framebuffers)
 {
   __glGenFramebuffers (n, framebuffers);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglFramebufferTexture2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
@@ -635,6 +869,9 @@ function inline void
 glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
   __glFramebufferTexture2D (target, attachment, textarget, texture, level);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetTexLevelParameterivPROC)(GLenum target, GLint level, GLenum pname, GLint *params);
@@ -643,6 +880,9 @@ function inline void
 glGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint *params)
 {
   __glGetTexLevelParameteriv (target, level, pname, params);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglReadBufferPROC)(GLenum src);
@@ -651,6 +891,9 @@ function inline void
 glReadBuffer (GLenum src)
 {
   __glReadBuffer (src);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglReadPixelsPROC)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels);
@@ -659,6 +902,9 @@ function inline void
 glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
 {
   __glReadPixels (x, y, width, height, format, type, pixels);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGenQueriesPROC)(GLsizei n, GLuint *ids);
@@ -667,6 +913,9 @@ function inline void
 glGenQueries (GLsizei n, GLuint *ids)
 {
   __glGenQueries (n, ids);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglGetQueryObjectui64vPROC)(GLuint id, GLenum pname, GLuint64 *params);
@@ -675,6 +924,9 @@ function inline void
 glGetQueryObjectui64v (GLuint id, GLenum pname, GLuint64 *params)
 {
   __glGetQueryObjectui64v (id, pname, params);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBeginQueryPROC)(GLenum target, GLuint id);
@@ -683,6 +935,9 @@ function inline void
 glBeginQuery (GLenum target, GLuint id)
 {
   __glBeginQuery (target, id);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglEndQueryPROC)(GLenum target);
@@ -691,6 +946,9 @@ function inline void
 glEndQuery (GLenum target)
 {
   __glEndQuery (target);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglBlendFuncSeparatePROC)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
@@ -699,6 +957,9 @@ function inline void
 glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 {
   __glBlendFuncSeparate (sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef void (*PFNglFinishPROC)();
@@ -707,6 +968,20 @@ function inline void
 glFinish ()
 {
   __glFinish ();
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglObjectLabelPROC)(GLenum identifier, GLuint name, GLsizei length, const char* label);
+global PFNglObjectLabelPROC __glObjectLabel = NULL;
+function inline void
+glObjectLabel (GLenum identifier, GLuint name, GLsizei length, const char* label)
+{
+  __glObjectLabel (identifier, name, length, label);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }
 
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);

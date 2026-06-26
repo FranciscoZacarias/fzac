@@ -15,6 +15,7 @@ struct File_Watcher
 function b32    file_create(String path); /* Creates file. If file exists, returns true anyway. */
 function b32    file_delete(String path); /* Deletes a file */
 function u32    file_write(String path, u8* data, u64 data_size); /* Wipes file contents and writes data */
+function u32    file_write_string(String path, String data); /* Same as file_write */
 function u32    file_append(String path, u8* data, u64 data_size); /* Appends data to the file */
 function b32    file_wipe(String path); /* Clears file */
 function u32    file_size(String path); /* Returns the size of the file */
@@ -188,6 +189,12 @@ file_write(String path, u8* data, u64 data_size)
   WriteFile(file, data, (DWORD)data_size, &written, 0);
   CloseHandle(file);
   return (u32)written;
+}
+
+function u32
+file_write_string(String path, String data)
+{
+  return file_write(path, data.cstring, data.count);
 }
 
 function u32

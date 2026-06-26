@@ -220,9 +220,11 @@ opengl_init(b32 set_vsync)
       assert(false);
     }
 
+#if DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(&_opengl_debug_callback, NULL);
+#endif // DEBUG
   }
 
   // Set viewport

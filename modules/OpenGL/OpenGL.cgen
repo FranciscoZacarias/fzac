@@ -90,6 +90,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glEndQuery                      `(GLenum target)`                                                                                                                            `(target)`                                                                          }
   {  glBlendFuncSeparate             `(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)`                                                           `(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)` }
   {  glFinish                        `()`                                                                                                                                         `()` }
+  {  glObjectLabel                   `(GLenum identifier, GLuint name, GLsizei length, const char* label)`                                                                        `(identifier, name, length, label)` }
 }
 
 @Table
@@ -120,6 +121,9 @@ function inline void
 $(name) $(args)
 {
   __$(name) $(call_args);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
 }\n\n`
 
   @foreach(OpenGL_Function_Table) 

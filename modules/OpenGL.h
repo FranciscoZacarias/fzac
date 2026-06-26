@@ -1,12 +1,15 @@
 #ifndef OPENGL_H
 #define OPENGL_H
 
+// Opengl Debug:
+// Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl function call
+// Define DEBUG to enable debug output and opengl debug message callback
+
 #include "Platform.h"
 #include "Window.h"
 #include "Files.h"
 
 #include "OpenGL/OpenGL_Constants.h"
-#include "OpenGL/generated/Opengl.cgen.h"
 
 typedef struct Opengl_Shader_Program Opengl_Shader_Program;
 struct Opengl_Shader_Program
@@ -40,6 +43,7 @@ function void           _opengl_check_error(String file, u32 line); /* Checks fo
 function void*          _load_gl_function(const char *name); /* Helper to load a single opengl function */
 
 // @Section: Implementation
+#include "OpenGL/generated/Opengl.cgen.h"
 #include "OpenGL/generated/Opengl.cgen.c"
 
 function Opengl_Compile_Shader_Result 
