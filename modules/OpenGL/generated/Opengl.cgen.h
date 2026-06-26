@@ -984,6 +984,28 @@ glObjectLabel (GLenum identifier, GLuint name, GLsizei length, const char* label
 #endif
 }
 
+typedef void (*PFNglPushDebugGroupPROC)(GLenum source, GLuint id, GLsizei length, const GLchar *message);
+global PFNglPushDebugGroupPROC __glPushDebugGroup = NULL;
+function inline void
+glPushDebugGroup (GLenum source, GLuint id, GLsizei length, const GLchar *message)
+{
+  __glPushDebugGroup (source, id, length, message);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglPopDebugGroupPROC)();
+global PFNglPopDebugGroupPROC __glPopDebugGroup = NULL;
+function inline void
+glPopDebugGroup ()
+{
+  __glPopDebugGroup ();
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint

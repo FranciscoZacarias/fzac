@@ -682,5 +682,19 @@ _opengl_load_functions()
     return false;
   }
 
+  __glPushDebugGroup = (PFNglPushDebugGroupPROC)_load_gl_function("glPushDebugGroup"); 
+  if (!__glPushDebugGroup)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glPushDebugGroup"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glPopDebugGroup = (PFNglPopDebugGroupPROC)_load_gl_function("glPopDebugGroup"); 
+  if (!__glPopDebugGroup)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glPopDebugGroup"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }
