@@ -451,7 +451,7 @@ string_find_first(String str, String substring, u64* index)
   *index = U64_MAX;
   for (u64 i = 0; i <= str.count - substring.count; i++)
   {
-    if (memory_match(&str.cstring[i], substring.cstring, substring.count))
+    if (memory_equals(&str.cstring[i], substring.cstring, substring.count))
     {
       *index = i;
       result = true;
@@ -469,7 +469,7 @@ string_find_last(String str, String substring, u64* index)
   *index = U64_MAX;
   for (u64 i = str.count - substring.count + 1; i-- > 0;)
   {
-    if (memory_match(&str.cstring[i], substring.cstring, substring.count))
+    if (memory_equals(&str.cstring[i], substring.cstring, substring.count))
     {
       *index = i;
       result = true;
@@ -612,7 +612,7 @@ string_split(Arena* arena, String str, String delimiter)
 
     for (u8* scan = cursor; scan + delimiter.count <= end; scan++)
     {
-      if (memory_match(scan, delimiter.cstring, delimiter.count) != 0)
+      if (memory_equals(scan, delimiter.cstring, delimiter.count) != 0)
       {
         match = scan;
         break;
