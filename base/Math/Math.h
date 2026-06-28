@@ -173,7 +173,7 @@ function Quaternion quaternion_from_euler(f32 pitch, f32 yaw, f32 roll); /* Crea
 function V3f32      quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
 function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
-function V3f32      quaternion_rotate_vec3f32(Quaternion q, V3f32 v);
+function V3f32      quaternion_rotate_v3f32(Quaternion q, V3f32 v);
 
 // @Section: Transform
 struct Transform 

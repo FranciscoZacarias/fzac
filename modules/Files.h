@@ -22,6 +22,7 @@ function u32    file_size(String path); /* Returns the size of the file */
 function String file_load(Arena* arena, String path); /* Loads file into memory */
 function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
 function String file_get_extension(String path); /* Returns file extension. */
+function String file_get_name_no_extension(String path); /* Returns the file name without extension */
 
 // File watch
 function void file_watch_init(Arena *arena, File_Watcher *watch, String path);
@@ -330,6 +331,31 @@ file_get_extension(String path)
   result.cstring = path.cstring + last_dot + 1;
   result.count   = path.count - (last_dot + 1);
 
+  return result;
+}
+
+function String 
+file_get_name_no_extension(String path)
+{
+  String result  = S("");
+  u64 dot_position;
+  if (string_find_last(path, S("."), &dot_position))
+  {
+    result.cstring = path.cstring;
+    result.count   = path.count - (path.count - dot_position);
+    for (u32 i = result.count-1; i > 0; i -= 1)
+    {
+      if (result.cstring[i] == '\\' || result.cstring[i] == '/')
+      {
+        if (result.count >= i+1)
+        {
+          result.cstring = result.cstring + i + 1;
+          result.count   = result.count - i - 1;
+        }
+        break;
+      }
+    }
+  }
   return result;
 }
 
