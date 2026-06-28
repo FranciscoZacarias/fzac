@@ -64,7 +64,7 @@ log_level_color(Log_Level level)
     case LogLevel_Warn:  return "\x1b[33m";
     case LogLevel_Error: return "\x1b[31m";
     case LogLevel_Fatal: return "\x1b[35m";
-    default:             return "";
+    default:             return ""; 
   }
 }
 
