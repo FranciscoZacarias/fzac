@@ -8,6 +8,7 @@
 #include "Platform.h"
 #include "Window.h"
 #include "Files.h"
+#include "Logging.h"
 
 #include "OpenGL/OpenGL_Constants.h"
 
@@ -73,6 +74,7 @@ opengl_compile_shader_from_source(Arena *arena, String label, String source, GLe
     
     result.result = false;
     result.error_log = Sf(arena, "Shader "S_FMT" compile/link failed:\n%s", S_ARG(label), log);
+    log_error_str(result.error_log);
   }
   else
   {
@@ -80,6 +82,7 @@ opengl_compile_shader_from_source(Arena *arena, String label, String source, GLe
     result.shader_program.label  = string_copy(arena, label);
     result.shader_program.type   = shader_type;
     result.shader_program.handle = program;
+    log_trace("Compiled shader %s sucessfully", label.cstring);
   }
 
   return result;
@@ -99,6 +102,7 @@ opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GL
   {
     result.result = false;
     result.error_log = Sf(arena, "Unable to compile shader. Could not to load file path \""S_FMT"\"", S_ARG(file_path));
+    log_error_str(result.error_log);
   }
   scratch_end(&scratch);
   return result;

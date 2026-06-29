@@ -117,17 +117,13 @@ struct CGen_String
 {
   String data;
 
-  CGen_String_Argument *arguments;
-  u64 arguments_count;
-  u64 arguments_capacity;
+  Array(arguments, CGen_String_Argument);
 };
 
 typedef struct CGen_Table_Row CGen_Table_Row;
 struct CGen_Table_Row
 {
-  String *entries;
-  u64 entries_count;
-  u64 entries_capacity;
+  Array(entries, String);
 };
 
 typedef struct CGen_Table CGen_Table;
@@ -135,13 +131,8 @@ struct CGen_Table
 {
   String name;
 
-  String *columns;
-  u64 columns_count;
-  u64 columns_capacity;
-
-  CGen_Table_Row *rows;
-  u64 rows_count;
-  u64 rows_capacity;
+  Array(columns, String);
+  Array(rows, CGen_Table_Row);
 };
 
 typedef struct CGen_Command CGen_Command;
@@ -155,11 +146,8 @@ struct CGen_Command
 typedef struct CGen_Generator CGen_Generator;
 struct CGen_Generator
 {
-  CGen_Command *commands;
-  u64 commands_count;
-  u64 commands_capacity;
-
   String custom_file_name;
+  Array(commands, CGen_Command);
 };
 
 typedef struct CGen_File CGen_File;
@@ -167,23 +155,15 @@ struct CGen_File
 {
   String name;
 
-  CGen_Table *tables;
-  u64 tables_count;
-  u64 tables_capacity;
-
-  CGen_Generator *generators;
-  u64 generators_count;
-  u64 generators_capacity;
+  Array(tables, CGen_Table);
+  Array(generators, CGen_Generator);
 };
 
 typedef struct CGen_Context CGen_Context;
 struct CGen_Context
 {
   Arena *arena;
-
-  CGen_File *files;
-  u64 files_count;
-  u64 files_capacity;
+  Array(files, CGen_File);
 };
 
 function CGen_Context cgen_run(String source_directory); /* Runs the code generator on any .cgen file */
@@ -228,8 +208,7 @@ cgen_run(String source_directory)
     String extension = file_get_extension(file_being_lexed);
     if (!string_equals(extension, S("cgen"), true)) continue;
 
-    CGen_File *cgen_file;
-    array_add(cgen_file, result.files);
+    CGen_File *cgen_file = array_add(result.files);
     memory_zero_struct(cgen_file);
 
     cgen_file->name = string_copy(result.arena, file_being_lexed);
@@ -393,8 +372,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  CGen_Table *result;
-  array_add(result, file->tables);
+  CGen_Table *result = array_add(file->tables);
   memory_zero_struct(result);
 
   array_init_with_arena(ctx->arena, result->columns, String, CGEN_COLUMNS_CAPACITY);
@@ -431,8 +409,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
       _cgen_error(Sf(scratch.arena, "Expected column name identifier, got: "S_FMT"\n", S_ARG(token->value)));
     }
 
-    String *column;
-    array_add(column, result->columns);
+    String *column = array_add(result->columns);
     *column = string_copy(ctx->arena, token->value);
 
     lexer_eat_token(lexer);
@@ -467,8 +444,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
     lexer_eat_token(lexer);
     token = lexer_peek_token(lexer);
 
-    CGen_Table_Row *row;
-    array_add(row, result->rows);
+    CGen_Table_Row *row = array_add(result->rows);
     memory_zero_struct(row);
 
     array_init_with_arena(ctx->arena, row->entries, String, CGEN_COLUMNS_CAPACITY);
@@ -482,8 +458,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 
       if (_cgen_token_is_acceptable_row_value(token))
       {
-        String *entry;
-        array_add(entry, row->entries);
+        String *entry = array_add(row->entries);
         *entry = string_copy(ctx->arena, token->value);
       }
       else
@@ -522,8 +497,7 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
 
-  CGen_Generator *generator;
-  array_add(generator, file->generators);
+  CGen_Generator *generator = array_add(file->generators);
   memory_zero_struct(generator);
   array_init_with_arena(ctx->arena, generator->commands, CGen_Command, CGEN_COMMANDS_CAPACITY);
 
@@ -628,8 +602,7 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
           _cgen_error(Sf(scratch.arena, "Table '"S_FMT"' not found in file\n", S_ARG(table_name)));
         }
 
-        CGen_Command *command;
-        array_add(command, generator->commands);
+        CGen_Command *command = array_add(generator->commands);
 
         command->kind = CGen_Command_Kind_Foreach;
         command->table = found_table;
@@ -645,8 +618,7 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
     }
     else if (token->kind == Token_String_Backtick)
     {
-      CGen_Command *command;
-      array_add(command, generator->commands);
+      CGen_Command *command = array_add(generator->commands);
 
       command->kind = CGen_Command_Kind_String;
       command->table = NULL;
@@ -766,8 +738,7 @@ _cgen_string_from_string(Arena *arena, String str)
       memory_copy(name_str, variable_name.cstring, variable_name.count);
       name_str[variable_name.count] = 0;
 
-      CGen_String_Argument *arg;
-      array_add(arg, result.arguments);
+      CGen_String_Argument *arg = array_add(result.arguments);
 
       arg->name.count   = variable_name.count;
       arg->name.cstring = name_str;

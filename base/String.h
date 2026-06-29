@@ -517,7 +517,7 @@ string_from_format(Arena *arena, char const *fmt, ...)
 function String
 string_from_format_va(Arena *arena, char const *fmt, va_list args)
 {
-  Scratch scratch = scratch_begin(0,0);
+  Scratch scratch = scratch_begin(&arena,1);
   String result = {0};
 
   va_list args_copy;
@@ -526,7 +526,7 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
   int count = kilobytes(8);
   char *temp = push_array(scratch.arena, char, count);
 
-  int len = vsnprintf(temp, count, fmt, args_copy);
+  int len = stbsp_vsnprintf(temp, count, fmt, args_copy);
   va_end(args_copy);
 
   if (len <= 0)
@@ -544,7 +544,7 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
 
     va_list args_copy2;
     va_copy(args_copy2, args);
-    vsnprintf(temp, len + 1, fmt, args_copy2);
+    stbsp_vsnprintf(temp, len + 1, fmt, args_copy2);
     va_end(args_copy2);
   }
 

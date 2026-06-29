@@ -42,18 +42,10 @@ typedef struct DM_File DM_File;
 struct DM_File
 {
   String name;
-  
-  DM_Code_Enum   *enum_definitions;
-  u32             enum_definitions_count;
-  u32             enum_definitions_capacity;
 
-  DM_Code_Struct   *struct_definitions;
-  u32               struct_definitions_count;
-  u32               struct_definitions_capacity;
-
-  DM_Code_Function *function_definitions;
-  u32 function_definitions_count;
-  u32 function_definitions_capacity;
+  Array(enum_definitions, DM_Code_Enum);
+  Array(struct_definitions, DM_Code_Struct);
+  Array(function_definitions, DM_Code_Function);
 
   u32 lines_of_code;
   u32 significant_lines_of_code;
@@ -63,14 +55,9 @@ typedef struct Default_Metaprogram Default_Metaprogram;
 struct Default_Metaprogram
 {
   Arena *arena;
-
-  DM_File *files;
-  u32 files_count;
-  u32 files_capacity;
-
-  String *excluded_files;
-  u32 excluded_files_count;
-  u32 excluded_files_capacity;
+  
+  Array(files, DM_File);
+  Array(excluded_files, String);
 };
 
 function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
@@ -84,8 +71,7 @@ default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram
     array_init_with_arena(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
   }
 
-  String *out;
-  array_add(out, dm->excluded_files);
+  String *out = array_add(dm->excluded_files);
   *out = string_copy(dm->arena, file_name);
 }
 
@@ -154,8 +140,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
 
-    DM_File *dm_file;
-    array_add(dm_file, dm->files);
+    DM_File *dm_file = array_add(dm->files);
     memory_zero_struct(dm_file);
 
     // Counts lines of code
@@ -771,7 +756,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
           String_Builder builder = string_builder_init(thousand(1));
           string_builder_push(&builder, 
           "\nUsage:\n"
-          "No args: Runs userspace metaprogram + default metaprogram"
+          "No args: Runs userspace metaprogram + default metaprogram\n"
           "-loc: Shows lines of code\n"
           "-cgen: Run Code Generator module on all .cgen files\n"
           "-list-todos: Lists all todos in the whole codebase\n"

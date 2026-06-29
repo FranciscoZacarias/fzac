@@ -64,21 +64,19 @@ log_level_color(Log_Level level)
     case LogLevel_Warn:  return "\x1b[33m";
     case LogLevel_Error: return "\x1b[31m";
     case LogLevel_Fatal: return "\x1b[35m";
-    default:             return ""; 
+    default:             return "";
   }
 }
 
 function inline void
 log_flush_to_file(String line)
 {
-  if(!GlobalLogger.file_enabled || line.count == 0) 
-  { 
+  if(!GlobalLogger.file_enabled || line.count == 0)
+  {
     return;
   }
-
   u64 len   = line.count;
   u64 space = (u64)LOG_FILE_BUFFER_SIZE - GlobalLogger.file_head;
-
   if(len <= space)
   {
     memory_copy(GlobalLogger.file_buf + GlobalLogger.file_head, line.cstring, len);
@@ -91,35 +89,38 @@ log_flush_to_file(String line)
     GlobalLogger.file_head = len - space;
   }
   GlobalLogger.file_total += len;
-
   u64 written = (GlobalLogger.file_total < (u64)LOG_FILE_BUFFER_SIZE) ? GlobalLogger.file_total : (u64)LOG_FILE_BUFFER_SIZE;
   file_write(GlobalLogger.file_path, GlobalLogger.file_buf, written);
+}
+
+function inline void
+log_fatal_popup(String msg, const char* src_file, int src_line)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  String  file    = string_new(cstring_length((u8*)src_file), (u8*)src_file);
+  String  body    = Sf(scratch.arena, "Fatal Error\n" S_FMT "\n\nat " S_FMT ":%d", S_ARG(msg), S_ARG(file), src_line);
+  message_box_with_debugger(S("Fatal Error"), body, file, (u32)src_line);
+  scratch_end(&scratch);
 }
 
 function void
 log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, ...)
 {
   if(level < GlobalLogger.min_level)
-  { 
-    return; 
+  {
+    return;
   }
-
   Scratch scratch = scratch_begin(0, 0);
-
   va_list args;
   va_start(args, fmt);
   String msg = string_from_format_va(scratch.arena, fmt, args);
   va_end(args);
-
-  Date_Time date_time    = datetime_now();
-  String    time_string  = datetime_to_string(scratch.arena, date_time, false);
-
-  String line = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+  Date_Time date_time   = datetime_now();
+  String    time_string = datetime_to_string(scratch.arena, date_time, false);
+  String line      = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   string_print(line);
-
   String file_line = Sf(scratch.arena, S_FMT " [%s] %s:%d: " S_FMT "\n", S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   log_flush_to_file(file_line);
-
   for(u32 i = 0; i < GlobalLogger.hook_count; i++)
   {
     if(GlobalLogger.hooks[i].hook_function)
@@ -127,29 +128,28 @@ log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, 
       GlobalLogger.hooks[i].hook_function(level, src_file, src_line, msg);
     }
   }
-
+  if(level == LogLevel_Fatal)
+  {
+    log_fatal_popup(msg, src_file, src_line);
+    assert(0);
+  }
   scratch_end(&scratch);
 }
 
 function void
 log_write_string(Log_Level level, const char* src_file, int src_line, String msg)
 {
-  if(level < GlobalLogger.min_level) 
-  { 
-    return; 
+  if(level < GlobalLogger.min_level)
+  {
+    return;
   }
-
   Scratch scratch = scratch_begin(0, 0);
-
   Date_Time date_time   = datetime_now();
   String    time_string = datetime_to_string(scratch.arena, date_time, false);
-
-  String line = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+  String line      = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   string_print(line);
-
   String file_line = Sf(scratch.arena, S_FMT " [%s] %s:%d: " S_FMT "\n", S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   log_flush_to_file(file_line);
-
   for(u32 i = 0; i < GlobalLogger.hook_count; i++)
   {
     if(GlobalLogger.hooks[i].hook_function)
@@ -157,35 +157,36 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
       GlobalLogger.hooks[i].hook_function(level, src_file, src_line, msg);
     }
   }
-
+  if(level == LogLevel_Fatal)
+  {
+    log_fatal_popup(msg, src_file, src_line);
+    assert(0);
+  }
   scratch_end(&scratch);
 }
 
 function b32
 logging_init(Log_Level min_level, String file_path)
 {
-  if (!TimingInited)
+  if(!TimingInited)
   {
     time_init();
   }
-
   memory_zero_struct(&GlobalLogger);
   GlobalLogger.min_level = min_level;
-
   if(file_path.count > 0)
   {
-    if(!file_exists(file_path)) 
-    { 
-      file_create(file_path); 
+    if(!file_exists(file_path))
+    {
+      file_create(file_path);
     }
-    else                        
-    { 
-      file_wipe(file_path); 
+    else
+    {
+      file_wipe(file_path);
     }
     GlobalLogger.file_path    = file_path;
     GlobalLogger.file_enabled = true;
   }
-
   return true;
 }
 
@@ -206,21 +207,25 @@ logging_set_level(Log_Level level)
   GlobalLogger.min_level = level;
 }
 
-function s32
-logging_add_hook(log_hook_function* fn)
+function b8
+logging_add_hook(log_hook_function* hook_function)
 {
-  if(GlobalLogger.hook_count >= LOG_MAX_HOOKS_COUNT) { return -1; }
-  u32 idx = GlobalLogger.hook_count++;
-  GlobalLogger.hooks[idx].hook_function = fn;
-  return (s32)idx;
+  b8 result = false;
+  if(GlobalLogger.hook_count < LOG_MAX_HOOKS_COUNT) 
+  { 
+    GlobalLogger.hooks[GlobalLogger.hook_count].hook_function = hook_function;
+    GlobalLogger.hook_count += 1;
+    result = true;
+  }
+  return result;
 }
 
 function void
 logging_remove_hook(s32 idx)
 {
   if(idx < 0 || (u32)idx >= GlobalLogger.hook_count)
-  { 
-    return; 
+  {
+    return;
   }
   GlobalLogger.hooks[idx] = GlobalLogger.hooks[--GlobalLogger.hook_count];
 }
@@ -237,8 +242,11 @@ logging_remove_hook(s32 idx)
 #define log_error_str(str) log_write_string(LogLevel_Error, __FILE__, __LINE__, str)
 #define log_fatal_str(str) log_write_string(LogLevel_Fatal, __FILE__, __LINE__, str)
 
+#define log_if(cond, level, fmt, ...) do { if(cond) { log_write(level, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_if_str(cond, level, str)  do { if(cond) { log_write_string(level, __FILE__, __LINE__, str); } } while(0)
+
 #ifdef DEBUG
-  #define log_assert(cond, fmt, ...) do { if(!(cond)) { log_fatal("ASSERT FAILED (%s): " fmt, #cond, ##__VA_ARGS__); raddbg_break(); } } while(0)
+  #define log_assert(cond, fmt, ...) do { if(!(cond)) { log_fatal("ASSERT FAILED (%s): " fmt, #cond, ##__VA_ARGS__); } } while(0)
 #else
   #define log_assert(cond, fmt, ...) do { if(!(cond)) { log_fatal("ASSERT FAILED (%s): " fmt, #cond, ##__VA_ARGS__); } } while(0)
 #endif

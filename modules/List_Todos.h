@@ -24,20 +24,14 @@ typedef struct LT_File LT_File;
 struct LT_File
 {
   String name;
-
-  LT_Todo *todos;
-  u32 todos_count;
-  u32 todos_capacity;
+  Array(todos, LT_Todo);
 };
 
 typedef struct List_Todos List_Todos;
 struct List_Todos
 {
   Arena *arena;
-
-  LT_File *files;
-  u32 files_count;
-  u32 files_capacity;  
+  Array(files, LT_File);
 };
 
 function List_Todos list_todos(String src_directory);
@@ -78,8 +72,7 @@ list_todos(String src_directory)
       continue;
     }
 
-    LT_File *lt_file;
-    array_add(lt_file, todos.files);
+    LT_File *lt_file = array_add(todos.files);
     memory_zero_struct(lt_file);
     
     lt_file->name = string_copy(todos.arena, file_being_lexed);

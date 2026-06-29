@@ -130,13 +130,11 @@ datetime_to_string(Arena *arena, Date_Time dt, b32 include_ms)
   String result;
   if (include_ms)
   {
-    result = Sf(arena, "%04u-" S_FMT "-%02u %02u:%02u:%02u.%03u",
-      dt.year, month_name.count, month_name.cstring, dt.day,dt.hour, dt.minute, dt.second, dt.millisecond);
+    result = Sf(arena, "%04u-" S_FMT "-%02u %02u:%02u:%02u.%03u", dt.year, month_name.count, month_name.cstring, dt.day,dt.hour, dt.minute, dt.second, dt.millisecond);
   }
   else
   {
-    result = Sf(arena, "%04u-" S_FMT "-%02u %02u:%02u:%02u",
-      dt.year, month_name.count, month_name.cstring, dt.day,dt.hour, dt.minute, dt.second);
+    result = Sf(arena, "%04u-" S_FMT "-%02u %02u:%02u:%02u", dt.year, month_name.count, month_name.cstring, dt.day,dt.hour, dt.minute, dt.second);
   }
   
   return result;

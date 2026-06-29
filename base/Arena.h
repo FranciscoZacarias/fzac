@@ -48,7 +48,7 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
 
 // Helper to push data into an arena backed array
 
-#define array_members(name, type) \
+#define Array(name, type) \
   type *name;             \
   u32 name##_count;       \
   u32 name##_capacity
@@ -61,18 +61,7 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     name = push_array((arena), type, name##_capacity); \
   )
 
-#define array_add(out_ptr, name)       \
-  statement(                                             \
-  if ((name##_count) >= (name##_capacity))                                \
-    {                                                    \
-      message_box(S("Arena Array Overflow"),             \
-      St("array_add capacity of %u exceeded", (name##_capacity)), \
-                  S(__FILE__),                             \
-                __LINE__);                               \
-      assert(false);                                     \
-    }                                                    \
-    (out_ptr) = &(name)[(name##_count)++];                       \
-  )
+#define array_add(name) _array_add_impl((void*)name, &(name##_count), name##_capacity, sizeof((name)[0]))
 
 #define array_pop(out_ptr, name)       \
   statement(                                 \
@@ -87,6 +76,20 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
   )
 
 // @Section: Implementation
+
+function void*
+_array_add_impl(void* array, u32* count, u32 capacity, u64 element_size)
+{
+  if (*count >= capacity)
+  {
+    // @TODO(Fz): error
+    assert(false);
+  }
+
+  void* result = (u8*)array + (*count * element_size);
+  *count += 1;
+  return result;
+}
 
 function u64
 arena_header_size()
