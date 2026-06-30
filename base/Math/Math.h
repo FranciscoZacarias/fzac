@@ -120,7 +120,7 @@ struct Matrix4
 function f32     matrix4_determinant(Matrix4 mat); /* Computes the determinant of a 4x4 matrix */
 function f32     matrix4_trace(Matrix4 mat); /* Computes the trace of a 4x4 matrix (sum of diagonal elements) */
 function Matrix4 matrix4_transpose(Matrix4 mat); /* Returns the transpose of a 4x4 matrix */
-function Matrix4 matrix4_invert(Matrix4 mat); /* Returns the inverse of a 4x4 matrix */
+function Matrix4 matrix4_inverse(Matrix4 mat); /* Returns the inverse of a 4x4 matrix */
 function Matrix4 matrix4_add(Matrix4 left, Matrix4 right); /* Adds two 4x4 matrices component-wise */
 function Matrix4 matrix4_sub(Matrix4 left, Matrix4 right); /* Subtracts the right 4x4 matrix from the left component-wise */
 function Matrix4 matrix4_mul(Matrix4 left, Matrix4 right); /* Multiplies two 4x4 matrices */
@@ -700,7 +700,7 @@ v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view)
   mat_view_proj.m14 = view.m12*projection.m2 + view.m13*projection.m6 + view.m14*projection.m10 + view.m15*projection.m14;
   mat_view_proj.m15 = view.m12*projection.m3 + view.m13*projection.m7 + view.m14*projection.m11 + view.m15*projection.m15;
 
-  // Calculate inverted matrix -> Matrix4_invert(mat_view_proj);
+  // Calculate inverted matrix -> Matrix4_inverse(mat_view_proj);
   // Cache the matrix values (speed optimization)
   f32 a00 = mat_view_proj.m0, a01 = mat_view_proj.m1, a02 = mat_view_proj.m2, a03 = mat_view_proj.m3;
   f32 a10 = mat_view_proj.m4, a11 = mat_view_proj.m5, a12 = mat_view_proj.m6, a13 = mat_view_proj.m7;
@@ -1074,7 +1074,7 @@ matrix4_transpose(Matrix4 mat)
 
 // Invert provided matrix
 function Matrix4
-matrix4_invert(Matrix4 mat)
+matrix4_inverse(Matrix4 mat)
 {
   Matrix4 result = { 0 };
 

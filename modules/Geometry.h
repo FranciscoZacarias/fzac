@@ -1,5 +1,12 @@
-#ifndef FZ_BOX_H
-#define FZ_BOX_H
+#ifndef FZ_GEOMETRY_H
+#define FZ_GEOMETRY_H
+
+typedef struct Ray Ray;
+struct Ray
+{
+  V3f32 begin;
+  V3f32 end;
+};
 
 typedef struct Box Box;
 struct Box
@@ -9,6 +16,12 @@ struct Box
 };
 #define box(min,max) (Box){ min, max }
 #define box_const(min,max) { min, max }
+
+function V3f32 box_get_dimensions(Box *box);
+function b8    box_is_point_inside(Box *box, V3f32 point);
+function b8    box_intersect(Box *box_a, Box box_b);
+
+// @Section: Implementation
 
 function V3f32
 box_get_dimensions(Box *box)
@@ -38,4 +51,4 @@ box_intersect(Box *box_a, Box box_b)
   return result;
 }
 
-#endif // FZ_BOX_H
+#endif // FZ_GEOMETRY_H
