@@ -458,13 +458,6 @@ _opengl_load_functions()
     return false;
   }
 
-  __glLineWidth = (PFNglLineWidthPROC)_load_gl_function("glLineWidth"); 
-  if (!__glLineWidth)
-  {
-    message_box(S("OpenGL"), S("Unable to load opengl function: glLineWidth"), S("OpenGL.cgen"), 0);
-    return false;
-  }
-
   __glVertexArrayElementBuffer = (PFNglVertexArrayElementBufferPROC)_load_gl_function("glVertexArrayElementBuffer"); 
   if (!__glVertexArrayElementBuffer)
   {
@@ -693,6 +686,20 @@ _opengl_load_functions()
   if (!__glPopDebugGroup)
   {
     message_box(S("OpenGL"), S("Unable to load opengl function: glPopDebugGroup"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glPointSize = (PFNglPointSizePROC)_load_gl_function("glPointSize"); 
+  if (!__glPointSize)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glPointSize"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glLineWidth = (PFNglLineWidthPROC)_load_gl_function("glLineWidth"); 
+  if (!__glLineWidth)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glLineWidth"), S("OpenGL.cgen"), 0);
     return false;
   }
 

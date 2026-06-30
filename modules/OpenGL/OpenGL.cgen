@@ -59,7 +59,6 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glProgramUniform1iv             `(GLuint program, GLint location, GLsizei count, const GLint *value)`                                                                        `(program, location, count, value)`                                                 }
   {  glPolygonMode                   `(GLenum face, GLenum mode)`                                                                                                                 `(face, mode)`                                                                      }
   {  glDepthRangef                   `(GLfloat n, GLfloat f)`                                                                                                                     `(n, f)`                                                                            }
-  {  glLineWidth                     `(GLfloat width)`                                                                                                                            `(width)`                                                                           }
   {  glVertexArrayElementBuffer      `(GLuint vaobj, GLuint buffer)`                                                                                                              `(vaobj, buffer)`                                                                   }
   {  glProgramUniformMatrix3fv       `(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)`                                                 `(program, location, count, transpose, value)`                                      }
   {  glViewport                      `(GLint x, GLint y, GLsizei width, GLsizei height)`                                                                                          `(x, y, width, height)`                                                             }
@@ -93,6 +92,9 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glObjectLabel                   `(GLenum identifier, GLuint name, GLsizei length, const char* label)`                                                                        `(identifier, name, length, label)` }
   {  glPushDebugGroup                `(GLenum source, GLuint id, GLsizei length, const GLchar *message)`                                                                          `(source, id, length, message)`     }
   {  glPopDebugGroup                 `()`                                                                                                                                         `()` }    
+  {  glPointSize                     `(GLfloat size)`                                                                                                                             `(size)` }
+  {  glLineWidth                     `(GLfloat width)`                                                                                                                            `(width)` }
+
 }
 
 @Table

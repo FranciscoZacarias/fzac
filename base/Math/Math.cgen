@@ -1,9 +1,9 @@
 
-@Table Vector_Type_Table (type)
+@Table Vector_Type_Table (type fmt)
 {
-  { f32 }
-  { u32 }
-  { s32 }
+  { f32 `.2f` }
+  { u32 `u`   }
+  { s32 `d`   }
 }
 
 @Table Rect_Type_Table (type)
@@ -23,6 +23,7 @@
 `typedef struct V2$(type) V2$(type);
 struct V2$(type) { $(type) x, y; };
 #define v2$(type)(x,y) (V2$(type)){(x),(y)}
+#define v2$(type)n(n)  (V2$(type)){(n),(n)}
 #define v2$(type)_zero() v2$(type)(0,0)
 function V2$(type) v2$(type)_add(V2$(type) a, V2$(type) b);
 function V2$(type) v2$(type)_sub(V2$(type) a, V2$(type) b);
@@ -30,7 +31,8 @@ function V2$(type) v2$(type)_mul(V2$(type) a, V2$(type) b);
 function V2$(type) v2$(type)_scale(V2$(type) v, $(type) s);
 function V2$(type) v2$(type)_min(V2$(type) a, V2$(type) b);
 function V2$(type) v2$(type)_max(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max);\n`
+function V2$(type) v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max);
+function String    v2$(type)_to_string(Arena* arena, V2$(type) v);\n`
 
   `\n// Vector 3 types\n`
   `// --------------\n`
@@ -38,6 +40,7 @@ function V2$(type) v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max);\n
 `typedef struct V3$(type) V3$(type);
 struct V3$(type) { $(type) x, y, z; };
 #define v3$(type)(x,y,z) (V3$(type)){(x),(y),(z)}
+#define v3$(type)n(n)  (V3$(type)){(n),(n),(n)}
 #define v3$(type)_zero() v3$(type)(0,0,0)
 function V3$(type) v3$(type)_add(V3$(type) a, V3$(type) b);
 function V3$(type) v3$(type)_sub(V3$(type) a, V3$(type) b);
@@ -45,7 +48,8 @@ function V3$(type) v3$(type)_mul(V3$(type) a, V3$(type) b);
 function V3$(type) v3$(type)_scale(V3$(type) v, $(type) s);
 function V3$(type) v3$(type)_min(V3$(type) a, V3$(type) b);
 function V3$(type) v3$(type)_max(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max);\n`
+function V3$(type) v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max);
+function String    v3$(type)_to_string(Arena* arena, V3$(type) v);\n`
 
   `\n// Vector4 types\n`
   `// -------------\n`
@@ -54,6 +58,7 @@ function V3$(type) v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max);\n
 typedef struct V4$(type) V4$(type);
 struct V4$(type) { $(type) x, y, z, w; };
 #define v4$(type)(x,y,z,w) (V4$(type)){(x),(y),(z),(w)}
+#define v4$(type)n(n)  (V4$(type)){(n),(n),(n),(n)}
 #define v4$(type)_zero() v4$(type)(0,0,0,0)
 function V4$(type) v4$(type)_add(V4$(type) a, V4$(type) b);
 function V4$(type) v4$(type)_sub(V4$(type) a, V4$(type) b);
@@ -61,7 +66,8 @@ function V4$(type) v4$(type)_mul(V4$(type) a, V4$(type) b);
 function V4$(type) v4$(type)_scale(V4$(type) v, $(type) s);
 function V4$(type) v4$(type)_min(V4$(type) a, V4$(type) b);
 function V4$(type) v4$(type)_max(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max);\n`
+function V4$(type) v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max);
+function String    v4$(type)_to_string(Arena* arena, V4$(type) v);\n`
 
   `\n// Rect types\n`
   `// ----------\n`
@@ -90,66 +96,72 @@ function Rect$(type) rect$(type)_union(Rect$(type) a, Rect$(type) b);\n`
   {
     `// V2 Implementation\n`
     @foreach(Vector_Type_Table) `function V2$(type)
-  v2$(type)_add(V2$(type) a, V2$(type) b)
-  {
-    V2$(type) result = { a.x + b.x, a.y + b.y };
-    return result;
-  }
+v2$(type)_add(V2$(type) a, V2$(type) b)
+{
+  V2$(type) result = { a.x + b.x, a.y + b.y };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_sub(V2$(type) a, V2$(type) b)
-  {
-    V2$(type) result = { a.x - b.x, a.y - b.y };
-    return result;
-  }
+function V2$(type)
+v2$(type)_sub(V2$(type) a, V2$(type) b)
+{
+  V2$(type) result = { a.x - b.x, a.y - b.y };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_mul(V2$(type) a, V2$(type) b)
-  {
-    V2$(type) result = { a.x * b.x, a.y * b.y };
-    return result;
-  }
+function V2$(type)
+v2$(type)_mul(V2$(type) a, V2$(type) b)
+{
+  V2$(type) result = { a.x * b.x, a.y * b.y };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_scale(V2$(type) v, $(type) s)
-  {
-    V2$(type) result = { v.x * s, v.y * s };
-    return result;
-  }
+function V2$(type)
+v2$(type)_scale(V2$(type) v, $(type) s)
+{
+  V2$(type) result = { v.x * s, v.y * s };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_min(V2$(type) a, V2$(type) b)
+function V2$(type)
+v2$(type)_min(V2$(type) a, V2$(type) b)
+{
+  V2$(type) result =
   {
-    V2$(type) result =
-    {
-      a.x < b.x ? a.x : b.x,
-      a.y < b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x < b.x ? a.x : b.x,
+    a.y < b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_max(V2$(type) a, V2$(type) b)
+function V2$(type)
+v2$(type)_max(V2$(type) a, V2$(type) b)
+{
+  V2$(type) result =
   {
-    V2$(type) result =
-    {
-      a.x > b.x ? a.x : b.x,
-      a.y > b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x > b.x ? a.x : b.x,
+    a.y > b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2$(type)
-  v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max)
+function V2$(type)
+v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max)
+{
+  V2$(type) result =
   {
-    V2$(type) result =
-    {
-      v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
-      v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
-    };
-    return result;
-  }
+    v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
+    v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
+  };
+  return result;
+}
 
+function String
+v2$(type)_to_string(Arena *arena, V2$(type) v)
+{
+  String result = Sf(arena, "(%%$(fmt), %%$(fmt))", v.x, v.y);
+  return result;
+}
   `
 
   `// V3 Implementation\n`
@@ -206,6 +218,14 @@ v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max)
   V3$(type) result = { v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
                        v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y),
                        v.z < min.z ? min.z : (v.z > max.z ? max.z : v.z) };
+  return result;
+}
+
+
+function String
+v3$(type)_to_string(Arena *arena, V3$(type) v)
+{
+  String result = Sf(arena, "(%%$(fmt), %%$(fmt), %%$(fmt))", v.x, v.y, v.z);
   return result;
 }
 
@@ -270,6 +290,14 @@ v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max)
                        v.w < min.w ? min.w : (v.w > max.w ? max.w : v.w) };
   return result;
 }
+
+function String
+v4$(type)_to_string(Arena *arena, V4$(type) v)
+{
+  String result = Sf(arena, "(%%$(fmt), %%$(fmt), %%$(fmt), %%$(fmt))", v.x, v.y, v.z, v.w);
+  return result;
+}
+
 \n`
 
   `// Rect Implementation\n`

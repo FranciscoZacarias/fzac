@@ -167,7 +167,7 @@ _profiler_init()
 
   ProfileContext.file_output  = PROFILER_OUTPUT_FILE;
   
-  array_init_with_arena(ProfileContext.arena, ProfileContext.recordings, Profiler_Recording, PROFILER_RECORDINGS_CAPACITY);
+  array_init(ProfileContext.arena, ProfileContext.recordings, Profiler_Recording, PROFILER_RECORDINGS_CAPACITY);
 }
 
 function void
@@ -184,7 +184,7 @@ _profiler_recording_start()
 
   memory_zero_struct(rec);
   rec->arena = arena_alloc();
-  array_init_with_arena(rec->arena, rec->events, Profiler_Event, PROFILER_EVENTS_CAPACITY);
+  array_init(rec->arena, rec->events, Profiler_Event, PROFILER_EVENTS_CAPACITY);
   rec->time_us_start = time_microseconds();
 
   // Output file
@@ -209,7 +209,7 @@ _profiler_recording_stop()
   Profiler_Event *event_stack = NULL;
   u64 event_stack_count    = 0;
   u64 event_stack_capacity = 0;
-  array_init_with_arena(scratch.arena, event_stack, Profiler_Event, ProfileContext.active_recording->events_count);
+  array_init(scratch.arena, event_stack, Profiler_Event, ProfileContext.active_recording->events_count);
 
   u64 nests = 0;
   u64 previous_frame_timestamp = 0;

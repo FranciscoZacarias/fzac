@@ -632,17 +632,6 @@ glDepthRangef (GLfloat n, GLfloat f)
 #endif
 }
 
-typedef void (*PFNglLineWidthPROC)(GLfloat width);
-global PFNglLineWidthPROC __glLineWidth = NULL;
-function inline void
-glLineWidth (GLfloat width)
-{
-  __glLineWidth (width);
-#if DEBUG_OPENGL_CHECK_ERRORS
-  opengl_check_errors();
-#endif
-}
-
 typedef void (*PFNglVertexArrayElementBufferPROC)(GLuint vaobj, GLuint buffer);
 global PFNglVertexArrayElementBufferPROC __glVertexArrayElementBuffer = NULL;
 function inline void
@@ -1001,6 +990,28 @@ function inline void
 glPopDebugGroup ()
 {
   __glPopDebugGroup ();
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglPointSizePROC)(GLfloat size);
+global PFNglPointSizePROC __glPointSize = NULL;
+function inline void
+glPointSize (GLfloat size)
+{
+  __glPointSize (size);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglLineWidthPROC)(GLfloat width);
+global PFNglLineWidthPROC __glLineWidth = NULL;
+function inline void
+glLineWidth (GLfloat width)
+{
+  __glLineWidth (width);
 #if DEBUG_OPENGL_CHECK_ERRORS
   opengl_check_errors();
 #endif

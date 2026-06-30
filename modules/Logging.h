@@ -9,11 +9,11 @@
 typedef enum Log_Level Log_Level;
 enum Log_Level
 {
-  LogLevel_Trace = 0,
-  LogLevel_Info  = 1,
-  LogLevel_Warn  = 2,
-  LogLevel_Error = 3,
-  LogLevel_Fatal = 4,
+  Log_Level_Trace = 0,
+  Log_Level_Info  = 1,
+  Log_Level_Warn  = 2,
+  Log_Level_Error = 3,
+  Log_Level_Fatal = 4,
   LogLevel_Count,
 };
 
@@ -45,11 +45,11 @@ log_level_str(Log_Level level)
 {
   switch(level)
   {
-    case LogLevel_Trace: return "TRACE";
-    case LogLevel_Info:  return "INFO";
-    case LogLevel_Warn:  return "WARN";
-    case LogLevel_Error: return "ERROR";
-    case LogLevel_Fatal: return "FATAL";
+    case Log_Level_Trace: return "TRACE";
+    case Log_Level_Info:  return "INFO";
+    case Log_Level_Warn:  return "WARN";
+    case Log_Level_Error: return "ERROR";
+    case Log_Level_Fatal: return "FATAL";
     default:             return "?????";
   }
 }
@@ -59,11 +59,11 @@ log_level_color(Log_Level level)
 {
   switch(level)
   {
-    case LogLevel_Trace: return "\x1b[90m";
-    case LogLevel_Info:  return "\x1b[32m";
-    case LogLevel_Warn:  return "\x1b[33m";
-    case LogLevel_Error: return "\x1b[31m";
-    case LogLevel_Fatal: return "\x1b[35m";
+    case Log_Level_Trace: return "\x1b[90m";
+    case Log_Level_Info:  return "\x1b[32m";
+    case Log_Level_Warn:  return "\x1b[33m";
+    case Log_Level_Error: return "\x1b[31m";
+    case Log_Level_Fatal: return "\x1b[35m";
     default:             return "";
   }
 }
@@ -128,7 +128,7 @@ log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, 
       GlobalLogger.hooks[i].hook_function(level, src_file, src_line, msg);
     }
   }
-  if(level == LogLevel_Fatal)
+  if(level == Log_Level_Fatal)
   {
     log_fatal_popup(msg, src_file, src_line);
     assert(0);
@@ -157,7 +157,7 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
       GlobalLogger.hooks[i].hook_function(level, src_file, src_line, msg);
     }
   }
-  if(level == LogLevel_Fatal)
+  if(level == Log_Level_Fatal)
   {
     log_fatal_popup(msg, src_file, src_line);
     assert(0);
@@ -230,25 +230,28 @@ logging_remove_hook(s32 idx)
   GlobalLogger.hooks[idx] = GlobalLogger.hooks[--GlobalLogger.hook_count];
 }
 
-#define log_trace(fmt, ...) log_write(LogLevel_Trace, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
-#define log_info(fmt, ...)  log_write(LogLevel_Info,  __FILE__, __LINE__, fmt, ##__VA_ARGS__)
-#define log_warn(fmt, ...)  log_write(LogLevel_Warn,  __FILE__, __LINE__, fmt, ##__VA_ARGS__)
-#define log_error(fmt, ...) log_write(LogLevel_Error, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
-#define log_fatal(fmt, ...) log_write(LogLevel_Fatal, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define log_trace(fmt, ...) log_write(Log_Level_Trace, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define log_info(fmt, ...)  log_write(Log_Level_Info,  __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define log_warn(fmt, ...)  log_write(Log_Level_Warn,  __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define log_error(fmt, ...) log_write(Log_Level_Error, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define log_fatal(fmt, ...) log_write(Log_Level_Fatal, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 
-#define log_trace_str(str) log_write_string(LogLevel_Trace, __FILE__, __LINE__, str)
-#define log_info_str(str)  log_write_string(LogLevel_Info,  __FILE__, __LINE__, str)
-#define log_warn_str(str)  log_write_string(LogLevel_Warn,  __FILE__, __LINE__, str)
-#define log_error_str(str) log_write_string(LogLevel_Error, __FILE__, __LINE__, str)
-#define log_fatal_str(str) log_write_string(LogLevel_Fatal, __FILE__, __LINE__, str)
+#define log_trace_str(str) log_write_string(Log_Level_Trace, __FILE__, __LINE__, str)
+#define log_info_str(str)  log_write_string(Log_Level_Info,  __FILE__, __LINE__, str)
+#define log_warn_str(str)  log_write_string(Log_Level_Warn,  __FILE__, __LINE__, str)
+#define log_error_str(str) log_write_string(Log_Level_Error, __FILE__, __LINE__, str)
+#define log_fatal_str(str) log_write_string(Log_Level_Fatal, __FILE__, __LINE__, str)
 
-#define log_if(cond, level, fmt, ...) do { if(cond) { log_write(level, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
-#define log_if_str(cond, level, str)  do { if(cond) { log_write_string(level, __FILE__, __LINE__, str); } } while(0)
+#define log_trace_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Trace, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_info_if (cond, fmt, ...) do { if(cond) { log_write(Log_Level_Info, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_warn_if (cond, fmt, ...) do { if(cond) { log_write(Log_Level_Warn, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_error_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Error, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_fatal_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Fatal, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
 
-#ifdef DEBUG
-  #define log_assert(cond, fmt, ...) do { if(!(cond)) { log_fatal("ASSERT FAILED (%s): " fmt, #cond, ##__VA_ARGS__); } } while(0)
-#else
-  #define log_assert(cond, fmt, ...) do { if(!(cond)) { log_fatal("ASSERT FAILED (%s): " fmt, #cond, ##__VA_ARGS__); } } while(0)
-#endif
+#define log_trace_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Trace, __FILE__, __LINE__, str); } } while(0)
+#define log_info_if_str (cond, str)  do { if(cond) { log_write_string(Log_Level_Info, __FILE__, __LINE__, str); } } while(0)
+#define log_warn_if_str (cond, str)  do { if(cond) { log_write_string(Log_Level_Warn, __FILE__, __LINE__, str); } } while(0)
+#define log_error_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Error, __FILE__, __LINE__, str); } } while(0)
+#define log_fatal_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Fatal, __FILE__, __LINE__, str); } } while(0)
 
 #endif // FZ_LOGGING_H

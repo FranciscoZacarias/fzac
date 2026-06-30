@@ -17,7 +17,6 @@ function inline f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value be
 function inline f32 f32_lerp(f32 start, f32 end, f32 t);
 
 // @Section: V2f32
-function String  v2f32_to_string(Arena *arena, V2f32 v);
 function f32   v2f32_length(V2f32 v); /* Returns the Euclidean length (magnitude) of a 2D vector */
 function f32   v2f32_length_squared(V2f32 v); /* Returns the squared length of a 2D vector (avoids sqrt) */
 function f32   v2f32_dot(V2f32 v1, V2f32 v2); /* Computes the dot product of two 2D vectors */
@@ -36,12 +35,6 @@ function V2f32 v2f32_invert(V2f32 v); /* Inverts each component of a 2D vector (
 function b32   v2f32_equals(V2f32 p, V2f32 q); /* Returns true if two 2D vectors are equal component-wise */
 function V2f32 v2f32_refract(V2f32 v, V2f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
 function V2f32 v2f32_snap45(V2f32 v); /* Snaps v to the closest 45 degree angle */
-
-// @Section: V2u32
-function String v2u32_to_string(Arena *arena, V2u32 v);
-
-// @Section: V2s32
-function String  v2s32_to_string(Arena *arena, V2s32 v);
 
 // @Section: V3f32
 function V3f32 v3f32_cross(V3f32 v1, V3f32 v2); /* Computes the cross product of two 3D vectors */
@@ -130,7 +123,8 @@ function Matrix4 matrix4_transpose(Matrix4 mat); /* Returns the transpose of a 4
 function Matrix4 matrix4_invert(Matrix4 mat); /* Returns the inverse of a 4x4 matrix */
 function Matrix4 matrix4_add(Matrix4 left, Matrix4 right); /* Adds two 4x4 matrices component-wise */
 function Matrix4 matrix4_sub(Matrix4 left, Matrix4 right); /* Subtracts the right 4x4 matrix from the left component-wise */
-function Matrix4 matrix4_multiply(Matrix4 left, Matrix4 right); /* Multiplies two 4x4 matrices */
+function Matrix4 matrix4_mul(Matrix4 left, Matrix4 right); /* Multiplies two 4x4 matrices */
+function V3f32   matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w);
 function Matrix4 matrix4_translate(f32 x, f32 y, f32 z); /* Creates a translation matrix for the given x, y, z offsets */
 function Matrix4 matrix4_rotate(V3f32 axis, f32 angle); /* Creates a rotation matrix around a given axis by an angle in radians */
 function Matrix4 matrix4_rotate_X(f32 angle); /* Creates a rotation matrix around the X-axis by an angle in radians */
@@ -145,6 +139,7 @@ function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nea
 function Matrix4 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
 function Matrix4 matrix4_from_quaternion(Quaternion q); /* Creates a Matrix4 from the given quaternion */
 function Matrix4 matrix4_from_transform(Transform t); /* Creates a Matrix4 from the given transform */
+function String  matrix4_to_string(Arena *arena, Matrix4 m); /* Creates a string out of a matrix4 */ 
 
 // @Section: Quaternion
 struct Quaternion { f32 x, y, z, w; };
@@ -168,12 +163,16 @@ function Quaternion quaternion_from_v3f32_to_v3f32(V3f32 from, V3f32 to); /* Cre
 function Quaternion quaternion_from_matrix4(Matrix4 mat); /* Converts a rotation matrix to a quaternion */
 function Matrix4    quaternion_to_matrix4(Quaternion q); /* Converts a quaternion to a rotation matrix */
 function Quaternion quaternion_from_axis_angle(V3f32 axis, f32 angle); /* Creates a quaternion representing a rotation around an axis by an angle in radians */
+function Quaternion quaternion_from_x_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the x axis by an angle in radians */
+function Quaternion quaternion_from_y_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the y axis by an angle in radians */
+function Quaternion quaternion_from_z_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the z axis by an angle in radians */
 function void       quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle); /* Extracts the rotation axis and angle (in radians) from a quaternion */
 function Quaternion quaternion_from_euler(f32 pitch, f32 yaw, f32 roll); /* Creates a quaternion equivalent to Euler angles (Z-Y-X rotation order)\n Angles must be provided in radians */
 function V3f32      quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
 function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
 function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
 function V3f32      quaternion_rotate_v3f32(Quaternion q, V3f32 v);
+function String     quaternion_to_string(Arena *arena, Quaternion q); /* Creates a string out of a quaternion */
 
 // @Section: Transform
 struct Transform 
@@ -184,6 +183,9 @@ struct Transform
 };
 #define transform(t,r,s) (Transform){t,r,s}
 #define transform_identity() transform(v3f32_zero(), quaternion_identity(), v3f32(1.0f, 1.0f, 1.0f))
+
+function Transform transform_apply(Transform a, Transform b); /* Applies transform a onto transform b */
+function String    transform_to_string(Arena *arena, Transform t); /* Creates a string out of a transform */
 
 // @Section: Implementation
 
@@ -199,13 +201,6 @@ function inline f32
 f32_lerp(f32 from, f32 to, f32 t)
 {
   return from + (to - from) * t;
-}
-
-function String
-v2f32_to_string(Arena *arena, V2f32 v)
-{
-  String result = Sf(arena, "%.2f, %.2f", v.x, v.y); 
-  return result;
 }
 
 function f32
@@ -382,20 +377,6 @@ v2f32_snap45(V2f32 v)
   v.y *= scale;
     
   return v;
-}
-
-function String
-v2u32_to_string(Arena *arena, V2u32 v)
-{
-  String result = Sf(arena, "%u, %u", v.x, v.y); 
-  return result;
-}
-
-function String
-v2s32_to_string(Arena *arena, V2s32 v)
-{
-  String result = Sf(arena, "%d, %d", v.x, v.y); 
-  return result;
 }
 
 function V3f32
@@ -1190,7 +1171,7 @@ matrix4_sub(Matrix4 left, Matrix4 right)
 }
 
 function Matrix4
-matrix4_multiply(Matrix4 left, Matrix4 right)
+matrix4_mul(Matrix4 left, Matrix4 right)
 {
   Matrix4 result = { 0 };
 
@@ -1210,6 +1191,18 @@ matrix4_multiply(Matrix4 left, Matrix4 right)
   result.m13 = left.m12*right.m1 + left.m13*right.m5 + left.m14*right.m9 + left.m15*right.m13;
   result.m14 = left.m12*right.m2 + left.m13*right.m6 + left.m14*right.m10 + left.m15*right.m14;
   result.m15 = left.m12*right.m3 + left.m13*right.m7 + left.m14*right.m11 + left.m15*right.m15;
+
+  return result;
+}
+
+function V3f32
+matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w)
+{
+  V3f32 result;
+
+  result.x = m.m0  * v.x + m.m4  * v.y + m.m8  * v.z + m.m12 * w;
+  result.y = m.m1  * v.x + m.m5  * v.y + m.m9  * v.z + m.m13 * w;
+  result.z = m.m2  * v.x + m.m6  * v.y + m.m10 * v.z + m.m14 * w;
 
   return result;
 }
@@ -1574,6 +1567,20 @@ matrix4_from_transform(Transform t)
   return result;
 }
 
+function String
+matrix4_to_string(Arena *arena, Matrix4 m)
+{
+  return Sf(arena,
+    "[%g %g %g %g]\n"
+    "[%g %g %g %g]\n"
+    "[%g %g %g %g]\n"
+    "[%g %g %g %g]",
+    m.m0,  m.m4,  m.m8,  m.m12,
+    m.m1,  m.m5,  m.m9,  m.m13,
+    m.m2,  m.m6,  m.m10, m.m14,
+    m.m3,  m.m7,  m.m11, m.m15);
+}
+
 function Quaternion
 quaternion_add(Quaternion q1, Quaternion q2)
 {
@@ -1928,6 +1935,30 @@ quaternion_from_axis_angle(V3f32 axis, f32 angle)
   return result;
 }
 
+function Quaternion 
+quaternion_from_x_axis_angle(f32 angle)
+{
+  Quaternion result;
+  result = quaternion_from_axis_angle(v3f32(1,0,0), angle);
+  return result;
+}
+
+function Quaternion 
+quaternion_from_y_axis_angle(f32 angle)
+{
+  Quaternion result;
+  result = quaternion_from_axis_angle(v3f32(0,1,0), angle);
+  return result;
+}
+
+function Quaternion 
+quaternion_from_z_axis_angle(f32 angle)
+{
+  Quaternion result;
+  result = quaternion_from_axis_angle(v3f32(0,0,1), angle);
+  return result;
+}
+
 function void
 quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle)
 {
@@ -2046,5 +2077,40 @@ quaternion_rotate_v3f32(Quaternion q, V3f32 v)
   return (V3f32){result.x, result.y, result.z};
 }
 
+function String
+quaternion_to_string(Arena *arena, Quaternion q)
+{
+  return Sf(arena, "(%.2f, %.2f, %.2f, %.2f)", q.x, q.y, q.z, q.w);
+}
+
+function Transform
+transform_apply(Transform t, Transform applied_to)
+{
+  Transform result;
+
+  result.scale    = v3f32_mul(t.scale, applied_to.scale);
+  result.rotation = quaternion_mul(t.rotation, applied_to.rotation);
+
+  V3f32 scaled_translation = v3f32_mul(t.scale, applied_to.translation);
+  result.translation = v3f32_add(t.translation, quaternion_rotate_v3f32(t.rotation, scaled_translation));
+
+  return result;
+}
+
+function String
+transform_to_string(Arena *arena, Transform t)
+{
+  String translation = v3f32_to_string(arena, t.translation);
+  String rotation    = quaternion_to_string(arena, t.rotation);
+  String scale       = v3f32_to_string(arena, t.scale);
+
+  return Sf(arena,
+    "Translation: "S_FMT"\n"
+    "Rotation:    "S_FMT"\n"
+    "Scale:       "S_FMT,
+    S_ARG(translation),
+    S_ARG(rotation),
+    S_ARG(scale));
+}
 
 #endif // MATH_H

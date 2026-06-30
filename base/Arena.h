@@ -53,7 +53,7 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
   u32 name##_count;       \
   u32 name##_capacity
 
-#define array_init_with_arena(arena, name, type, capacity)  \
+#define array_init(arena, name, type, capacity)  \
   statement(                                           \
     assert((arena) != NULL);                           \
     name##_count = 0;                                  \

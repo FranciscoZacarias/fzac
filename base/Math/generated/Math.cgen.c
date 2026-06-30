@@ -2,188 +2,206 @@
 
 // V2 Implementation
 function V2f32
-  v2f32_add(V2f32 a, V2f32 b)
-  {
-    V2f32 result = { a.x + b.x, a.y + b.y };
-    return result;
-  }
+v2f32_add(V2f32 a, V2f32 b)
+{
+  V2f32 result = { a.x + b.x, a.y + b.y };
+  return result;
+}
 
-  function V2f32
-  v2f32_sub(V2f32 a, V2f32 b)
-  {
-    V2f32 result = { a.x - b.x, a.y - b.y };
-    return result;
-  }
+function V2f32
+v2f32_sub(V2f32 a, V2f32 b)
+{
+  V2f32 result = { a.x - b.x, a.y - b.y };
+  return result;
+}
 
-  function V2f32
-  v2f32_mul(V2f32 a, V2f32 b)
-  {
-    V2f32 result = { a.x * b.x, a.y * b.y };
-    return result;
-  }
+function V2f32
+v2f32_mul(V2f32 a, V2f32 b)
+{
+  V2f32 result = { a.x * b.x, a.y * b.y };
+  return result;
+}
 
-  function V2f32
-  v2f32_scale(V2f32 v, f32 s)
-  {
-    V2f32 result = { v.x * s, v.y * s };
-    return result;
-  }
+function V2f32
+v2f32_scale(V2f32 v, f32 s)
+{
+  V2f32 result = { v.x * s, v.y * s };
+  return result;
+}
 
-  function V2f32
-  v2f32_min(V2f32 a, V2f32 b)
+function V2f32
+v2f32_min(V2f32 a, V2f32 b)
+{
+  V2f32 result =
   {
-    V2f32 result =
-    {
-      a.x < b.x ? a.x : b.x,
-      a.y < b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x < b.x ? a.x : b.x,
+    a.y < b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2f32
-  v2f32_max(V2f32 a, V2f32 b)
+function V2f32
+v2f32_max(V2f32 a, V2f32 b)
+{
+  V2f32 result =
   {
-    V2f32 result =
-    {
-      a.x > b.x ? a.x : b.x,
-      a.y > b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x > b.x ? a.x : b.x,
+    a.y > b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2f32
-  v2f32_clamp(V2f32 v, V2f32 min, V2f32 max)
+function V2f32
+v2f32_clamp(V2f32 v, V2f32 min, V2f32 max)
+{
+  V2f32 result =
   {
-    V2f32 result =
-    {
-      v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
-      v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
-    };
-    return result;
-  }
+    v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
+    v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
+  };
+  return result;
+}
 
+function String
+v2f32_to_string(Arena *arena, V2f32 v)
+{
+  String result = Sf(arena, "(%.2f, %.2f)", v.x, v.y);
+  return result;
+}
   function V2u32
-  v2u32_add(V2u32 a, V2u32 b)
-  {
-    V2u32 result = { a.x + b.x, a.y + b.y };
-    return result;
-  }
+v2u32_add(V2u32 a, V2u32 b)
+{
+  V2u32 result = { a.x + b.x, a.y + b.y };
+  return result;
+}
 
-  function V2u32
-  v2u32_sub(V2u32 a, V2u32 b)
-  {
-    V2u32 result = { a.x - b.x, a.y - b.y };
-    return result;
-  }
+function V2u32
+v2u32_sub(V2u32 a, V2u32 b)
+{
+  V2u32 result = { a.x - b.x, a.y - b.y };
+  return result;
+}
 
-  function V2u32
-  v2u32_mul(V2u32 a, V2u32 b)
-  {
-    V2u32 result = { a.x * b.x, a.y * b.y };
-    return result;
-  }
+function V2u32
+v2u32_mul(V2u32 a, V2u32 b)
+{
+  V2u32 result = { a.x * b.x, a.y * b.y };
+  return result;
+}
 
-  function V2u32
-  v2u32_scale(V2u32 v, u32 s)
-  {
-    V2u32 result = { v.x * s, v.y * s };
-    return result;
-  }
+function V2u32
+v2u32_scale(V2u32 v, u32 s)
+{
+  V2u32 result = { v.x * s, v.y * s };
+  return result;
+}
 
-  function V2u32
-  v2u32_min(V2u32 a, V2u32 b)
+function V2u32
+v2u32_min(V2u32 a, V2u32 b)
+{
+  V2u32 result =
   {
-    V2u32 result =
-    {
-      a.x < b.x ? a.x : b.x,
-      a.y < b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x < b.x ? a.x : b.x,
+    a.y < b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2u32
-  v2u32_max(V2u32 a, V2u32 b)
+function V2u32
+v2u32_max(V2u32 a, V2u32 b)
+{
+  V2u32 result =
   {
-    V2u32 result =
-    {
-      a.x > b.x ? a.x : b.x,
-      a.y > b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x > b.x ? a.x : b.x,
+    a.y > b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2u32
-  v2u32_clamp(V2u32 v, V2u32 min, V2u32 max)
+function V2u32
+v2u32_clamp(V2u32 v, V2u32 min, V2u32 max)
+{
+  V2u32 result =
   {
-    V2u32 result =
-    {
-      v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
-      v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
-    };
-    return result;
-  }
+    v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
+    v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
+  };
+  return result;
+}
 
+function String
+v2u32_to_string(Arena *arena, V2u32 v)
+{
+  String result = Sf(arena, "(%u, %u)", v.x, v.y);
+  return result;
+}
   function V2s32
-  v2s32_add(V2s32 a, V2s32 b)
-  {
-    V2s32 result = { a.x + b.x, a.y + b.y };
-    return result;
-  }
+v2s32_add(V2s32 a, V2s32 b)
+{
+  V2s32 result = { a.x + b.x, a.y + b.y };
+  return result;
+}
 
-  function V2s32
-  v2s32_sub(V2s32 a, V2s32 b)
-  {
-    V2s32 result = { a.x - b.x, a.y - b.y };
-    return result;
-  }
+function V2s32
+v2s32_sub(V2s32 a, V2s32 b)
+{
+  V2s32 result = { a.x - b.x, a.y - b.y };
+  return result;
+}
 
-  function V2s32
-  v2s32_mul(V2s32 a, V2s32 b)
-  {
-    V2s32 result = { a.x * b.x, a.y * b.y };
-    return result;
-  }
+function V2s32
+v2s32_mul(V2s32 a, V2s32 b)
+{
+  V2s32 result = { a.x * b.x, a.y * b.y };
+  return result;
+}
 
-  function V2s32
-  v2s32_scale(V2s32 v, s32 s)
-  {
-    V2s32 result = { v.x * s, v.y * s };
-    return result;
-  }
+function V2s32
+v2s32_scale(V2s32 v, s32 s)
+{
+  V2s32 result = { v.x * s, v.y * s };
+  return result;
+}
 
-  function V2s32
-  v2s32_min(V2s32 a, V2s32 b)
+function V2s32
+v2s32_min(V2s32 a, V2s32 b)
+{
+  V2s32 result =
   {
-    V2s32 result =
-    {
-      a.x < b.x ? a.x : b.x,
-      a.y < b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x < b.x ? a.x : b.x,
+    a.y < b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2s32
-  v2s32_max(V2s32 a, V2s32 b)
+function V2s32
+v2s32_max(V2s32 a, V2s32 b)
+{
+  V2s32 result =
   {
-    V2s32 result =
-    {
-      a.x > b.x ? a.x : b.x,
-      a.y > b.y ? a.y : b.y
-    };
-    return result;
-  }
+    a.x > b.x ? a.x : b.x,
+    a.y > b.y ? a.y : b.y
+  };
+  return result;
+}
 
-  function V2s32
-  v2s32_clamp(V2s32 v, V2s32 min, V2s32 max)
+function V2s32
+v2s32_clamp(V2s32 v, V2s32 min, V2s32 max)
+{
+  V2s32 result =
   {
-    V2s32 result =
-    {
-      v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
-      v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
-    };
-    return result;
-  }
+    v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
+    v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y)
+  };
+  return result;
+}
 
+function String
+v2s32_to_string(Arena *arena, V2s32 v)
+{
+  String result = Sf(arena, "(%d, %d)", v.x, v.y);
+  return result;
+}
   // V3 Implementation
 function V3f32
 v3f32_add(V3f32 a, V3f32 b)
@@ -237,6 +255,14 @@ v3f32_clamp(V3f32 v, V3f32 min, V3f32 max)
   V3f32 result = { v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
                        v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y),
                        v.z < min.z ? min.z : (v.z > max.z ? max.z : v.z) };
+  return result;
+}
+
+
+function String
+v3f32_to_string(Arena *arena, V3f32 v)
+{
+  String result = Sf(arena, "(%.2f, %.2f, %.2f)", v.x, v.y, v.z);
   return result;
 }
 
@@ -295,6 +321,14 @@ v3u32_clamp(V3u32 v, V3u32 min, V3u32 max)
   return result;
 }
 
+
+function String
+v3u32_to_string(Arena *arena, V3u32 v)
+{
+  String result = Sf(arena, "(%u, %u, %u)", v.x, v.y, v.z);
+  return result;
+}
+
 function V3s32
 v3s32_add(V3s32 a, V3s32 b)
 {
@@ -347,6 +381,14 @@ v3s32_clamp(V3s32 v, V3s32 min, V3s32 max)
   V3s32 result = { v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
                        v.y < min.y ? min.y : (v.y > max.y ? max.y : v.y),
                        v.z < min.z ? min.z : (v.z > max.z ? max.z : v.z) };
+  return result;
+}
+
+
+function String
+v3s32_to_string(Arena *arena, V3s32 v)
+{
+  String result = Sf(arena, "(%d, %d, %d)", v.x, v.y, v.z);
   return result;
 }
 
@@ -409,6 +451,14 @@ v4f32_clamp(V4f32 v, V4f32 min, V4f32 max)
   return result;
 }
 
+function String
+v4f32_to_string(Arena *arena, V4f32 v)
+{
+  String result = Sf(arena, "(%.2f, %.2f, %.2f, %.2f)", v.x, v.y, v.z, v.w);
+  return result;
+}
+
+
 function V4u32
 v4u32_add(V4u32 a, V4u32 b)
 {
@@ -467,6 +517,14 @@ v4u32_clamp(V4u32 v, V4u32 min, V4u32 max)
   return result;
 }
 
+function String
+v4u32_to_string(Arena *arena, V4u32 v)
+{
+  String result = Sf(arena, "(%u, %u, %u, %u)", v.x, v.y, v.z, v.w);
+  return result;
+}
+
+
 function V4s32
 v4s32_add(V4s32 a, V4s32 b)
 {
@@ -524,6 +582,14 @@ v4s32_clamp(V4s32 v, V4s32 min, V4s32 max)
                        v.w < min.w ? min.w : (v.w > max.w ? max.w : v.w) };
   return result;
 }
+
+function String
+v4s32_to_string(Arena *arena, V4s32 v)
+{
+  String result = Sf(arena, "(%d, %d, %d, %d)", v.x, v.y, v.z, v.w);
+  return result;
+}
+
 
 // Rect Implementation
 

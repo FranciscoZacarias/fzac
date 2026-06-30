@@ -49,17 +49,17 @@ ui_init(UI_Font font)
   UIContext.window_min_width  = 150;
   UIContext.window_min_height = 50;
 
-  array_init_with_arena(UIContext.arena, UIContext.commands, UI_Command, UI_MAX_COMMANDS);
+  array_init(UIContext.arena, UIContext.commands, UI_Command, UI_MAX_COMMANDS);
 
   UIContext.style.corner_roundness = 0;
   UIContext.style.border_thickness = 1.0f;
 
-  array_init_with_arena(UIContext.arena, UIContext.cached_nodes, UI_Node_Cache, UI_MAX_CACHED_NODES);
+  array_init(UIContext.arena, UIContext.cached_nodes, UI_Node_Cache, UI_MAX_CACHED_NODES);
   UIContext.cached_nodes_available = UIContext.cached_nodes_capacity;
   UIContext.cached_nodes_max_idle_lifetime_ms = UI_MAX_NODE_IDLE_LIFETIME_MS;
 
   UIContext.previous_frame.rects_arena = arena_alloc();
-  array_init_with_arena(UIContext.previous_frame.rects_arena, UIContext.previous_frame.rects, UI_Rect, UI_MAX_PREVIOUS_FRAME_RECTS);
+  array_init(UIContext.previous_frame.rects_arena, UIContext.previous_frame.rects, UI_Rect, UI_MAX_PREVIOUS_FRAME_RECTS);
 
   ui_init_stacks(UIContext);
 

@@ -1,6 +1,7 @@
 #ifndef DEFAULT_METAPROGRAM_H
 #define DEFAULT_METAPROGRAM_H
 
+#include "Logging.h"
 #include "List_Todos.h"
 
 #define METAPROGRAM_GLOBAL_HEADERS_PATH "/global_headers.h"
@@ -63,12 +64,24 @@ struct Default_Metaprogram
 function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
 function void default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name);
 
+#define dm_log_fatal_if(cond, msg) \
+  statement( \
+    log_fatal_if(cond, msg "\nFile: " S_FMT "\nLine: %d", \
+      S_ARG(file_being_lexed), lexer.current_line_number); \
+  )
+
+#define dm_log_fatal_if_fmt(cond, fmt, ...) \
+  statement( \
+    log_fatal_if(cond, fmt "\nFile: " S_FMT "\nLine: %d", \
+      __VA_ARGS__, S_ARG(file_being_lexed), lexer.current_line_number); \
+  )
+
 function void 
 default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name)
 {
   if (dm->excluded_files == NULL)
   {
-    array_init_with_arena(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
+    array_init(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
   }
 
   String *out = array_add(dm->excluded_files);
@@ -80,7 +93,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
 {
   Scratch scratch = scratch_begin(0,0);
 
-  array_init_with_arena(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
+  array_init(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
   String_List files = file_get_files_in_path(dm->arena, src_directory, true);
 
   for (String_Node *next = files.first; next != NULL; next = next->next)
@@ -213,9 +226,9 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     dm_file->name = string_copy(dm->arena, file_being_lexed);
-    array_init_with_arena(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
-    array_init_with_arena(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
-    array_init_with_arena(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
+    array_init(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
+    array_init(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
+    array_init(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Whitespace|Trivia_Line_Break, Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
@@ -358,7 +371,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-          assert(token->kind == Token_Semicolon && "Expected ';' after struct definition");
+          dm_log_fatal_if(token->kind != Token_Semicolon, "Expected ';' after struct definition.");
           lexer_eat_token(&lexer);
 
           assert(dm_file->struct_definitions_count < dm_file->struct_definitions_capacity && "struct_definitions capacity exceeded");
@@ -532,6 +545,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
 
   //
   // @TODO(Fz): We don't need to separate the headers and the implementation into two different loops. 
+  // @TODO(fz): We should forward declare ALL enums first, then ALL structs, then ALL functions
   //
 
   // Just headers
