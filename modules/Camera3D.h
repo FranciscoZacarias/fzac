@@ -43,35 +43,35 @@ struct Camera3D
   Camera3D_Input_Config input_config;
 };
 
-function void    camera3d_init(Camera3D *camera, u32 speed);
-
-function void    camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time); /* This would be the default behaviour attached to the camera. User can implement it's own update functions and not call these. */
-function V2s32   camera3d_update_mouse(Window *window, Camera3D* camera); /* Optional behaviour to hide mouse when pressing a mouse button */
-function void    camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
-
-function V3f32   camera3d_get_forward(Camera3D *camera);
-function V3f32   camera3d_get_right(Camera3D *camera);
-function V3f32   camera3d_get_up(Camera3D *camera);
-function Matrix4 camera3d_projection(Camera3D *camera, f32 width, f32 height, f32 near_plane, f32 far_plane);
-function Matrix4 camera3d_view(Camera3D *camera);
-function void    camera3d_look_at(Camera3D *camera, V3f32 target);
-function void    camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll);
-function void    camera3d_set_speed(Camera3D *camera, u32 speed);
+function Camera3D* camera3d_init(Arena *arena, f32 speed);
+function void      camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time); /* This would be the default behaviour attached to the camera. User can implement it's own update functions and not call these. */
+function V2s32     camera3d_update_mouse(Window *window, Camera3D* camera); /* Optional behaviour to hide mouse when pressing a mouse button */
+function void      camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
+function V3f32     camera3d_get_forward(Camera3D *camera);
+function V3f32     camera3d_get_right(Camera3D *camera);
+function V3f32     camera3d_get_up(Camera3D *camera);
+function Matrix4   camera3d_projection(Camera3D *camera, f32 width, f32 height, f32 near_plane, f32 far_plane);
+function Matrix4   camera3d_view(Camera3D *camera);
+function void      camera3d_look_at(Camera3D *camera, V3f32 target);
+function void      camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll);
+function void      camera3d_set_speed(Camera3D *camera, u32 speed);
 
 #endif // CAMERA3D_H
 
-function void
-camera3d_init(Camera3D *camera, u32 speed)
+function Camera3D*
+camera3d_init(Arena *arena, f32 speed)
 {
-  memory_zero_struct(camera);
-  camera->position    = v3f32(0.0f, 0.0f, 5.0f);
-  camera->fov         = 60.0f;
-  camera->speed       = (f32)speed;
-  camera->sensitivity = 0.1f;
-  camera->pitch       = 0.0f;
-  camera->yaw         = 0.0f;
+  Camera3D *result = push_array(arena, Camera3D, 1);
 
-  camera->input_config = (Camera3D_Input_Config) {
+  memory_zero_struct(result);
+  result->position    = v3f32(0.0f, 0.0f, 5.0f);
+  result->fov         = 60.0f;
+  result->speed       = speed;
+  result->sensitivity = 0.1f;
+  result->pitch       = 0.0f;
+  result->yaw         = 0.0f;
+
+  result->input_config = (Camera3D_Input_Config) {
     .up        = Keyboard_Key_E,
     .down      = Keyboard_Key_Q,
     .left      = Keyboard_Key_A,
@@ -80,6 +80,8 @@ camera3d_init(Camera3D *camera, u32 speed)
     .backwards = Keyboard_Key_S,
     .enable_move_camera_around = Mouse_Button_Right,
   };
+
+  return result;
 }
 
 function void
