@@ -155,6 +155,9 @@ camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time)
   if (is_key_down(camera->input_config.right))     { camera->position = v3f32_add(camera->position, v3f32_scale(right, move_speed));     }
   if (is_key_down(camera->input_config.up))        { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, move_speed));  }
   if (is_key_down(camera->input_config.down))      { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, -move_speed)); }
+
+  camera->view       = camera3d_view(camera);
+  camera->projection = camera3d_projection(camera, get_window_width(), get_window_height(), 0.1f, 100.0f);
 }
 
 function V3f32
