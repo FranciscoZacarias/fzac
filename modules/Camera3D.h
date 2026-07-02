@@ -15,6 +15,18 @@ typedef enum
   CameraMovement_Down
 } Camera_Movement;
 
+typedef struct Camera3D_Input_Config Camera3D_Input_Config;
+struct Camera3D_Input_Config
+{
+  Keyboard_Key up;
+  Keyboard_Key down;
+  Keyboard_Key left;
+  Keyboard_Key right;
+  Keyboard_Key forward;
+  Keyboard_Key backwards;
+  Mouse_Button enable_move_camera_around; // If calling camera3d_update_mouse, use this mouse button to move the camera around
+};
+
 typedef struct Camera3D Camera3D;
 struct Camera3D
 {
@@ -24,10 +36,19 @@ struct Camera3D
   f32   sensitivity;
   f32   pitch;
   f32   yaw;
+
+  Matrix4 view;
+  Matrix4 projection;
+
+  Camera3D_Input_Config input_config;
 };
 
 function void    camera3d_init(Camera3D *camera, u32 speed);
-function void    camera3d_update(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
+
+function void    camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time); /* This would be the default behaviour attached to the camera. User can implement it's own update functions and not call these. */
+function V2s32   camera3d_update_mouse(Window *window, Camera3D* camera); /* Optional behaviour to hide mouse when pressing a mouse button */
+function void    camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
+
 function V3f32   camera3d_get_forward(Camera3D *camera);
 function V3f32   camera3d_get_right(Camera3D *camera);
 function V3f32   camera3d_get_up(Camera3D *camera);
@@ -49,13 +70,75 @@ camera3d_init(Camera3D *camera, u32 speed)
   camera->sensitivity = 0.1f;
   camera->pitch       = 0.0f;
   camera->yaw         = 0.0f;
+
+  camera->input_config = (Camera3D_Input_Config) {
+    .up        = Keyboard_Key_E,
+    .down      = Keyboard_Key_Q,
+    .left      = Keyboard_Key_A,
+    .right     = Keyboard_Key_D,
+    .forward   = Keyboard_Key_W,
+    .backwards = Keyboard_Key_S,
+    .enable_move_camera_around = Mouse_Button_Right,
+  };
 }
 
 function void
-camera3d_update(Camera3D *camera, V2s32 delta, f32 delta_time)
+camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time)
 {
-  f32 dx = delta.x * camera->sensitivity;
-  f32 dy = delta.y * camera->sensitivity;
+  V2s32 mouse_delta = camera3d_update_mouse(window, camera);
+  camera3d_update_move(camera, mouse_delta, delta_time);
+}
+
+function V2s32
+camera3d_update_mouse(Window *window, Camera3D* camera)
+{
+  local_persist b32 was_right_mouse_button_down = false;
+  local_persist b32 skip_first_delta = false;
+
+  V2s32 mouse_delta = {0};
+  local_persist V2s32 mouse_last_position = {0};
+  if (is_button_down(camera->input_config.enable_move_camera_around))
+  {
+    if (!was_right_mouse_button_down)
+    {
+      mouse_last_position = get_mouse_position();
+
+      cursor_lock(window);
+      cursor_hide(true);
+
+      was_right_mouse_button_down = true;
+      skip_first_delta = true;
+    }
+
+    if (!skip_first_delta)
+    {
+      mouse_delta = get_mouse_delta();
+    }
+    else
+    {
+      skip_first_delta = false;
+    }
+  }
+  else
+  {
+    if (was_right_mouse_button_down)
+    {
+      cursor_unlock();
+      cursor_hide(false);
+
+      was_right_mouse_button_down = false;
+
+      cursor_set_position(window, mouse_last_position.x, mouse_last_position.y);
+    }
+  }
+  return mouse_delta;
+}
+
+function void
+camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time)
+{
+  f32 dx = mouse_delta.x * camera->sensitivity;
+  f32 dy = mouse_delta.y * camera->sensitivity;
 
   camera->yaw   -= dx;
   camera->pitch -= dy;
@@ -65,15 +148,13 @@ camera3d_update(Camera3D *camera, V2s32 delta, f32 delta_time)
 
   V3f32 forward = camera3d_get_forward(camera);
   V3f32 right   = camera3d_get_right(camera);
-
   f32 move_speed = camera->speed * delta_time;
-
-  if (is_key_down(Keyboard_Key_W)) { camera->position = v3f32_add(camera->position, v3f32_scale(forward, move_speed)); }
-  if (is_key_down(Keyboard_Key_S)) { camera->position = v3f32_add(camera->position, v3f32_scale(forward, -move_speed)); }
-  if (is_key_down(Keyboard_Key_D)) { camera->position = v3f32_add(camera->position, v3f32_scale(right, move_speed)); }
-  if (is_key_down(Keyboard_Key_A)) { camera->position = v3f32_add(camera->position, v3f32_scale(right, -move_speed)); }
-  if (is_key_down(Keyboard_Key_E)) { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, move_speed)); }
-  if (is_key_down(Keyboard_Key_Q)) { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, -move_speed)); }
+  if (is_key_down(camera->input_config.forward))   { camera->position = v3f32_add(camera->position, v3f32_scale(forward, move_speed));   }
+  if (is_key_down(camera->input_config.backwards)) { camera->position = v3f32_add(camera->position, v3f32_scale(forward, -move_speed));  }
+  if (is_key_down(camera->input_config.left))      { camera->position = v3f32_add(camera->position, v3f32_scale(right, -move_speed));    }
+  if (is_key_down(camera->input_config.right))     { camera->position = v3f32_add(camera->position, v3f32_scale(right, move_speed));     }
+  if (is_key_down(camera->input_config.up))        { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, move_speed));  }
+  if (is_key_down(camera->input_config.down))      { camera->position = v3f32_add(camera->position, v3f32_scale(WORLD_UP, -move_speed)); }
 }
 
 function V3f32
