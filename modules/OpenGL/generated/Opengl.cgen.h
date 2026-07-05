@@ -1017,6 +1017,17 @@ glLineWidth (GLfloat width)
 #endif
 }
 
+typedef void (*PFNglClearTexImagePROC)(GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
+global PFNglClearTexImagePROC __glClearTexImage = NULL;
+function inline void
+glClearTexImage (GLuint texture, GLint level, GLenum format, GLenum type, const void *data)
+{
+  __glClearTexImage (texture, level, format, type, data);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint

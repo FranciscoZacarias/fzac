@@ -34,6 +34,12 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   AdjustWindowRect(&rect, style, false);
 
   HWND hwnd    = CreateWindowExA(0, WINDOW_CLASS_NAME, (char*)title.cstring, style, x, y, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, GetModuleHandle(NULL), NULL);
+  if (!hwnd)
+  {
+    DWORD error = GetLastError();
+    assert(false);
+  }
+
   window->hwnd = hwnd;
   window->dc   = GetDC(hwnd);
 

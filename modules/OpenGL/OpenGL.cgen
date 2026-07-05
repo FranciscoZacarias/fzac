@@ -94,7 +94,7 @@ OpenGL_Void_Function_Table (name args call_args)
   {  glPopDebugGroup                 `()`                                                                                                                                         `()` }    
   {  glPointSize                     `(GLfloat size)`                                                                                                                             `(size)` }
   {  glLineWidth                     `(GLfloat width)`                                                                                                                            `(width)` }
-
+  {  glClearTexImage                 `(GLuint texture, GLint level, GLenum format, GLenum type, const void *data)`                                                                `(texture, level, format, type, data)` }
 }
 
 @Table

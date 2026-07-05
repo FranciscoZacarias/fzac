@@ -1,8 +1,8 @@
 #ifndef FZ_GEOMETRY_H
 #define FZ_GEOMETRY_H
 
-typedef struct Ray Ray;
-struct Ray
+typedef struct Line_Segment Line_Segment;
+struct Line_Segment
 {
   V3f32 begin;
   V3f32 end;

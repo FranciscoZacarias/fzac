@@ -703,5 +703,12 @@ _opengl_load_functions()
     return false;
   }
 
+  __glClearTexImage = (PFNglClearTexImagePROC)_load_gl_function("glClearTexImage"); 
+  if (!__glClearTexImage)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glClearTexImage"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }
