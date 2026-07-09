@@ -1,6 +1,10 @@
 #ifndef LIST_TODOS_H
 #define LIST_TODOS_H
 
+/*
+  Lists all @TODO(<name>) in all files. Written as a metaprogram command
+*/
+
 #define LT_MAX_FILES 64
 #define LT_MAX_TODOS 256
 

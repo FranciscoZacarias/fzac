@@ -94,6 +94,13 @@ _opengl_load_functions()
     return false;
   }
 
+  __glProgramUniform3fv = (PFNglProgramUniform3fvPROC)_load_gl_function("glProgramUniform3fv"); 
+  if (!__glProgramUniform3fv)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glProgramUniform3fv"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   __glProgramUniformMatrix4fv = (PFNglProgramUniformMatrix4fvPROC)_load_gl_function("glProgramUniformMatrix4fv"); 
   if (!__glProgramUniformMatrix4fv)
   {

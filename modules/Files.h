@@ -362,8 +362,16 @@ file_get_name_no_extension(String path)
 function void
 file_watch_init(Arena *arena, File_Watcher *watch, String path)
 {
-  watch->path = string_copy(arena, path);
-  watch->last_write_time = file_get_last_write_time(path);
+  if (file_exists(path))
+  {
+    watch->path = string_copy(arena, path);
+    watch->last_write_time = file_get_last_write_time(path);
+  }
+  else
+  {
+    // @TODO(fz): Log error better (we cant use logging as of nwo because of circular dependncy between files and loggin
+    printf("Tried to init a file watch with a path that wasn't found: " S_FMT, S_ARG(path));
+  }
 }
 
 function u64

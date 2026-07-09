@@ -60,6 +60,17 @@ glProgramUniform4f (GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfl
 #endif
 }
 
+typedef void (*PFNglProgramUniform3fvPROC)(GLuint program, GLint location, GLsizei count, const GLfloat *value);
+global PFNglProgramUniform3fvPROC __glProgramUniform3fv = NULL;
+function inline void
+glProgramUniform3fv (GLuint program, GLint location, GLsizei count, const GLfloat *value)
+{
+  __glProgramUniform3fv (program, location, count, value);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
 typedef void (*PFNglProgramUniformMatrix4fvPROC)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 global PFNglProgramUniformMatrix4fvPROC __glProgramUniformMatrix4fv = NULL;
 function inline void

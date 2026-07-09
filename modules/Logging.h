@@ -3,6 +3,8 @@
 
 #include <stdarg.h>
 
+#include "Files.h"
+
 #define LOG_FILE_BUFFER_SIZE megabytes(1)
 #define LOG_MAX_HOOKS_COUNT  8
 
@@ -36,6 +38,7 @@ struct Log_State
   Log_Level min_level;
   Log_Hook  hooks[LOG_MAX_HOOKS_COUNT];
   u32       hook_count;
+  b8        inited;
 };
 
 global Log_State GlobalLogger = {0};
@@ -50,7 +53,7 @@ log_level_str(Log_Level level)
     case Log_Level_Warn:  return "WARN";
     case Log_Level_Error: return "ERROR";
     case Log_Level_Fatal: return "FATAL";
-    default:             return "?????";
+    default:              return "?????";
   }
 }
 
@@ -64,7 +67,7 @@ log_level_color(Log_Level level)
     case Log_Level_Warn:  return "\x1b[33m";
     case Log_Level_Error: return "\x1b[31m";
     case Log_Level_Fatal: return "\x1b[35m";
-    default:             return "";
+    default:              return "";
   }
 }
 
@@ -106,7 +109,7 @@ log_fatal_popup(String msg, const char* src_file, int src_line)
 function void
 log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, ...)
 {
-  if(level < GlobalLogger.min_level)
+  if(level < GlobalLogger.min_level || !GlobalLogger.inited)
   {
     return;
   }
@@ -139,7 +142,7 @@ log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, 
 function void
 log_write_string(Log_Level level, const char* src_file, int src_line, String msg)
 {
-  if(level < GlobalLogger.min_level)
+  if(level < GlobalLogger.min_level || !GlobalLogger.inited)
   {
     return;
   }
@@ -187,6 +190,7 @@ logging_init(Log_Level min_level, String file_path)
     GlobalLogger.file_path    = file_path;
     GlobalLogger.file_enabled = true;
   }
+  GlobalLogger.inited = true;
   return true;
 }
 

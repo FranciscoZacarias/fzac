@@ -101,10 +101,9 @@ typedef FAST_OBJ_UINT_TYPE fastObjUInt;
 
 typedef struct
 {
-    fastObjUInt                 p;
-    fastObjUInt                 t;
-    fastObjUInt                 n;
-
+    fastObjUInt                 position;
+    fastObjUInt                 texture;
+    fastObjUInt                 normal;
 } fastObjIndex;
 
 
@@ -779,25 +778,25 @@ const char* fastObj_parse_face(fastObjData* data, const char* ptr, unsigned char
         }
 
         if (v < 0)
-            vn.p = (fastObj_array_size(data->mesh->positions) / 3) - (fastObjUInt)(-v);
+            vn.position = (fastObj_array_size(data->mesh->positions) / 3) - (fastObjUInt)(-v);
         else if (v > 0)
-            vn.p = (fastObjUInt)(v);
+            vn.position = (fastObjUInt)(v);
         else
             return ptr; /* Skip lines with no valid vertex index */
 
         if (t < 0)
-            vn.t = (fastObj_array_size(data->mesh->texcoords) / 2) - (fastObjUInt)(-t);
+            vn.texture = (fastObj_array_size(data->mesh->texcoords) / 2) - (fastObjUInt)(-t);
         else if (t > 0)
-            vn.t = (fastObjUInt)(t);
+            vn.texture = (fastObjUInt)(t);
         else
-            vn.t = 0;
+            vn.texture = 0;
 
         if (n < 0)
-            vn.n = (fastObj_array_size(data->mesh->normals) / 3) - (fastObjUInt)(-n);
+            vn.normal = (fastObj_array_size(data->mesh->normals) / 3) - (fastObjUInt)(-n);
         else if (n > 0)
-            vn.n = (fastObjUInt)(n);
+            vn.normal = (fastObjUInt)(n);
         else
-            vn.n = 0;
+            vn.normal = 0;
 
         fastObj_array_push(data->mesh->indices, vn);
         count++;
