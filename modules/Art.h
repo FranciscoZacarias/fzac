@@ -99,7 +99,7 @@ struct HSV
 
 // @Section: Implementation
 
-function RGBA_Packed
+fz_function RGBA_Packed
 rgba_pack(RGBA rgba)
 {
   RGBA_Packed result;
@@ -111,7 +111,7 @@ rgba_pack(RGBA rgba)
   return result;
 }
 
-function RGBA
+fz_function RGBA
 rgba_unpack(RGBA_Packed packed)
 {
   RGBA result;
@@ -122,7 +122,7 @@ rgba_unpack(RGBA_Packed packed)
   return result;
 }
 
-function RGBA
+fz_function RGBA
 rgba_from_hsv(HSV hsv, f32 a)
 {
   f32 h = hsv.h - floorf(hsv.h);
@@ -152,7 +152,7 @@ rgba_from_hsv(HSV hsv, f32 a)
   return (RGBA){r, g, b, a};
 }
 
-function HSV
+fz_function HSV
 hsv_from_rgba(RGBA rgba)
 {
   f32 r = rgba.r;

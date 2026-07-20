@@ -82,22 +82,50 @@
 #define WGL_SAMPLES_ARB              0x2042
 #define WGL_SAMPLE_BUFFERS_ARB       0x2041
 
-// @Section: Define wgl function pointers
+// @Section: Define wgl fz_function pointers
 #define WGL_FUNC(ret,name,params) typedef ret (* PFN##name##PROC) params;
   #include "OpenGL_Win32_WGL.inl"
 #undef WGL_FUNC
 
 // @Section: Generate wgl definitions
-#define WGL_FUNC(ret,name,params) global PFN##name##PROC name = NULL;
+#define WGL_FUNC(ret,name,params) fz_global PFN##name##PROC name = NULL;
   #include "OpenGL_Win32_WGL.inl"
 #undef WGL_FUNC
 
 // @Section: Functions
-function b32 _win32_load_wgl_functions(); /* Opens webgl functions */
+fz_function b32 _win32_load_wgl_functions(); /* Opens webgl functions */
 
 // @Section: Implementation
 
-function b32
+fz_function void*
+_load_gl_function(const char *name)
+{
+  void* proc = (void*)wglGetProcAddress(name);
+
+  // Check for invalid pointer values
+  if (!proc || proc == (void *)0x1 || proc == (void *)0x2 || proc == (void *)0x3 || proc == (void *)-1)
+  {
+    fz_local_persist HMODULE opengl32_module = NULL;
+    if (!opengl32_module)
+    {
+      opengl32_module = GetModuleHandleA("opengl32.dll");
+      if (!opengl32_module)
+      {
+        printf("opengl32.dll not loaded. Trying to load it dynamically.");
+        opengl32_module = LoadLibraryA("opengl32.dll");
+        if (opengl32_module)
+        {
+          printf("Unable to load opengl32.dll");
+          return NULL;
+        }
+      }
+    }
+    proc = (void *)GetProcAddress(opengl32_module, name);
+  }
+  return proc;
+}
+
+fz_function b32
 opengl_init(b32 set_vsync)
 {
   if (!WindowClassInited)
@@ -241,20 +269,20 @@ opengl_init(b32 set_vsync)
   return true;
 }
 
-function void
+fz_function void
 opengl_end(Window* window)
 {
   wglMakeCurrent(NULL, NULL);
   wglDeleteContext(GlobalWindow.rc);
 }
 
-function void
+fz_function void
 opengl_set_vsync(b32 state)
 {
   wglSwapIntervalEXT(state);
 }
 
-function b32
+fz_function b32
 _win32_load_wgl_functions()
 {
   // to get WGL functions we need valid GL context, so create dummy window for dummy GL context

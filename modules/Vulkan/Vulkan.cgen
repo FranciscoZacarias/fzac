@@ -1,0 +1,254 @@
+@Table
+Vulkan_Global_Function_Return_Table (name return_type args call_args)
+{
+  { vkCreateInstance                       VkResult `(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance)` `(pCreateInfo, pAllocator, pInstance)` }
+  { vkEnumerateInstanceExtensionProperties VkResult `(const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties)` `(pLayerName, pPropertyCount, pProperties)` }
+  { vkEnumerateInstanceLayerProperties     VkResult `(uint32_t* pPropertyCount, VkLayerProperties* pProperties)` `(pPropertyCount, pProperties)` }
+  { vkEnumerateInstanceVersion             VkResult `(uint32_t* pApiVersion)` `(pApiVersion)` }
+}
+
+
+@Table
+Vulkan_Global_Function_Void_Table (name args call_args)
+{
+}
+
+@Table
+Vulkan_Instance_Function_Return_Table (name return_type args call_args)
+{
+  { vkEnumeratePhysicalDevices                 VkResult `(VkInstance instance, uint32_t* pPhysicalDeviceCount, VkPhysicalDevice* pPhysicalDevices)` `(instance, pPhysicalDeviceCount, pPhysicalDevices)` }
+
+  { vkCreateDevice                             VkResult `(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDevice* pDevice)` `(physicalDevice, pCreateInfo, pAllocator, pDevice)` }
+
+  { vkGetPhysicalDeviceSurfaceSupportKHR       VkResult `(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported)` `(physicalDevice, queueFamilyIndex, surface, pSupported)` }
+
+  { vkGetPhysicalDeviceSurfaceCapabilitiesKHR  VkResult `(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities)` `(physicalDevice, surface, pSurfaceCapabilities)` }
+
+  { vkGetPhysicalDeviceSurfaceFormatsKHR        VkResult `(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats)` `(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats)` }
+
+  { vkGetPhysicalDeviceSurfacePresentModesKHR   VkResult `(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes)` `(physicalDevice, surface, pPresentModeCount, pPresentModes)` }
+}
+
+
+@Table
+Vulkan_Instance_Function_Void_Table (name args call_args)
+{
+  { vkDestroyInstance                   `(VkInstance instance, const VkAllocationCallbacks* pAllocator)` `(instance, pAllocator)` }
+
+  { vkGetPhysicalDeviceFeatures         `(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures)` `(physicalDevice, pFeatures)` }
+
+  { vkGetPhysicalDeviceFeatures2        `(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures)` `(physicalDevice, pFeatures)` }
+
+  { vkGetPhysicalDeviceProperties       `(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties)` `(physicalDevice, pProperties)` }
+
+  { vkGetPhysicalDeviceProperties2      `(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties)` `(physicalDevice, pProperties)` }
+
+  { vkGetPhysicalDeviceMemoryProperties `(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties)` `(physicalDevice, pMemoryProperties)` }
+
+  { vkGetPhysicalDeviceQueueFamilyProperties `(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties)` `(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties)` }
+}
+
+@Table
+Vulkan_Device_Function_Return_Table (name return_type args call_args)
+{
+  { vkDeviceWaitIdle VkResult `(VkDevice device)` `(device)` }
+
+  { vkQueueSubmit VkResult `(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence)` `(queue, submitCount, pSubmits, fence)` }
+
+  { vkQueueWaitIdle VkResult `(VkQueue queue)` `(queue)` }
+
+  { vkCreateSwapchainKHR VkResult `(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain)` `(device, pCreateInfo, pAllocator, pSwapchain)` }
+
+  { vkGetSwapchainImagesKHR VkResult `(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages)` `(device, swapchain, pSwapchainImageCount, pSwapchainImages)` }
+
+  { vkAcquireNextImageKHR VkResult `(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex)` `(device, swapchain, timeout, semaphore, fence, pImageIndex)` }
+
+  { vkQueuePresentKHR VkResult `(VkQueue queue, const VkPresentInfoKHR* pPresentInfo)` `(queue, pPresentInfo)` }
+
+
+  { vkCreateCommandPool VkResult `(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool)` `(device, pCreateInfo, pAllocator, pCommandPool)` }
+
+  { vkAllocateCommandBuffers VkResult `(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers)` `(device, pAllocateInfo, pCommandBuffers)` }
+
+  { vkBeginCommandBuffer VkResult `(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo)` `(commandBuffer, pBeginInfo)` }
+
+  { vkEndCommandBuffer VkResult `(VkCommandBuffer commandBuffer)` `(commandBuffer)` }
+
+
+  { vkCreateSemaphore VkResult `(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore)` `(device, pCreateInfo, pAllocator, pSemaphore)` }
+
+  { vkCreateFence VkResult `(VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence)` `(device, pCreateInfo, pAllocator, pFence)` }
+
+  { vkWaitForFences VkResult `(VkDevice device, uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll, uint64_t timeout)` `(device, fenceCount, pFences, waitAll, timeout)` }
+
+  { vkResetFences VkResult `(VkDevice device, uint32_t fenceCount, const VkFence* pFences)` `(device, fenceCount, pFences)` }
+}
+
+
+@Table
+Vulkan_Device_Function_Void_Table (name args call_args)
+{
+  { vkDestroyDevice `(VkDevice device, const VkAllocationCallbacks* pAllocator)` `(device, pAllocator)` }
+
+  { vkGetDeviceQueue `(VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, VkQueue* pQueue)` `(device, queueFamilyIndex, queueIndex, pQueue)` }
+
+
+  { vkDestroySwapchainKHR `(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator)` `(device, swapchain, pAllocator)` }
+
+
+  { vkDestroyCommandPool `(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator)` `(device, commandPool, pAllocator)` }
+
+  { vkFreeCommandBuffers `(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers)` `(device, commandPool, commandBufferCount, pCommandBuffers)` }
+
+
+  { vkDestroySemaphore `(VkDevice device, VkSemaphore semaphore, const VkAllocationCallbacks* pAllocator)` `(device, semaphore, pAllocator)` }
+
+  { vkDestroyFence `(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator)` `(device, fence, pAllocator)` }
+
+
+  { vkCmdBeginRenderPass `(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, VkSubpassContents contents)` `(commandBuffer, pRenderPassBegin, contents)` }
+
+  { vkCmdEndRenderPass `(VkCommandBuffer commandBuffer)` `(commandBuffer)` }
+
+  { vkCmdBindPipeline `(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline)` `(commandBuffer, pipelineBindPoint, pipeline)` }
+
+  { vkCmdBindVertexBuffers `(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets)` `(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets)` }
+
+  { vkCmdBindIndexBuffer `(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType indexType)` `(commandBuffer, buffer, offset, indexType)` }
+
+  { vkCmdDraw `(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)` `(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance)` }
+
+  { vkCmdDrawIndexed `(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)` `(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance)` }
+
+  { vkCmdDispatch `(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)` `(commandBuffer, groupCountX, groupCountY, groupCountZ)` }
+}
+
+@Generator(Vulkan.cgen.h)
+{
+`#ifndef VULKAN_FUNCTIONS_H
+#define VULKAN_FUNCTIONS_H
+
+fz_function b32 _vulkan_load_global_functions();
+fz_function b32 _vulkan_load_instance_functions(VkInstance instance);
+fz_function b32 _vulkan_load_device_functions(VkDevice device);\n\n`
+
+@foreach(Vulkan_Global_Function_Return_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function $(return_type)
+$(name) $(args)
+{
+  $(return_type) result = __$(name) $(call_args);
+  return result;
+}\n\n`
+
+@foreach(Vulkan_Global_Function_Void_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function void
+$(name) $(args)
+{
+  __$(name) $(call_args);
+}\n\n`
+
+@foreach(Vulkan_Instance_Function_Return_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function $(return_type)
+$(name) $(args)
+{
+  $(return_type) result = __$(name) $(call_args);
+  return result;
+}\n\n`
+
+@foreach(Vulkan_Instance_Function_Void_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function void
+$(name) $(args)
+{
+  __$(name) $(call_args);
+}\n\n`
+
+@foreach(Vulkan_Device_Function_Return_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function $(return_type)
+$(name) $(args)
+{
+  $(return_type) result = __$(name) $(call_args);
+  return result;
+}\n\n`
+
+@foreach(Vulkan_Device_Function_Void_Table)
+`fz_global PFN_$(name) __$(name) = NULL;
+fz_function void
+$(name) $(args)
+{
+  __$(name) $(call_args);
+}\n\n`
+
+`#endif // VULKAN_FUNCTIONS_H`
+}
+
+@Generator(Vulkan.cgen.c)
+{
+
+`fz_function b32\n_vulkan_load_global_functions()\n{\n`
+
+@foreach(Vulkan_Global_Function_Return_Table)
+`  __$(name) = (PFN_$(name))__vkGetInstanceProcAddr(VK_NULL_HANDLE, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+@foreach(Vulkan_Global_Function_Void_Table)
+`  __$(name) = (PFN_$(name))__vkGetInstanceProcAddr(VK_NULL_HANDLE, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+`  return true;\n}\n\n`
+
+
+`fz_function b32\n_vulkan_load_instance_functions(VkInstance instance)\n{\n`
+
+@foreach(Vulkan_Instance_Function_Return_Table)
+
+`  __$(name) = (PFN_$(name)) __vkGetInstanceProcAddr(instance, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+@foreach(Vulkan_Instance_Function_Void_Table)
+`  __$(name) = (PFN_$(name)) __vkGetInstanceProcAddr(instance, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+`  return true;\n}\n\n`
+
+`fz_function b32\n_vulkan_load_device_functions(VkDevice device)\n{\n`
+
+@foreach(Vulkan_Device_Function_Return_Table)
+
+`  __$(name) = (PFN_$(name)) __vkGetDeviceProcAddr(device, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+@foreach(Vulkan_Device_Function_Void_Table)
+`  __$(name) = (PFN_$(name)) __vkGetDeviceProcAddr(device, "$(name)");
+  if (!__$(name))
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: $(name)"), S("Vulkan.cgen"), 0);
+    return false;
+  }\n\n`
+
+`  return true;\n}\n`
+}

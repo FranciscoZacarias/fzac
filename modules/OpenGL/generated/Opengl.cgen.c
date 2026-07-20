@@ -1,6 +1,6 @@
 /* Generated code */
 
-function b32
+fz_function b32
 _opengl_load_functions()
 {
   __glCreateShaderProgramv = (PFNglCreateShaderProgramvPROC)_load_gl_function("glCreateShaderProgramv"); 

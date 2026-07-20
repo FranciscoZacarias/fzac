@@ -6,13 +6,13 @@
 #define FULLSCREEN_STYLE       WS_VISIBLE | WS_POPUP
 #define SECONDARY_WINDOW_STYLE WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 
-global Keyboard_Key _win32_vk_to_key[256];
+fz_global Keyboard_Key _win32_vk_to_key[256];
 
-function LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+fz_function LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
 // @TODO(Fz): Add resize callback
 
-function Window*
+fz_function Window*
 window_create(String title, u32 width, u32 height, u32 x, u32 y)
 {
   if (!WindowClassInited) _init_window_class();
@@ -61,13 +61,13 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   return window;
 }
 
-function void
+fz_function void
 window_swap_buffers()
 {
   SwapBuffers(GlobalWindow.dc);
 }
 
-function void
+fz_function void
 window_destroy()
 {
   if (!GlobalWindow.hwnd) return;
@@ -76,7 +76,7 @@ window_destroy()
   GlobalWindow.should_close = true;
 }
 
-function LRESULT CALLBACK
+fz_function LRESULT CALLBACK
 _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
   Event_Array* events = &GlobalWindow.events_this_frame;
@@ -262,7 +262,7 @@ _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
   return DefWindowProcW(hwnd, message, wparam, lparam);
 }
 
-function void
+fz_function void
 _init_window_class()
 {
   if(WindowClassInited) return;
@@ -289,7 +289,7 @@ _init_window_class()
   GlobalWindow.events_this_frame.data     = push_array(GlobalWindow.frame_arena, Window_Event, GlobalWindow.events_this_frame.capacity);
 }
 
-function void
+fz_function void
 window_update_events()
 {
   Window *window = &GlobalWindow;
@@ -317,7 +317,7 @@ window_update_events()
   }
 }
 
-function Window_Event*
+fz_function Window_Event*
 _event_push(Event_Array* array)
 {
   assert(array->count < array->capacity);
@@ -326,19 +326,19 @@ _event_push(Event_Array* array)
   return result;
 }
 
-function u32
+fz_function u32
 get_total_events_this_frame()
 {
   return GlobalWindow.events_this_frame.count;
 }
 
-function Window_Event*
+fz_function Window_Event*
 get_event_this_frame(u32 index)
 {
   return &GlobalWindow.events_this_frame.data[index];
 }
 
-function void
+fz_function void
 _init_win32_key_table()
 {
   for (u32 i = 0; i < 256; ++i)
@@ -440,7 +440,7 @@ _init_win32_key_table()
 
 }
 
-function Keyboard_Key
+fz_function Keyboard_Key
 _key_from_native_key(u32 native_key)
 {
   Keyboard_Key result = Keyboard_Key_Count;
@@ -451,7 +451,7 @@ _key_from_native_key(u32 native_key)
   return result;
 }
 
-function void
+fz_function void
 _input_init()
 {
   memory_zero_struct(&GlobalWindow.input);
@@ -460,7 +460,7 @@ _input_init()
   GlobalWindow.input.mouse_previous.screen_space.y = -1;
 }
 
-function void
+fz_function void
 _input_update()
 {
   GlobalWindow.input.mouse_current.delta       = GlobalWindow.input.mouse_current.raw_delta;
@@ -472,82 +472,82 @@ _input_update()
   memory_copy(&GlobalWindow.input.mouse_previous, &GlobalWindow.input.mouse_current, sizeof(Mouse_State));
 }
 
-function b8
+fz_function b8
 is_key_up(Keyboard_Key key)
 {
   b8 result = GlobalWindow.input.keyboard_current.keys[key] == false;
   return result;
 }
 
-function b8
+fz_function b8
 is_key_down(Keyboard_Key key)
 {
   b8 result = GlobalWindow.input.keyboard_current.keys[key] == true;
   return result;
 }
 
-function b8
+fz_function b8
 was_key_up(Keyboard_Key key)
 {
   b8 result = GlobalWindow.input.keyboard_previous.keys[key] == false;
   return result;
 }
 
-function b8
+fz_function b8
 was_key_down(Keyboard_Key key)
 {
   b8 result = GlobalWindow.input.keyboard_previous.keys[key] == true;
   return result;
 }
 
-function b8
+fz_function b8
 is_key_clicked(Keyboard_Key key)
 {
   return is_key_down(key) && was_key_up(key);
 }
 
-function void
+fz_function void
 _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed)
 {
   GlobalWindow.input.keyboard_current.keys[key] = is_pressed;
 }
 
-function b8
+fz_function b8
 is_button_up(Mouse_Button button)
 {
   b8 result = GlobalWindow.input.mouse_current.buttons[button] == false;
   return result;
 }
 
-function b8
+fz_function b8
 is_button_down(Mouse_Button button)
 {
   b8 result = GlobalWindow.input.mouse_current.buttons[button] == true;
   return result;
 }
 
-function b8
+fz_function b8
 was_button_up(Mouse_Button button)
 {
   b8 result = GlobalWindow.input.mouse_previous.buttons[button] == false;
   return result;
 }
 
-function b8
+fz_function b8
 was_button_down(Mouse_Button button)
 {
   b8 result = GlobalWindow.input.mouse_previous.buttons[button] == true;
   return result;
 }
 
-function b8
+fz_function b8
 is_button_clicked(Mouse_Button button)
 {
   b8 result = is_button_down(button) && was_button_up(button);
   return result;
 }
 
-function void
+fz_function void
 _input_process_mouse_button(Mouse_Button button, b8 is_pressed)
 {
   // if (GlobalWindow.input.mouse_current.buttons[button] != (b8)is_pressed)
@@ -557,92 +557,92 @@ _input_process_mouse_button(Mouse_Button button, b8 is_pressed)
   GlobalWindow.input.mouse_current.buttons[button] = (b8)is_pressed;
 }
 
-function s32
+fz_function s32
 get_mouse_x()
 {
   return GlobalWindow.input.mouse_current.screen_space.x;
 }
 
-function s32
+fz_function s32
 get_mouse_y()
 {
   return GlobalWindow.input.mouse_current.screen_space.y;
 }
 
-function V2s32
+fz_function V2s32
 get_mouse_position()
 {
   return GlobalWindow.input.mouse_current.screen_space;
 }
 
-function s32
+fz_function s32
 get_mouse_delta_x()
 {
   return GlobalWindow.input.mouse_current.delta.x;
 }
 
-function s32
+fz_function s32
 get_mouse_delta_y()
 {
   return GlobalWindow.input.mouse_current.delta.y;
 }
 
-function V2s32
+fz_function V2s32
 get_mouse_delta()
 {
   return GlobalWindow.input.mouse_current.delta;
 }
 
-function s32
+fz_function s32
 get_mouse_wheel_delta()
 {
   return GlobalWindow.input.mouse_current.wheel_delta;
 }
 
-function s32
+fz_function s32
 get_window_width()
 {
   return GlobalWindow.width;
 }
 
-function s32
+fz_function s32
 get_window_height()
 {
   return GlobalWindow.height;
 }
 
-function V2s32
+fz_function V2s32
 get_window_center(Window *window)
 {
   V2s32 result = v2s32(get_window_width() / 2, get_window_height() / 2);
   return result;
 }
 
-function V2s32
+fz_function V2s32
 get_window_dimensions()
 {
   return v2s32(GlobalWindow.width, GlobalWindow.height);
 }
 
-function s32   
+fz_function s32   
 get_window_x()
 {
   return GlobalWindow.x;
 }
 
-function s32   
+fz_function s32   
 get_window_y()
 {
   return GlobalWindow.y;
 }
 
-function V2s32 
+fz_function V2s32 
 get_window_position()
 {
   return v2s32(GlobalWindow.x, GlobalWindow.y);
 }
 
-function b32
+fz_function b32
 is_window_focused()
 {
   return GlobalWindow.is_focused;

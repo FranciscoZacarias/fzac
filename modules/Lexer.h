@@ -165,46 +165,46 @@ struct Lexer
 
 
 // @Section: Token_helpers
-function b32 token_is_trivia(Token* token);
-function b32 token_is_comment(Token* token);
+fz_function b32 token_is_trivia(Token* token);
+fz_function b32 token_is_comment(Token* token);
 
-function s32    lexer_token_index(Lexer* lexer, s32 lookahead); /* Ensure we get a valid index into the circular buffer */
-function Token* lexer_reserve_token_slot(Lexer* lexer); /* Add a new incoming token to buffer */
-function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures);
+fz_function s32    lexer_token_index(Lexer* lexer, s32 lookahead); /* Ensure we get a valid index into the circular buffer */
+fz_function Token* lexer_reserve_token_slot(Lexer* lexer); /* Add a new incoming token to buffer */
+fz_function void   lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures);
 
-function b32    lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Attaches a file to the lexer for it to parse */
-function b32    lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string */
-function b32    lexer_init_from_string_with_arena(Lexer* lexer, Arena* arena, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string and a given arena by the caller */
-function void   lexer_free(Lexer* lexer); /* Frees the lexer */
-function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
-function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
-function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
-function Token* lexer_peek_nth_token(Lexer* lexer, s32 nth); /* Returns the nth token. Nth must be smaller than MAX_LOOKAHEAD_TOKENS */
-function s16    lexer_peek_character(Lexer* lexer); /* Returns the next character without advancing the lexer */
-function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the nth character without advancing the lexer. 0 is current character, 1 is next character, etc... */
-function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a call to lexer_eat_token */
-function void   lexer_eat_character(Lexer* lexer); /* Advances the lexer by 1 character */
-function void   lexer_eat_token(Lexer* lexer); /* Advances lexer by 1 token */
-function void   lexer_eat_trivia(Lexer* lexer); /* Advances over all spaces */
-function Token* lexer_current_token(Lexer* lexer); /* Returns the current token. Doesn't peek, doesn't make. Can return garbage. */
+fz_function b32    lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Attaches a file to the lexer for it to parse */
+fz_function b32    lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string */
+fz_function b32    lexer_init_from_string_with_arena(Lexer* lexer, Arena* arena, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures); /* Initializes the lexer with a string and a given arena by the caller */
+fz_function void   lexer_free(Lexer* lexer); /* Frees the lexer */
+fz_function Token* lexer_make_new_token(Lexer* lexer); /* Returns a new token */
+fz_function Token* lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count); /* Returns the nth characters */
+fz_function Token* lexer_peek_token(Lexer* lexer); /* Creates and puts a new token into incoming tokens */
+fz_function Token* lexer_peek_nth_token(Lexer* lexer, s32 nth); /* Returns the nth token. Nth must be smaller than MAX_LOOKAHEAD_TOKENS */
+fz_function s16    lexer_peek_character(Lexer* lexer); /* Returns the next character without advancing the lexer */
+fz_function s16    lexer_peek_nth_character(Lexer* lexer, u32 nth); /* Returns the nth character without advancing the lexer. 0 is current character, 1 is next character, etc... */
+fz_function void   lexer_rewind_token(Lexer* lexer, u32 count); /* Used to undo a call to lexer_eat_token */
+fz_function void   lexer_eat_character(Lexer* lexer); /* Advances the lexer by 1 character */
+fz_function void   lexer_eat_token(Lexer* lexer); /* Advances lexer by 1 token */
+fz_function void   lexer_eat_trivia(Lexer* lexer); /* Advances over all spaces */
+fz_function Token* lexer_current_token(Lexer* lexer); /* Returns the current token. Doesn't peek, doesn't make. Can return garbage. */
 
 // @Section: Parsing helpers
-function void lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind); /* Parses a token that is a single character long */
-function void lexer_parse_identifier(Lexer* lexer, Token* token); /* Parses the next token as an identifier */
-function void lexer_parse_number(Lexer* lexer, Token* token); /* Parses the next token as a number */
-function void lexer_parse_string_literal(Lexer* lexer, Token* token); /* Parses a string literal that is in between double quotes */
-function void lexer_parse_string_backtick(Lexer* lexer, Token* token); /* Parses a backtick string that is in between backticks */
-function void lexer_parse_character_literal(Lexer* lexer, Token* token); /* Parses a character literal that is in between single ticks */
-function void lexer_parse_trivia(Lexer* lexer, Token* token); 
-function void lexer_parse_line_comment(Lexer* lexer, Token* token); /* Parses a line comment defined by double slash */
-function void lexer_parse_block_comment(Lexer* lexer, Token* token); /* Parses a block comment defined by slash asterisk up to asterisk slash */
-function Token_Kind lexer_classify_trivia(u8 c);
-function b32        lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind);
+fz_function void lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind); /* Parses a token that is a single character long */
+fz_function void lexer_parse_identifier(Lexer* lexer, Token* token); /* Parses the next token as an identifier */
+fz_function void lexer_parse_number(Lexer* lexer, Token* token); /* Parses the next token as a number */
+fz_function void lexer_parse_string_literal(Lexer* lexer, Token* token); /* Parses a string literal that is in between double quotes */
+fz_function void lexer_parse_string_backtick(Lexer* lexer, Token* token); /* Parses a backtick string that is in between backticks */
+fz_function void lexer_parse_character_literal(Lexer* lexer, Token* token); /* Parses a character literal that is in between single ticks */
+fz_function void lexer_parse_trivia(Lexer* lexer, Token* token); 
+fz_function void lexer_parse_line_comment(Lexer* lexer, Token* token); /* Parses a line comment defined by double slash */
+fz_function void lexer_parse_block_comment(Lexer* lexer, Token* token); /* Parses a block comment defined by slash asterisk up to asterisk slash */
+fz_function Token_Kind lexer_classify_trivia(u8 c);
+fz_function b32        lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind);
 
 
 // @Section: Implementation
 
-function b32
+fz_function b32
 token_is_comment(Token* token)
 {
   b32 result = false;
@@ -215,7 +215,7 @@ token_is_comment(Token* token)
   return result;
 }
 
-function b32
+fz_function b32
 token_is_trivia(Token* token)
 {
   b32 result = false;
@@ -235,7 +235,7 @@ token_is_trivia(Token* token)
   return result;
 }
 
-function s32
+fz_function s32
 lexer_token_index(Lexer* lexer, s32 lookahead)
 {
   assert(lookahead >= 0);
@@ -245,7 +245,7 @@ lexer_token_index(Lexer* lexer, s32 lookahead)
   return result;
 }
 
-function Token_Kind
+fz_function Token_Kind
 lexer_classify_trivia(u8 c)
 {
   switch (c)
@@ -260,7 +260,7 @@ lexer_classify_trivia(u8 c)
   return Token_Error;
 }
 
-function b32
+fz_function b32
 lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind)
 {
   switch (kind)
@@ -275,7 +275,7 @@ lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind)
   }
 }
 
-function Token*
+fz_function Token*
 lexer_reserve_token_slot(Lexer* lexer)
 {
   assert(lexer->incoming_tokens_count < MAX_LOOKAHEAD_TOKENS);
@@ -293,7 +293,7 @@ lexer_reserve_token_slot(Lexer* lexer)
   return result;
 }
 
-function void
+fz_function void
 lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_Structures emit_structures)
 {
   lexer_init_with_single_file_path(lexer, path, trivia_tokens, emit_structures);
@@ -319,7 +319,7 @@ lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_St
   }
 }
 
-function b32
+fz_function b32
 lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_flags, Emit_Structures emit_structures)
 {
   if (path.count == 0) return false;
@@ -342,7 +342,7 @@ lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_
   return true;
 }
 
-function b32
+fz_function b32
 lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures)
 {
   if (source.count == 0) return false;
@@ -359,14 +359,14 @@ lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, E
   return true;
 }
 
-function void
+fz_function void
 lexer_free(Lexer* lexer)
 {
   arena_free(lexer->arena);
   lexer = NULL;
 }
 
-function s16
+fz_function s16
 lexer_peek_nth_character(Lexer* lexer, u32 nth)
 {
   s16 result = -1;
@@ -377,7 +377,7 @@ lexer_peek_nth_character(Lexer* lexer, u32 nth)
   return result;
 }
 
-function s16
+fz_function s16
 lexer_peek_character(Lexer* lexer)
 {
   s16 result = -1;
@@ -403,7 +403,7 @@ lexer_peek_character(Lexer* lexer)
   return result;
 }
 
-function Token*
+fz_function Token*
 lexer_peek_token(Lexer* lexer)
 {
   if (lexer->incoming_tokens_count == 0)
@@ -417,7 +417,7 @@ lexer_peek_token(Lexer* lexer)
 }
 
 #if 0
-function Token*
+fz_function Token*
 lexer_peek_nth_token(Lexer* lexer, s32 nth)
 {
   assert(nth >= 0);
@@ -432,7 +432,7 @@ lexer_peek_nth_token(Lexer* lexer, s32 nth)
   return &lexer->incoming_tokens[index];
 }
 #else
-function Token*
+fz_function Token*
 lexer_peek_nth_token(Lexer* lexer, s32 nth)
 {
   assert(nth >= 0);
@@ -454,7 +454,7 @@ lexer_peek_nth_token(Lexer* lexer, s32 nth)
 }
 #endif
 
-function void
+fz_function void
 lexer_eat_character(Lexer* lexer)
 {
   u8 c = lexer->source.cstring[lexer->source_cursor];
@@ -471,7 +471,7 @@ lexer_eat_character(Lexer* lexer)
   }
 }
 
-function void
+fz_function void
 lexer_eat_token(Lexer* lexer)
 {
   assert(lexer->incoming_tokens_count > 0);
@@ -480,7 +480,7 @@ lexer_eat_token(Lexer* lexer)
   lexer->incoming_tokens_count -= 1;
 }
 
-function void
+fz_function void
 lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind)
 {
   s16 c_s16 = lexer_peek_character(lexer);
@@ -503,7 +503,7 @@ lexer_parse_single_character_token(Lexer* lexer, Token* token, Token_Kind kind)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_identifier(Lexer* lexer, Token* token)
 {
   u32 scratch_position = 0;
@@ -532,7 +532,7 @@ lexer_parse_identifier(Lexer* lexer, Token* token)
   token->c1 = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_number(Lexer* lexer, Token* token)
 {
   // @TODO(fz):
@@ -565,7 +565,7 @@ lexer_parse_number(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_eat_trivia(Lexer* lexer)
 {
   for (;;)
@@ -576,7 +576,7 @@ lexer_eat_trivia(Lexer* lexer)
   }
 }
 
-function void
+fz_function void
 lexer_parse_trivia(Lexer* lexer, Token* token)
 {
   s16 c_s16 = lexer_peek_character(lexer);
@@ -593,7 +593,7 @@ lexer_parse_trivia(Lexer* lexer, Token* token)
   lexer_parse_single_character_token(lexer, token, kind);
 }
 
-function void
+fz_function void
 lexer_parse_string_literal(Lexer* lexer, Token* token)
 {
   // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
@@ -625,7 +625,7 @@ lexer_parse_string_literal(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_string_backtick(Lexer* lexer, Token* token)
 {
   // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
@@ -657,7 +657,7 @@ lexer_parse_string_backtick(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_character_literal(Lexer* lexer, Token* token)
 {
   u32 scratch_position = 0;
@@ -688,7 +688,7 @@ lexer_parse_character_literal(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_line_comment(Lexer* lexer, Token* token)
 {
   lexer_eat_character(lexer);
@@ -713,7 +713,7 @@ lexer_parse_line_comment(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function void
+fz_function void
 lexer_parse_hash_line_comment(Lexer* lexer, Token* token)
 {
   lexer_eat_character(lexer);
@@ -736,7 +736,7 @@ lexer_parse_hash_line_comment(Lexer* lexer, Token* token)
   token->c1    = lexer->current_character_index;
 }
 
-function Token*
+fz_function Token*
 lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind kind, u32 count)
 {
   u32 scratch_position = 0;
@@ -757,7 +757,7 @@ lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind k
   return token;
 }
 
-function void
+fz_function void
 lexer_parse_block_comment(Lexer* lexer, Token* token)
 {
   lexer_eat_character(lexer);
@@ -793,7 +793,7 @@ lexer_parse_block_comment(Lexer* lexer, Token* token)
   string_builder_free(&buffer);
 }
 
-function Token*
+fz_function Token*
 lexer_make_new_token(Lexer* lexer)
 {
   for (;;)
@@ -1045,7 +1045,7 @@ lexer_make_new_token(Lexer* lexer)
   }
 }
 
-function void
+fz_function void
 lexer_rewind_token(Lexer* lexer, u32 count)
 {
   assert(count <= MAX_LOOKAHEAD_TOKENS); // Cannot rewind more tokens than the buffer can  hold
@@ -1062,7 +1062,7 @@ lexer_rewind_token(Lexer* lexer, u32 count)
   }
 }
 
-function Token*
+fz_function Token*
 lexer_current_token(Lexer* lexer)
 {
   return &lexer->incoming_tokens[lexer->incoming_tokens_head];

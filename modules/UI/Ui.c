@@ -1,6 +1,6 @@
 #include "generated/ui.cgen.c"
 
-function void
+fz_function void
 ui_init(UI_Font font)
 {
   UIColorThemeDark = (UI_Color_Theme)
@@ -74,7 +74,7 @@ ui_init(UI_Font font)
   UIContext.debug.disable_node_cache_clear        = false;
 }
 
-function void
+fz_function void
 ui_begin(u32 window_width, u32 window_height, u32 mouse_x, u32 mouse_y, u32 mouse_delta_x, u32 mouse_delta_y, f32 delta_time, u64 frame_count)
 {
   UIContext.window_width  = window_width;
@@ -102,7 +102,7 @@ ui_begin(u32 window_width, u32 window_height, u32 mouse_x, u32 mouse_y, u32 mous
   }
 }
 
-function void
+fz_function void
 ui_end()
 {
 #if DEBUG
@@ -144,7 +144,7 @@ ui_end()
   arena_clear(UIContext.frame_arena);
 }
 
-function b32
+fz_function b32
 ui_is_mouse_in_ui()
 {
   b32 result = false;
@@ -159,19 +159,19 @@ ui_is_mouse_in_ui()
   return result;
 }
 
-function u32
+fz_function u32
 ui_get_commands_count()
 {
   return UIContext.commands_count;
 }
 
-function UI_Command*
+fz_function UI_Command*
 ui_get_commands()
 {
   return UIContext.commands;
 }
 
-function UI_Node*
+fz_function UI_Node*
 _ui_node_from_string(String unique, String string, UI_Node_Flags flags)
 {
   UI_Node* parent = ui_stack_parent_top();
@@ -568,7 +568,7 @@ _ui_node_from_string(String unique, String string, UI_Node_Flags flags)
   return node;
 }
 
-function void
+fz_function void
 _ui_update_tree_nodes(UI_Node* node)
 {
   if (!node)
@@ -647,7 +647,7 @@ _ui_update_tree_nodes(UI_Node* node)
   }
 }
 
-function V2s32
+fz_function V2s32
 _ui_get_node_absolute_top_left(UI_Node *node)
 {
   V2s32 top_left = v2s32(0, 0);
@@ -662,7 +662,7 @@ _ui_get_node_absolute_top_left(UI_Node *node)
   return top_left;
 }
 
-function u32
+fz_function u32
 _ui_get_node_depth(UI_Node *node)
 {
   u32 depth = 0;
@@ -677,7 +677,7 @@ _ui_get_node_depth(UI_Node *node)
   return depth;
 }
 
-function void
+fz_function void
 _ui_render_ui_tree(UI_Node *node)
 {
   V2s32 absolute_top_left = _ui_get_node_absolute_top_left(node);
@@ -759,7 +759,7 @@ _ui_render_ui_tree(UI_Node *node)
   }
 }
 
-function void
+fz_function void
 _ui_add_node_child(UI_Node *parent, UI_Node *child)
 {
   if (parent == &UINodeNilSentinel)
@@ -790,7 +790,7 @@ _ui_add_node_child(UI_Node *parent, UI_Node *child)
   }
 }
 
-function UI_Node_Cache*
+fz_function UI_Node_Cache*
 _ui_get_cached_node(u64 hash)
 {
   // Is this node cached?
@@ -832,7 +832,7 @@ _ui_get_cached_node(u64 hash)
   return cached_node;
 }
 
-function b32
+fz_function b32
 _ui_is_mouse_in_node(UI_Node* node)
 {
   UI_Rect bounds;
@@ -862,7 +862,7 @@ _ui_is_mouse_in_node(UI_Node* node)
   return result;
 }
 
-function b32
+fz_function b32
 _ui_is_mouse_in_rect(UI_Rect rect)
 {
   b32 result = (UIContext.mouse_x >= rect.top_left.x &&
@@ -872,7 +872,7 @@ _ui_is_mouse_in_rect(UI_Rect rect)
   return result;
 }
 
-function void
+fz_function void
 _ui_fill_signals_from_node(UI_Signal* signal)
 {
   if (signal->node == NULL)
@@ -891,7 +891,7 @@ _ui_fill_signals_from_node(UI_Signal* signal)
   }
 }
 
-function String
+fz_function String
 _ui_clean_string(Arena* arena, String string)
 {
   String result;
@@ -907,7 +907,7 @@ _ui_clean_string(Arena* arena, String string)
   return result;
 }
 
-function void
+fz_function void
 _ui_purge_old_cached_nodes()
 {
   u64 time_now = time_milliseconds();
@@ -925,14 +925,14 @@ _ui_purge_old_cached_nodes()
   }
 }
 
-function UI_Node *
+fz_function UI_Node *
 _ui_tree_next(UI_Node *node)
 {
   while(node && !node->next) node = node->parent;
   return node ? node->next : NULL;
 }
 
-function void
+fz_function void
 _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
 {
   UI_Command *command;
@@ -950,7 +950,7 @@ _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation
   command->rect.border_color     = border_color;
 }
 
-function void
+fz_function void
 _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
 {
   UI_Command *command;
@@ -972,7 +972,7 @@ _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 u
   command->rect.uv_max           = uv_max;
 }
 
-function void
+fz_function void
 _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 color, String text)
 {
   // @TODO(fz): This max_width/max_height are probably just a V2f32 size?
@@ -990,7 +990,7 @@ _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 
 }
 
 #if DEBUG
-function void inline
+fz_function void inline
 _ui_error(String message, String file, u32 line)
 {
   Scratch scratch = scratch_begin(0,0);

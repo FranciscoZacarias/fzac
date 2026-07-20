@@ -17,13 +17,13 @@ struct Box
 #define box(min,max) (Box){ min, max }
 #define box_const(min,max) { min, max }
 
-function V3f32 box_get_dimensions(Box *box);
-function b8    box_is_point_inside(Box *box, V3f32 point);
-function b8    box_intersect(Box *box_a, Box box_b);
+fz_function V3f32 box_get_dimensions(Box *box);
+fz_function b8    box_is_point_inside(Box *box, V3f32 point);
+fz_function b8    box_intersect(Box *box_a, Box box_b);
 
 // @Section: Implementation
 
-function V3f32
+fz_function V3f32
 box_get_dimensions(Box *box)
 {
   V3f32 result;
@@ -33,7 +33,7 @@ box_get_dimensions(Box *box)
   return result;
 }
 
-function b8
+fz_function b8
 box_is_point_inside(Box *box, V3f32 point)
 {
   b8 result = point.x >= box->min.x && point.x <= box->max.x &&
@@ -42,7 +42,7 @@ box_is_point_inside(Box *box, V3f32 point)
   return result;
 }
 
-function b8
+fz_function b8
 box_intersect(Box *box_a, Box box_b)
 {
   b8 result = box_a->min.x <= box_b.max.x && box_a->max.x >= box_b.min.x &&

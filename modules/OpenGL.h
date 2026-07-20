@@ -2,7 +2,7 @@
 #define OPENGL_H
 
 // Opengl Debug:
-// Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl function call
+// Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl fz_function call
 // Define DEBUG to enable debug output and opengl debug message callback
 
 #include "Platform.h"
@@ -29,25 +29,25 @@ struct Opengl_Compile_Shader_Result
 };
 
 // @Section: Opengl entry point
-function b32   opengl_init(b32 set_vsync); /* Initializes opengl context */
-function void  opengl_end();  /* Deletes opengl context */
-function Opengl_Compile_Shader_Result opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type);
-function Opengl_Compile_Shader_Result opengl_compile_shader_from_file(Arena *arena, String label, String file_path, GLenum shader_type);
+fz_function b32   opengl_init(b32 set_vsync); /* Initializes opengl context */
+fz_function void  opengl_end();  /* Deletes opengl context */
+fz_function Opengl_Compile_Shader_Result opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type);
+fz_function Opengl_Compile_Shader_Result opengl_compile_shader_from_file(Arena *arena, String label, String file_path, GLenum shader_type);
 #define opengl_check_errors() _opengl_check_error(S(__FILE__), __LINE__)
 
 // @Section: Settings
-function void opengl_set_vsync(b32 state); /* Enables vsync */
+fz_function void opengl_set_vsync(b32 state); /* Enables vsync */
 
 // @Section: Opengl helpers
-function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
-function void           _opengl_check_error(String file, u32 line); /* Checks for opengl errors and terminates the program. */
-function void*          _load_gl_function(const char *name); /* Helper to load a single opengl function */
+fz_function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
+fz_function void           _opengl_check_error(String file, u32 line); /* Checks for opengl errors and terminates the program. */
+fz_function void*          _load_gl_function(const char *name); /* Helper to load a single opengl fz_function */
 
 // @Section: Implementation
 #include "OpenGL/generated/Opengl.cgen.h"
 #include "OpenGL/generated/Opengl.cgen.c"
 
-function Opengl_Compile_Shader_Result 
+fz_function Opengl_Compile_Shader_Result 
 opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type)
 {
   Opengl_Compile_Shader_Result result = {0}; 
@@ -88,7 +88,7 @@ opengl_compile_shader_from_source(Arena *arena, String label, String source, GLe
   return result;
 }
 
-function Opengl_Compile_Shader_Result 
+fz_function Opengl_Compile_Shader_Result 
 opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GLenum shader_type)
 {
   Opengl_Compile_Shader_Result result = {0};
@@ -108,7 +108,7 @@ opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GL
   return result;
 }
 
-function void
+fz_function void
 _opengl_check_error(String file, u32 line)
 {
   GLenum err = glGetError();
@@ -134,7 +134,7 @@ _opengl_check_error(String file, u32 line)
   }
 }
 
-function void APIENTRY
+fz_function void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
 {
   if (id == 131218) return; // @TODO(fz): Deal with this
@@ -200,34 +200,6 @@ _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
   }
 
   scratch_end(&scratch);
-}
-
-function void*
-_load_gl_function(const char *name)
-{
-  void* proc = (void*)wglGetProcAddress(name);
-
-  // Check for invalid pointer values
-  if (!proc || proc == (void *)0x1 || proc == (void *)0x2 || proc == (void *)0x3 || proc == (void *)-1)
-  {
-    local_persist HMODULE opengl32_module = NULL;
-    if (!opengl32_module)
-    {
-      opengl32_module = GetModuleHandleA("opengl32.dll");
-      if (!opengl32_module)
-      {
-        printf("opengl32.dll not loaded. Trying to load it dynamically.");
-        opengl32_module = LoadLibraryA("opengl32.dll");
-        if (opengl32_module)
-        {
-          printf("Unable to load opengl32.dll");
-          return NULL;
-        }
-      }
-    }
-    proc = (void *)GetProcAddress(opengl32_module, name);
-  }
-  return proc;
 }
 
 #if OS_WINDOWS

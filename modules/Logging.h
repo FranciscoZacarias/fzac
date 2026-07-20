@@ -41,9 +41,9 @@ struct Log_State
   b8        inited;
 };
 
-global Log_State GlobalLogger = {0};
+fz_global Log_State GlobalLogger = {0};
 
-function inline const char*
+fz_function inline const char*
 log_level_str(Log_Level level)
 {
   switch(level)
@@ -57,7 +57,7 @@ log_level_str(Log_Level level)
   }
 }
 
-function inline const char*
+fz_function inline const char*
 log_level_color(Log_Level level)
 {
   switch(level)
@@ -71,7 +71,7 @@ log_level_color(Log_Level level)
   }
 }
 
-function inline void
+fz_function inline void
 log_flush_to_file(String line)
 {
   if(!GlobalLogger.file_enabled || line.count == 0)
@@ -96,7 +96,7 @@ log_flush_to_file(String line)
   file_write(GlobalLogger.file_path, GlobalLogger.file_buf, written);
 }
 
-function inline void
+fz_function inline void
 log_fatal_popup(String msg, const char* src_file, int src_line)
 {
   Scratch scratch = scratch_begin(0, 0);
@@ -106,7 +106,7 @@ log_fatal_popup(String msg, const char* src_file, int src_line)
   scratch_end(&scratch);
 }
 
-function void
+fz_function void
 log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, ...)
 {
   if(level < GlobalLogger.min_level || !GlobalLogger.inited)
@@ -139,7 +139,7 @@ log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, 
   scratch_end(&scratch);
 }
 
-function void
+fz_function void
 log_write_string(Log_Level level, const char* src_file, int src_line, String msg)
 {
   if(level < GlobalLogger.min_level || !GlobalLogger.inited)
@@ -168,7 +168,7 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
   scratch_end(&scratch);
 }
 
-function b32
+fz_function b32
 logging_init(Log_Level min_level, String file_path)
 {
   if(!TimingInited)
@@ -194,7 +194,7 @@ logging_init(Log_Level min_level, String file_path)
   return true;
 }
 
-function void
+fz_function void
 logging_free(void)
 {
   if(GlobalLogger.file_enabled && GlobalLogger.file_total > 0)
@@ -205,13 +205,13 @@ logging_free(void)
   memory_zero_struct(&GlobalLogger);
 }
 
-function void
+fz_function void
 logging_set_level(Log_Level level)
 {
   GlobalLogger.min_level = level;
 }
 
-function b8
+fz_function b8
 logging_add_hook(log_hook_function* hook_function)
 {
   b8 result = false;
@@ -224,7 +224,7 @@ logging_add_hook(log_hook_function* hook_function)
   return result;
 }
 
-function void
+fz_function void
 logging_remove_hook(s32 idx)
 {
   if(idx < 0 || (u32)idx >= GlobalLogger.hook_count)

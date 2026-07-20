@@ -10,10 +10,10 @@
 #define glue(A,B) glue_(A,B)
 
 /* === Static is Ambiguous === */
-#define local_persist   static
-#define global          static
-#define function        static
-#define function_no_reflection static
+#define fz_local_persist   static
+#define fz_global          static
+#define fz_function        static
+#define fz_function_no_reflection static
 
 /* === Readonly === */
 #if OS_WINDOWS

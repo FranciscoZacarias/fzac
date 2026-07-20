@@ -9,18 +9,18 @@
   #include "Platform.h"
   #include "Default_Metaprogram.h"
   
-  global Default_Metaprogram DefaultMetaprogram;
+  fz_global Default_Metaprogram DefaultMetaprogram;
   
   // Metaprogram
   #define METAPROGRAM_SRC_DIRECTORY S("../src")
-  function void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data);  /* Metaprogram entry point, defined by user. */
+  fz_function void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data);  /* Metaprogram entry point, defined by user. */
   raddbg_entry_point(metaprogram_entry_point);
-  function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  fz_function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
   
-  function void
+  fz_function void
   metaprogram_main_thread_base_entry_point(String command_line)
   {
-    local_persist Thread_Context thread_context;
+    fz_local_persist Thread_Context thread_context;
     thread_context_init_and_attach(&thread_context);
     Command_Line cmd_line = command_line_parse(command_line);
   
@@ -35,7 +35,7 @@
     // User can toggle this off if doesn't want to run default metaprogram
     b32 run_default_metaprogram = true; 
 
-    // If this string pointer is not NULL, it will be added to global headers. 
+    // If this string pointer is not NULL, it will be added to fz_global headers. 
     // Must be allocated by the user and not cleaned up, so the metaprogram can use it.
     // Only writes to global_headers.h!! The metaprogram_global_headers cannot be modified
     String global_headers_extra_data = S(""); 
@@ -50,14 +50,14 @@
     arena_free(DefaultMetaprogram.arena);
   }
 #else
-  function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
+  fz_function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
   raddbg_entry_point(entry_point);
-  function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  fz_function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
   
-  function void
+  fz_function void
   main_thread_base_entry_point(String command_line)
   {
-    local_persist Thread_Context thread_context;
+    fz_local_persist Thread_Context thread_context;
     thread_context_init_and_attach(&thread_context);
     Command_Line cmd_line = command_line_parse(command_line);
     entry_point(&cmd_line);

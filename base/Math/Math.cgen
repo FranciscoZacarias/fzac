@@ -25,14 +25,14 @@ struct V2$(type) { $(type) x, y; };
 #define v2$(type)(x,y) (V2$(type)){(x),(y)}
 #define v2$(type)n(n)  (V2$(type)){(n),(n)}
 #define v2$(type)_zero() v2$(type)(0,0)
-function V2$(type) v2$(type)_add(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_sub(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_mul(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_scale(V2$(type) v, $(type) s);
-function V2$(type) v2$(type)_min(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_max(V2$(type) a, V2$(type) b);
-function V2$(type) v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max);
-function String    v2$(type)_to_string(Arena* arena, V2$(type) v);\n`
+fz_function V2$(type) v2$(type)_add(V2$(type) a, V2$(type) b);
+fz_function V2$(type) v2$(type)_sub(V2$(type) a, V2$(type) b);
+fz_function V2$(type) v2$(type)_mul(V2$(type) a, V2$(type) b);
+fz_function V2$(type) v2$(type)_scale(V2$(type) v, $(type) s);
+fz_function V2$(type) v2$(type)_min(V2$(type) a, V2$(type) b);
+fz_function V2$(type) v2$(type)_max(V2$(type) a, V2$(type) b);
+fz_function V2$(type) v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max);
+fz_function String    v2$(type)_to_string(Arena* arena, V2$(type) v);\n`
 
   `\n// Vector 3 types\n`
   `// --------------\n`
@@ -42,14 +42,14 @@ struct V3$(type) { $(type) x, y, z; };
 #define v3$(type)(x,y,z) (V3$(type)){(x),(y),(z)}
 #define v3$(type)n(n)  (V3$(type)){(n),(n),(n)}
 #define v3$(type)_zero() v3$(type)(0,0,0)
-function V3$(type) v3$(type)_add(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_sub(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_mul(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_scale(V3$(type) v, $(type) s);
-function V3$(type) v3$(type)_min(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_max(V3$(type) a, V3$(type) b);
-function V3$(type) v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max);
-function String    v3$(type)_to_string(Arena* arena, V3$(type) v);\n`
+fz_function V3$(type) v3$(type)_add(V3$(type) a, V3$(type) b);
+fz_function V3$(type) v3$(type)_sub(V3$(type) a, V3$(type) b);
+fz_function V3$(type) v3$(type)_mul(V3$(type) a, V3$(type) b);
+fz_function V3$(type) v3$(type)_scale(V3$(type) v, $(type) s);
+fz_function V3$(type) v3$(type)_min(V3$(type) a, V3$(type) b);
+fz_function V3$(type) v3$(type)_max(V3$(type) a, V3$(type) b);
+fz_function V3$(type) v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max);
+fz_function String    v3$(type)_to_string(Arena* arena, V3$(type) v);\n`
 
   `\n// Vector4 types\n`
   `// -------------\n`
@@ -60,14 +60,14 @@ struct V4$(type) { $(type) x, y, z, w; };
 #define v4$(type)(x,y,z,w) (V4$(type)){(x),(y),(z),(w)}
 #define v4$(type)n(n)  (V4$(type)){(n),(n),(n),(n)}
 #define v4$(type)_zero() v4$(type)(0,0,0,0)
-function V4$(type) v4$(type)_add(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_sub(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_mul(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_scale(V4$(type) v, $(type) s);
-function V4$(type) v4$(type)_min(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_max(V4$(type) a, V4$(type) b);
-function V4$(type) v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max);
-function String    v4$(type)_to_string(Arena* arena, V4$(type) v);\n`
+fz_function V4$(type) v4$(type)_add(V4$(type) a, V4$(type) b);
+fz_function V4$(type) v4$(type)_sub(V4$(type) a, V4$(type) b);
+fz_function V4$(type) v4$(type)_mul(V4$(type) a, V4$(type) b);
+fz_function V4$(type) v4$(type)_scale(V4$(type) v, $(type) s);
+fz_function V4$(type) v4$(type)_min(V4$(type) a, V4$(type) b);
+fz_function V4$(type) v4$(type)_max(V4$(type) a, V4$(type) b);
+fz_function V4$(type) v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max);
+fz_function String    v4$(type)_to_string(Arena* arena, V4$(type) v);\n`
 
   `\n// Rect types\n`
   `// ----------\n`
@@ -76,18 +76,18 @@ function String    v4$(type)_to_string(Arena* arena, V4$(type) v);\n`
 typedef struct Rect$(type) Rect$(type);
 struct Rect$(type) { V2$(type) min; V2$(type) max; };
 #define rect$(type)(min,max) (Rect$(type)){(min),(max)}
-function Rect$(type) rect$(type)_from_position_size(V2$(type) pos, V2$(type) size);
-function V2$(type)   rect$(type)_size(Rect$(type) rect);
-function V2$(type)   rect$(type)_center(Rect$(type) rect);
-function $(type)     rect$(type)_width(Rect$(type) rect);
-function $(type)     rect$(type)_height(Rect$(type) rect);
-function $(type)     rect$(type)_area(Rect$(type) rect);
-function b32     rect$(type)_contains_point(Rect$(type) rect, V2$(type) point);
-function b32     rect$(type)_contains_rect(Rect$(type) a, Rect$(type) b);
-function b32     rect$(type)_overlaps(Rect$(type) a, Rect$(type) b);
-function Rect$(type) rect$(type)_translate(Rect$(type) rect, V2$(type) offset);
-function Rect$(type) rect$(type)_intersection(Rect$(type) a, Rect$(type) b);
-function Rect$(type) rect$(type)_union(Rect$(type) a, Rect$(type) b);\n`
+fz_function Rect$(type) rect$(type)_from_position_size(V2$(type) pos, V2$(type) size);
+fz_function V2$(type)   rect$(type)_size(Rect$(type) rect);
+fz_function V2$(type)   rect$(type)_center(Rect$(type) rect);
+fz_function $(type)     rect$(type)_width(Rect$(type) rect);
+fz_function $(type)     rect$(type)_height(Rect$(type) rect);
+fz_function $(type)     rect$(type)_area(Rect$(type) rect);
+fz_function b32     rect$(type)_contains_point(Rect$(type) rect, V2$(type) point);
+fz_function b32     rect$(type)_contains_rect(Rect$(type) a, Rect$(type) b);
+fz_function b32     rect$(type)_overlaps(Rect$(type) a, Rect$(type) b);
+fz_function Rect$(type) rect$(type)_translate(Rect$(type) rect, V2$(type) offset);
+fz_function Rect$(type) rect$(type)_intersection(Rect$(type) a, Rect$(type) b);
+fz_function Rect$(type) rect$(type)_union(Rect$(type) a, Rect$(type) b);\n`
 
   `\n#endif // MATH_GENERATED_H`
 }
@@ -95,35 +95,35 @@ function Rect$(type) rect$(type)_union(Rect$(type) a, Rect$(type) b);\n`
   @Generator(Math.cgen.c)
   {
     `// V2 Implementation\n`
-    @foreach(Vector_Type_Table) `function V2$(type)
+    @foreach(Vector_Type_Table) `fz_function V2$(type)
 v2$(type)_add(V2$(type) a, V2$(type) b)
 {
   V2$(type) result = { a.x + b.x, a.y + b.y };
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_sub(V2$(type) a, V2$(type) b)
 {
   V2$(type) result = { a.x - b.x, a.y - b.y };
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_mul(V2$(type) a, V2$(type) b)
 {
   V2$(type) result = { a.x * b.x, a.y * b.y };
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_scale(V2$(type) v, $(type) s)
 {
   V2$(type) result = { v.x * s, v.y * s };
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_min(V2$(type) a, V2$(type) b)
 {
   V2$(type) result =
@@ -134,7 +134,7 @@ v2$(type)_min(V2$(type) a, V2$(type) b)
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_max(V2$(type) a, V2$(type) b)
 {
   V2$(type) result =
@@ -145,7 +145,7 @@ v2$(type)_max(V2$(type) a, V2$(type) b)
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max)
 {
   V2$(type) result =
@@ -156,7 +156,7 @@ v2$(type)_clamp(V2$(type) v, V2$(type) min, V2$(type) max)
   return result;
 }
 
-function String
+fz_function String
 v2$(type)_to_string(Arena *arena, V2$(type) v)
 {
   String result = Sf(arena, "(%%$(fmt), %%$(fmt))", v.x, v.y);
@@ -166,35 +166,35 @@ v2$(type)_to_string(Arena *arena, V2$(type) v)
 
   `// V3 Implementation\n`
 @foreach(Vector_Type_Table)
-`function V3$(type)
+`fz_function V3$(type)
 v3$(type)_add(V3$(type) a, V3$(type) b)
 {
   V3$(type) result = { a.x + b.x, a.y + b.y, a.z + b.z };
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_sub(V3$(type) a, V3$(type) b)
 {
   V3$(type) result = { a.x - b.x, a.y - b.y, a.z - b.z };
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_mul(V3$(type) a, V3$(type) b)
 {
   V3$(type) result = { a.x * b.x, a.y * b.y, a.z * b.z };
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_scale(V3$(type) v, $(type) s)
 {
   V3$(type) result = { v.x * s, v.y * s, v.z * s };
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_min(V3$(type) a, V3$(type) b)
 {
   V3$(type) result = { a.x < b.x ? a.x : b.x,
@@ -203,7 +203,7 @@ v3$(type)_min(V3$(type) a, V3$(type) b)
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_max(V3$(type) a, V3$(type) b)
 {
   V3$(type) result = { a.x > b.x ? a.x : b.x,
@@ -212,7 +212,7 @@ v3$(type)_max(V3$(type) a, V3$(type) b)
   return result;
 }
 
-function V3$(type)
+fz_function V3$(type)
 v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max)
 {
   V3$(type) result = { v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
@@ -222,7 +222,7 @@ v3$(type)_clamp(V3$(type) v, V3$(type) min, V3$(type) max)
 }
 
 
-function String
+fz_function String
 v3$(type)_to_string(Arena *arena, V3$(type) v)
 {
   String result = Sf(arena, "(%%$(fmt), %%$(fmt), %%$(fmt))", v.x, v.y, v.z);
@@ -233,35 +233,35 @@ v3$(type)_to_string(Arena *arena, V3$(type) v)
 
   `// V4 Implementation\n`
   @foreach(Vector_Type_Table)
-`function V4$(type)
+`fz_function V4$(type)
 v4$(type)_add(V4$(type) a, V4$(type) b)
 {
   V4$(type) result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_sub(V4$(type) a, V4$(type) b)
 {
   V4$(type) result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_mul(V4$(type) a, V4$(type) b)
 {
   V4$(type) result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_scale(V4$(type) v, $(type) s)
 {
   V4$(type) result = { v.x * s, v.y * s, v.z * s, v.w * s };
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_min(V4$(type) a, V4$(type) b)
 {
   V4$(type) result = { a.x < b.x ? a.x : b.x,
@@ -271,7 +271,7 @@ v4$(type)_min(V4$(type) a, V4$(type) b)
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_max(V4$(type) a, V4$(type) b)
 {
   V4$(type) result = { a.x > b.x ? a.x : b.x,
@@ -281,7 +281,7 @@ v4$(type)_max(V4$(type) a, V4$(type) b)
   return result;
 }
 
-function V4$(type)
+fz_function V4$(type)
 v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max)
 {
   V4$(type) result = { v.x < min.x ? min.x : (v.x > max.x ? max.x : v.x),
@@ -291,7 +291,7 @@ v4$(type)_clamp(V4$(type) v, V4$(type) min, V4$(type) max)
   return result;
 }
 
-function String
+fz_function String
 v4$(type)_to_string(Arena *arena, V4$(type) v)
 {
   String result = Sf(arena, "(%%$(fmt), %%$(fmt), %%$(fmt), %%$(fmt))", v.x, v.y, v.z, v.w);
@@ -304,21 +304,21 @@ v4$(type)_to_string(Arena *arena, V4$(type) v)
 
   @foreach(Rect_Type_Table)
 `
-function Rect$(type)
+fz_function Rect$(type)
 rect$(type)_from_position_size(V2$(type) position, V2$(type) size)
 {
   Rect$(type) result = rect$(type)(position, v2$(type)_add(position, size));
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 rect$(type)_size(Rect$(type) rect)
 {
   V2$(type) result = v2$(type)_sub(rect.max, rect.min);
   return result;
 }
 
-function V2$(type)
+fz_function V2$(type)
 rect$(type)_center(Rect$(type) rect)
 {
   V2$(type) size = rect$(type)_size(rect);
@@ -326,28 +326,28 @@ rect$(type)_center(Rect$(type) rect)
   return result;
 }
 
-function $(type)
+fz_function $(type)
 rect$(type)_width(Rect$(type) rect)
 {
   $(type) result = rect.max.x - rect.min.x;
   return result;
 }
 
-function $(type)
+fz_function $(type)
 rect$(type)_height(Rect$(type) rect)
 {
   $(type) result = rect.max.y - rect.min.y;
   return result;
 }
 
-function $(type)
+fz_function $(type)
 rect$(type)_area(Rect$(type) rect)
 {
   $(type) result = rect$(type)_width(rect) * rect$(type)_height(rect);
   return result;
 }
 
-function b32
+fz_function b32
 rect$(type)_contains_point(Rect$(type) rect, V2$(type) point)
 {
   b32 result = point.x >= rect.min.x &&
@@ -357,7 +357,7 @@ rect$(type)_contains_point(Rect$(type) rect, V2$(type) point)
   return result;
 }
 
-function b32
+fz_function b32
 rect$(type)_contains_rect(Rect$(type) a, Rect$(type) b)
 {
   b32 result = b.min.x >= a.min.x &&
@@ -367,7 +367,7 @@ rect$(type)_contains_rect(Rect$(type) a, Rect$(type) b)
   return result;
 }
 
-function b32
+fz_function b32
 rect$(type)_overlaps(Rect$(type) a, Rect$(type) b)
 {
   b32 result = a.min.x < b.max.x &&
@@ -377,14 +377,14 @@ rect$(type)_overlaps(Rect$(type) a, Rect$(type) b)
   return result;
 }
 
-function Rect$(type)
+fz_function Rect$(type)
 rect$(type)_translate(Rect$(type) rect, V2$(type) offset)
 {
   Rect$(type) result = rect$(type)(v2$(type)_add(rect.min, offset), v2$(type)_add(rect.max, offset));
   return result;
 }
 
-function Rect$(type)
+fz_function Rect$(type)
 rect$(type)_intersection(Rect$(type) a, Rect$(type) b)
 {
   Rect$(type) result;
@@ -397,7 +397,7 @@ rect$(type)_intersection(Rect$(type) a, Rect$(type) b)
   return result;
 }
 
-function Rect$(type)
+fz_function Rect$(type)
 rect$(type)_union(Rect$(type) a, Rect$(type) b)
 {
   Rect$(type) result;

@@ -1,4 +1,4 @@
-function void
+fz_function void
 message_box(String title, String content, String file, u32 line)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -7,7 +7,7 @@ message_box(String title, String content, String file, u32 line)
   scratch_end(&scratch);
 }
 
-function void
+fz_function void
 message_box_with_debugger(String title, String content, String file, u32 line)
 {
   Scratch scratch = scratch_begin(0, 0);

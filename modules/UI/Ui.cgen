@@ -175,12 +175,12 @@
 
 @Generator(ui.cgen.c)
 {
-  @foreach(UI_Stack_Table) `function void ui_stack_$(name)_init($(type) bot_val) { ui_stack_init($(name), bot_val); }
-function void ui_stack_$(name)_push($(type) val) { ui_stack_push($(name), val); }
-function $(type) ui_stack_$(name)_pop() { return ui_stack_pop($(name)); }
-function $(type) ui_stack_$(name)_top() { return ui_stack_top($(name)); }
-function b32  ui_stack_$(name)_is_at_bottom() { return ui_stack_is_at_bottom($(name)); }
-function void ui_stack_$(name)_assert_top_at(u32 at) { ui_stack_assert_top_at($(name), at); }
+  @foreach(UI_Stack_Table) `fz_function void ui_stack_$(name)_init($(type) bot_val) { ui_stack_init($(name), bot_val); }
+fz_function void ui_stack_$(name)_push($(type) val) { ui_stack_push($(name), val); }
+fz_function $(type) ui_stack_$(name)_pop() { return ui_stack_pop($(name)); }
+fz_function $(type) ui_stack_$(name)_top() { return ui_stack_top($(name)); }
+fz_function b32  ui_stack_$(name)_is_at_bottom() { return ui_stack_is_at_bottom($(name)); }
+fz_function void ui_stack_$(name)_assert_top_at(u32 at) { ui_stack_assert_top_at($(name), at); }
 #define ui_$(name)(val) defer_loop(ui_stack_$(name)_push(val), ui_stack_$(name)_pop())\n\n`
 
 }

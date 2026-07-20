@@ -12,41 +12,41 @@ struct File_Watcher
 };
 
 // @Section: File and directory
-function b32    file_create(String path); /* Creates file. If file exists, returns true anyway. */
-function b32    file_delete(String path); /* Deletes a file */
-function u32    file_write(String path, u8* data, u64 data_size); /* Wipes file contents and writes data */
-function u32    file_write_string(String path, String data); /* Same as file_write */
-function u32    file_append(String path, u8* data, u64 data_size); /* Appends data to the file */
-function b32    file_wipe(String path); /* Clears file */
-function u32    file_size(String path); /* Returns the size of the file */
-function String file_load(Arena* arena, String path); /* Loads file into memory */
-function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
-function String file_get_extension(String path); /* Returns file extension. */
-function String file_get_name_no_extension(String path); /* Returns the file name without extension */
+fz_function b32    file_create(String path); /* Creates file. If file exists, returns true anyway. */
+fz_function b32    file_delete(String path); /* Deletes a file */
+fz_function u32    file_write(String path, u8* data, u64 data_size); /* Wipes file contents and writes data */
+fz_function u32    file_write_string(String path, String data); /* Same as file_write */
+fz_function u32    file_append(String path, u8* data, u64 data_size); /* Appends data to the file */
+fz_function b32    file_wipe(String path); /* Clears file */
+fz_function u32    file_size(String path); /* Returns the size of the file */
+fz_function String file_load(Arena* arena, String path); /* Loads file into memory */
+fz_function String_List file_get_files_in_path(Arena* arena, String path, b32 recursive); /* Returns all files in a given path. If recursive is false: returns immediate files and directories in path. If recursive is true: returns all files recursively from directory specified. */
+fz_function String file_get_extension(String path); /* Returns file extension. */
+fz_function String file_get_name_no_extension(String path); /* Returns the file name without extension */
 
 // File watch
-function void file_watch_init(Arena *arena, File_Watcher *watch, String path);
-function u64  file_get_last_write_time(String path);
-function b32  file_watch_changed(File_Watcher *watch);
+fz_function void file_watch_init(Arena *arena, File_Watcher *watch, String path);
+fz_function u64  file_get_last_write_time(String path);
+fz_function b32  file_watch_changed(File_Watcher *watch);
 
-function b32 file_exists(String path);
-function b32 is_file(String path);
+fz_function b32 file_exists(String path);
+fz_function b32 is_file(String path);
 
-function b32 directory_create(String path);
-function b32 is_directory(String path);
-function b32 directory_exists(String path);
+fz_function b32 directory_create(String path);
+fz_function b32 is_directory(String path);
+fz_function b32 directory_exists(String path);
 
-function String full_path_from_relative_path(Arena* arena, String relative_path);
+fz_function String full_path_from_relative_path(Arena* arena, String relative_path);
 
 #if OS_WINDOWS
 
-function wchar_t* utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size);
-function void     win32_log_error(const char* msg, String path);
-function b32      win32_is_dot_dir(const char* name);
-function b32      win32_collect_recursive(Arena* arena, String_List* out, String dir_path);
-function void     win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path);
+fz_function wchar_t* utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size);
+fz_function void     win32_log_error(const char* msg, String path);
+fz_function b32      win32_is_dot_dir(const char* name);
+fz_function b32      win32_collect_recursive(Arena* arena, String_List* out, String dir_path);
+fz_function void     win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path);
 
-function wchar_t*
+fz_function wchar_t*
 utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
 {
   if (utf8 == 0 || utf8_size <= 0) return NULL;
@@ -58,7 +58,7 @@ utf8_to_wide(Arena* arena, u8* utf8, s64 utf8_size)
   return wstr;
 }
 
-function void
+fz_function void
 win32_log_error(const char* msg, String path)
 {
   char buffer[512];
@@ -66,14 +66,14 @@ win32_log_error(const char* msg, String path)
   OutputDebugStringA(buffer);
 }
 
-function b32
+fz_function b32
 win32_is_dot_dir(const char* name)
 {
   b32 result = (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0)));
   return result;
 }
 
-function b32
+fz_function b32
 win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
 {
   b32 found_file = 0;
@@ -119,7 +119,7 @@ win32_collect_recursive(Arena* arena, String_List* out, String dir_path)
   return found_file;
 }
 
-function void
+fz_function void
 win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
 {
   String search = string_join(arena, dir_path, S("\\*"));
@@ -147,7 +147,7 @@ win32_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
   FindClose(handle);
 }
 
-function b32
+fz_function b32
 file_create(String path)
 {
   b32 result  = true;
@@ -167,7 +167,7 @@ file_create(String path)
   return result;
 }
 
-function b32
+fz_function b32
 file_delete(String path)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -177,7 +177,7 @@ file_delete(String path)
   return result;
 }
 
-function u32
+fz_function u32
 file_write(String path, u8* data, u64 data_size)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -192,13 +192,13 @@ file_write(String path, u8* data, u64 data_size)
   return (u32)written;
 }
 
-function u32
+fz_function u32
 file_write_string(String path, String data)
 {
   return file_write(path, data.cstring, data.count);
 }
 
-function u32
+fz_function u32
 file_append(String path, u8* data, u64 data_size)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -214,7 +214,7 @@ file_append(String path, u8* data, u64 data_size)
   return (u32)written;
 }
 
-function b32
+fz_function b32
 file_wipe(String path)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -229,7 +229,7 @@ file_wipe(String path)
   return result;
 }
 
-function u32
+fz_function u32
 file_size(String path)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -245,7 +245,7 @@ file_size(String path)
   return (u32)size.QuadPart;
 }
 
-function String
+fz_function String
 file_load(Arena* arena, String path)
 {
   String result = {0};
@@ -271,7 +271,7 @@ file_load(Arena* arena, String path)
   return result;
 }
 
-function String_List
+fz_function String_List
 file_get_files_in_path(Arena* arena, String path, b32 recursive)
 {
   String_List result = string_list_new();
@@ -301,7 +301,7 @@ file_get_files_in_path(Arena* arena, String path, b32 recursive)
   return result;
 }
 
-function String
+fz_function String
 file_get_extension(String path)
 {
   String result = {0};
@@ -334,7 +334,7 @@ file_get_extension(String path)
   return result;
 }
 
-function String 
+fz_function String 
 file_get_name_no_extension(String path)
 {
   String result  = S("");
@@ -359,7 +359,7 @@ file_get_name_no_extension(String path)
   return result;
 }
 
-function void
+fz_function void
 file_watch_init(Arena *arena, File_Watcher *watch, String path)
 {
   if (file_exists(path))
@@ -374,7 +374,7 @@ file_watch_init(Arena *arena, File_Watcher *watch, String path)
   }
 }
 
-function u64
+fz_function u64
 file_get_last_write_time(String path)
 {
   u64 result = 0;
@@ -387,7 +387,7 @@ file_get_last_write_time(String path)
   return result;
 }
 
-function b32
+fz_function b32
 file_watch_changed(File_Watcher *watch)
 {
   b32 result = false;
@@ -406,7 +406,7 @@ file_watch_changed(File_Watcher *watch)
   return result;
 }
 
-function b32
+fz_function b32
 is_directory(String path)
 {
   if (path.count == 0 || path.cstring == 0) return false;
@@ -420,7 +420,7 @@ is_directory(String path)
   return result;
 }
 
-function b32
+fz_function b32
 is_file(String path)
 {
   if (path.count == 0 || path.cstring == 0) return false;
@@ -434,7 +434,7 @@ is_file(String path)
   return result;
 }
 
-function b32
+fz_function b32
 directory_exists(String path)
 {
   if (path.count == 0 || path.cstring == 0) return false;
@@ -447,7 +447,7 @@ directory_exists(String path)
   return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
-function b32
+fz_function b32
 file_exists(String path)
 {
   if (path.count == 0 || path.cstring == 0) return false;
@@ -460,7 +460,7 @@ file_exists(String path)
   return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
 
-function b32
+fz_function b32
 directory_create(String path)
 {
   if (path.count == 0 || path.cstring == 0) return false;
@@ -491,7 +491,7 @@ directory_create(String path)
   return false;
 }
 
-function String
+fz_function String
 full_path_from_relative_path(Arena* arena, String relative_path)
 {
   String result = {0};

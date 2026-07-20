@@ -9,9 +9,9 @@
 
 typedef struct Window Window;
 
-function Window* window_create(String title, u32 width, u32 height, u32 x, u32 y);
-function void    window_swap_buffers();
-function void    window_destroy();
+fz_function Window* window_create(String title, u32 width, u32 height, u32 x, u32 y);
+fz_function void    window_swap_buffers();
+fz_function void    window_destroy();
 
 // @Section: Input
 typedef u32 Keyboard_Key;
@@ -155,9 +155,9 @@ const char *keyboard_key_to_string[] = {
   "Keyboard_Key_Count"
 };
 
-function void         _init_win32_key_table(); /* Initializes the key tables for quick lookup at runtime */
-function u32          _native_key_from_key(Keyboard_Key key); /* Converts os key to native key */
-function Keyboard_Key _key_from_native_key(u32 native_key); /* Converts native key to os key */
+fz_function void         _init_win32_key_table(); /* Initializes the key tables for quick lookup at runtime */
+fz_function u32          _native_key_from_key(Keyboard_Key key); /* Converts os key to native key */
+fz_function Keyboard_Key _key_from_native_key(u32 native_key); /* Converts native key to os key */
 
 
 typedef u32 Mouse_Button;
@@ -197,31 +197,31 @@ struct Input_State
   b32 is_cursor_locked;
 };
 
-function void _input_init(); /* Initializes input state (clears previous + current states) */
-function void _input_update(); /* Updates previous input state with current state (to track deltas and transitions) */
-function void _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed); /* Internal: Processes a key press/release and updates keyboard state */
-function void _input_process_mouse_move(s32 x, s32 y);
-function void _input_process_mouse_button(Mouse_Button button, b8 is_pressed); /* Internal: Processes mouse button press/release and updates mouse state */
+fz_function void _input_init(); /* Initializes input state (clears previous + current states) */
+fz_function void _input_update(); /* Updates previous input state with current state (to track deltas and transitions) */
+fz_function void _input_process_keyboard_key(Keyboard_Key key, b8 is_pressed); /* Internal: Processes a key press/release and updates keyboard state */
+fz_function void _input_process_mouse_move(s32 x, s32 y);
+fz_function void _input_process_mouse_button(Mouse_Button button, b8 is_pressed); /* Internal: Processes mouse button press/release and updates mouse state */
 
-function b8 is_key_up(Keyboard_Key key); /* True if the given key is currently up */
-function b8 is_key_down(Keyboard_Key key); /* True if the given key is currently down */
-function b8 was_key_up(Keyboard_Key key); /* True if the given key was up on the previous frame */
-function b8 was_key_down(Keyboard_Key key); /* True if the given key was down on the previous frame */
-function b8 is_key_clicked(Keyboard_Key key); /* True if the given key is down this frame but was up last frame */
+fz_function b8 is_key_up(Keyboard_Key key); /* True if the given key is currently up */
+fz_function b8 is_key_down(Keyboard_Key key); /* True if the given key is currently down */
+fz_function b8 was_key_up(Keyboard_Key key); /* True if the given key was up on the previous frame */
+fz_function b8 was_key_down(Keyboard_Key key); /* True if the given key was down on the previous frame */
+fz_function b8 is_key_clicked(Keyboard_Key key); /* True if the given key is down this frame but was up last frame */
 
-function b8 is_button_up(Mouse_Button button); /* True if the given mouse button is currently up */
-function b8 is_button_down(Mouse_Button button); /* True if the given mouse button is currently down */
-function b8 was_button_up(Mouse_Button button); /* True if the given mouse button was up on the previous frame */
-function b8 was_button_down(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
-function b8 is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
+fz_function b8 is_button_up(Mouse_Button button); /* True if the given mouse button is currently up */
+fz_function b8 is_button_down(Mouse_Button button); /* True if the given mouse button is currently down */
+fz_function b8 was_button_up(Mouse_Button button); /* True if the given mouse button was up on the previous frame */
+fz_function b8 was_button_down(Mouse_Button button); /* True if the given mouse button was down on the previous frame */
+fz_function b8 is_button_clicked(Mouse_Button button); /* True if the given mouse button is down this frame but was up last frame */
 
-function s32   get_mouse_x();
-function s32   get_mouse_y();
-function V2s32 get_mouse_position();
-function s32   get_mouse_delta_x();
-function s32   get_mouse_delta_y();
-function V2s32 get_mouse_delta();
-function s32   get_mouse_wheel_delta();
+fz_function s32   get_mouse_x();
+fz_function s32   get_mouse_y();
+fz_function V2s32 get_mouse_position();
+fz_function s32   get_mouse_delta_x();
+fz_function s32   get_mouse_delta_y();
+fz_function V2s32 get_mouse_delta();
+fz_function s32   get_mouse_wheel_delta();
 
 // @Section: Events
 
@@ -269,11 +269,11 @@ struct Event_Array
   u32 capacity;
 };
 
-function Window_Event* _event_push(Event_Array* array);
-function u32            get_total_events_this_frame();
-function Window_Event*  get_event_this_frame(u32 index);
+fz_function Window_Event* _event_push(Event_Array* array);
+fz_function u32            get_total_events_this_frame();
+fz_function Window_Event*  get_event_this_frame(u32 index);
 
-function void window_update_events(); /* Processes all window events this frame. Returns false if app should close */
+fz_function void window_update_events(); /* Processes all window events this frame. Returns false if app should close */
 
 struct Window
 {
@@ -301,10 +301,10 @@ struct Window
   HDC   dc;
 };
 
-  global Window GlobalWindow;
-  global b8 WindowClassInited = 0;
+  fz_global Window GlobalWindow;
+  fz_global b8 WindowClassInited = 0;
 
-  function void _init_window_class(); /* Only needs to be called one time per process. */
+  fz_function void _init_window_class(); /* Only needs to be called one time per process. */
 
   #include "windowsx.h"
   #include "Window/Window_Win32.c"
@@ -313,13 +313,13 @@ struct Window
 # error Operating System not supported
 #endif
 
-function s32   get_window_width();
-function s32   get_window_height();
-function V2s32 get_window_center();
-function V2s32 get_window_dimensions();
-function s32   get_window_x();
-function s32   get_window_y();
-function V2s32 get_window_position();
-function b32   is_window_focused();
+fz_function s32   get_window_width();
+fz_function s32   get_window_height();
+fz_function V2s32 get_window_center();
+fz_function V2s32 get_window_dimensions();
+fz_function s32   get_window_x();
+fz_function s32   get_window_y();
+fz_function V2s32 get_window_position();
+fz_function b32   is_window_focused();
 
 #endif // WINDOW_CREATION

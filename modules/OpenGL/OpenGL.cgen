@@ -121,12 +121,12 @@ OpenGL_Function_Table (return name args call_args)
   `#ifndef OPENGL_FUNCTIONS_H
 #define OPENGL_FUNCTIONS_H
 
-function b32 _os_opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */\n\n`
+fz_function b32 _opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */\n\n`
 
   @foreach(OpenGL_Void_Function_Table) 
 `typedef void (*PFN$(name)PROC)$(args);
-global PFN$(name)PROC __$(name) = NULL;
-function inline void
+fz_global PFN$(name)PROC __$(name) = NULL;
+fz_function inline void
 $(name) $(args)
 {
   __$(name) $(call_args);
@@ -137,8 +137,8 @@ $(name) $(args)
 
   @foreach(OpenGL_Function_Table) 
 `typedef $(return) (*PFN$(name)PROC)$(args);
-global PFN$(name)PROC __$(name) = NULL;
-function inline $(return)
+fz_global PFN$(name)PROC __$(name) = NULL;
+fz_function inline $(return)
 $(name) $(args)
 {
   return __$(name) $(call_args);
@@ -149,7 +149,7 @@ $(name) $(args)
 
 @Generator(Opengl.cgen.c)
 {
-  `function b32\n_opengl_load_functions()\n{\n`
+  `fz_function b32\n_opengl_load_functions()\n{\n`
 
   @foreach(OpenGL_Function_Table)
   `  __$(name) = (PFN$(name)PROC)_load_gl_function("$(name)"); 

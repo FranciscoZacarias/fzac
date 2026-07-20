@@ -15,7 +15,7 @@
 //        extract glyph metrics
 //        extract glyph shapes
 //        render glyphs to one-channel bitmaps with antialiasing (box filter)
-//        render glyphs to one-channel SDF bitmaps (signed-distance field/function)
+//        render glyphs to one-channel SDF bitmaps (signed-distance field/fz_function)
 //
 //   Todo:
 //        non-MS cmaps
@@ -66,11 +66,11 @@
 //   1.21 (2019-02-25) fix warning
 //   1.20 (2019-02-07) PackFontRange skips missing codepoints; GetScaleFontVMetrics()
 //   1.19 (2018-02-11) GPOS kerning, STBTT_fmod
-//   1.18 (2018-01-29) add missing function
+//   1.18 (2018-01-29) add missing fz_function
 //   1.17 (2017-07-23) make more arguments const; doc fix
 //   1.16 (2017-07-12) SDF support
 //   1.15 (2017-03-03) make more arguments const
-//   1.14 (2017-01-16) num-fonts-in-TTC function
+//   1.14 (2017-01-16) num-fonts-in-TTC fz_function
 //   1.13 (2017-01-02) support OpenType fonts, certain Apple fonts
 //   1.12 (2016-10-25) suppress warnings about casting away const with -Wcast-qual
 //   1.11 (2016-04-02) fix unused-variable warning
@@ -142,7 +142,7 @@
 //   Immediately after this block comment are a series of sample programs.
 //
 //   After the sample programs is the "header file" section. This section
-//   includes documentation for each API function.
+//   includes documentation for each API fz_function.
 //
 //   Some important concepts to understand to use this library:
 //
@@ -636,7 +636,7 @@ STBTT_DEF void stbtt_PackSetOversampling(stbtt_pack_context *spc, unsigned int h
 // Oversampling a font increases the quality by allowing higher-quality subpixel
 // positioning, and is especially valuable at smaller text sizes.
 //
-// This function sets the amount of oversampling for all following calls to
+// This fz_function sets the amount of oversampling for all following calls to
 // stbtt_PackFontRange(s) or stbtt_PackFontRangesGatherRects for a given
 // pack context. The default (no oversampling) is achieved by h_oversample=1
 // and v_oversample=1. The total number of pixels required is
@@ -695,21 +695,21 @@ struct stbtt_pack_context {
 //
 
 STBTT_DEF int stbtt_GetNumberOfFonts(const unsigned char *data);
-// This function will determine the number of fonts in a font file.  TrueType
+// This fz_function will determine the number of fonts in a font file.  TrueType
 // collection (.ttc) files may contain multiple fonts, while TrueType font
 // (.ttf) files only contain one font. The number of fonts can be used for
-// indexing with the previous function where the index is between zero and one
+// indexing with the previous fz_function where the index is between zero and one
 // less than the total fonts. If an error occurs, -1 is returned.
 
 STBTT_DEF int stbtt_GetFontOffsetForIndex(const unsigned char *data, int index);
 // Each .ttf/.ttc file may have more than one font. Each font has a sequential
-// index number starting from 0. Call this function to get the font offset for
+// index number starting from 0. Call this fz_function to get the font offset for
 // a given index; it returns -1 if the index is out of range. A regular .ttf
 // file will only define one font and it always be at offset 0, so it will
 // return '0' for index 0, and -1 for all other indices.
 
 // The following structure is defined publicly so you can declare one on
-// the stack or as a global or etc, but you should treat it as opaque.
+// the stack or as a fz_global or etc, but you should treat it as opaque.
 struct stbtt_fontinfo
 {
    void           * userdata;
@@ -724,14 +724,14 @@ struct stbtt_fontinfo
 
    stbtt__buf cff;                    // cff font data
    stbtt__buf charstrings;            // the charstring index
-   stbtt__buf gsubrs;                 // global charstring subroutines index
+   stbtt__buf gsubrs;                 // fz_global charstring subroutines index
    stbtt__buf subrs;                  // private charstring subroutines index
    stbtt__buf fontdicts;              // array of font dicts
    stbtt__buf fdselect;               // map from glyph to fontdict
 };
 
 STBTT_DEF int stbtt_InitFont(stbtt_fontinfo *info, const unsigned char *data, int offset);
-// Given an offset into the file that defines a font, this function builds
+// Given an offset into the file that defines a font, this fz_function builds
 // the necessary cached info for the rest of the system. You must allocate
 // the stbtt_fontinfo yourself, and stbtt_InitFont will fill it out. You don't
 // need to do anything special to free it, because the contents are pure
@@ -744,7 +744,7 @@ STBTT_DEF int stbtt_InitFont(stbtt_fontinfo *info, const unsigned char *data, in
 
 STBTT_DEF int stbtt_FindGlyphIndex(const stbtt_fontinfo *info, int unicode_codepoint);
 // If you're going to perform multiple operations on the same character
-// and you want a speed-up, call this function with the character you're
+// and you want a speed-up, call this fz_function with the character you're
 // going to process, then use glyph-based functions instead of the
 // codepoint-based functions.
 // Returns 0 if the character codepoint is not defined in the font.
@@ -985,7 +985,7 @@ STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, floa
 //      outside effects only (the interior range is needed to allow proper
 //      antialiasing of the font at *smaller* sizes)
 //
-// The function computes the SDF analytically at each SDF pixel, not by e.g.
+// The fz_function computes the SDF analytically at each SDF pixel, not by e.g.
 // building a higher-res bitmap and approximating it. In theory the quality
 // should be as high as possible for an SDF of this size & representation, but
 // unclear if this is true in practice (perhaps building a higher-res bitmap
@@ -4982,11 +4982,11 @@ STBTT_DEF int stbtt_CompareUTF8toUTF16_bigendian(const char *s1, int len1, const
 //   1.21 (2019-02-25) fix warning
 //   1.20 (2019-02-07) PackFontRange skips missing codepoints; GetScaleFontVMetrics()
 //   1.19 (2018-02-11) OpenType GPOS kerning (horizontal only), STBTT_fmod
-//   1.18 (2018-01-29) add missing function
+//   1.18 (2018-01-29) add missing fz_function
 //   1.17 (2017-07-23) make more arguments const; doc fix
 //   1.16 (2017-07-12) SDF support
 //   1.15 (2017-03-03) make more arguments const
-//   1.14 (2017-01-16) num-fonts-in-TTC function
+//   1.14 (2017-01-16) num-fonts-in-TTC fz_function
 //   1.13 (2017-01-02) support OpenType fonts, certain Apple fonts
 //   1.12 (2016-10-25) suppress warnings about casting away const with -Wcast-qual
 //   1.11 (2016-04-02) fix unused-variable warning

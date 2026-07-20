@@ -28,15 +28,15 @@ struct Command_Line
   u32              args_count;
 };
 
-function Command_Line_Arg command_line_arg_new(String key, String value, b32 is_flag);
-function Command_Line     command_line_parse(String input); /* Parses a command line type from a String */
-function Command_Line     command_line_parse_from_argc_argv(s32 argc, u8** argv); /* Parses a Command line from a c style argc/argv argument */
-function String          _command_line_parse_token(u8** cursor);
-function void            _command_line_skip_whitespace(u8** cursor);
-function String          _command_line_strip_quotes(String in);
-function String          _command_line_strip_leading_dashes(String in);
+fz_function Command_Line_Arg command_line_arg_new(String key, String value, b32 is_flag);
+fz_function Command_Line     command_line_parse(String input); /* Parses a command line type from a String */
+fz_function Command_Line     command_line_parse_from_argc_argv(s32 argc, u8** argv); /* Parses a Command line from a c style argc/argv argument */
+fz_function String          _command_line_parse_token(u8** cursor);
+fz_function void            _command_line_skip_whitespace(u8** cursor);
+fz_function String          _command_line_strip_quotes(String in);
+fz_function String          _command_line_strip_leading_dashes(String in);
 
-function Command_Line_Arg
+fz_function Command_Line_Arg
 command_line_arg_new(String key, String value, b32 is_flag)
 {
   Command_Line_Arg result = (Command_Line_Arg)
@@ -48,13 +48,13 @@ command_line_arg_new(String key, String value, b32 is_flag)
   return result;
 }
 
-function void
+fz_function void
 _command_line_skip_whitespace(u8** cursor)
 {
   while (char_is_space(**cursor)) (*cursor)++;
 }
 
-function String
+fz_function String
 _command_line_strip_quotes(String in)
 {
   if (in.count >= 2 && in.cstring[0] == '"' && in.cstring[in.count - 1] == '"')
@@ -64,7 +64,7 @@ _command_line_strip_quotes(String in)
   return in;
 }
 
-function String
+fz_function String
 _command_line_strip_leading_dashes(String in)
 {
   u64 offset = 0;
@@ -75,7 +75,7 @@ _command_line_strip_leading_dashes(String in)
   return string_new(in.count - offset, in.cstring + offset);
 }
 
-function String
+fz_function String
 _command_line_parse_token(u8** cursor)
 {
   _command_line_skip_whitespace(cursor);
@@ -104,7 +104,7 @@ _command_line_parse_token(u8** cursor)
   return result;
 }
 
-function Command_Line
+fz_function Command_Line
 command_line_parse_from_argc_argv(s32 argc, u8** argv)
 {
   Command_Line result = {0};
@@ -125,7 +125,7 @@ command_line_parse_from_argc_argv(s32 argc, u8** argv)
   return result;
 }
 
-function Command_Line
+fz_function Command_Line
 command_line_parse(String input)
 {
   Command_Line result = {0};
@@ -134,13 +134,13 @@ command_line_parse(String input)
     return result;
   }
 
-  local_persist u8 exe_buffer[MAX_PATH];
+  fz_local_persist u8 exe_buffer[MAX_PATH];
   DWORD exe_len = GetModuleFileNameA(0, (LPSTR)exe_buffer, MAX_PATH);
   result.executable = (String){ exe_len, exe_buffer };
 
   // Copy input into stable memory
-  local_persist u8 temp_buffer[TEMP_BUFFER_SIZE];
-  local_persist u8 parsed_buffer[PARSED_BUFFER_SIZE];
+  fz_local_persist u8 temp_buffer[TEMP_BUFFER_SIZE];
+  fz_local_persist u8 parsed_buffer[PARSED_BUFFER_SIZE];
   u64 parsed_cursor = 0;
 
   u64 len = input.count;

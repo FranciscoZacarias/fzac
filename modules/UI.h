@@ -14,7 +14,7 @@
   How to:
 
   - Implement somewhere:
-    function UI_Text_Metrics
+    fz_function UI_Text_Metrics
     ui_measure_text(String text)
     {
       R_Text_Metrics r_metrics = r_measure_text(R_RenderContext.font, text);
@@ -136,7 +136,7 @@ struct UI_Texture
   s32 handle;
 };
 
-function UI_Text_Metrics ui_measure_text(String text); // @NOTE(fz): Define in user space!!
+fz_function UI_Text_Metrics ui_measure_text(String text); // @NOTE(fz): Define in user space!!
 
 typedef struct UI_Color_Theme UI_Color_Theme;
 struct UI_Color_Theme
@@ -377,9 +377,9 @@ struct UI_Context
   ui_config_stacks;
 };
 
-global UI_Context UIContext;
-global UI_Color_Theme UIColorThemeDark;
-read_only global UI_Node UINodeNilSentinel =
+fz_global UI_Context UIContext;
+fz_global UI_Color_Theme UIColorThemeDark;
+read_only fz_global UI_Node UINodeNilSentinel =
 {
   .first    = &UINodeNilSentinel,
   .last     = &UINodeNilSentinel,
@@ -388,37 +388,37 @@ read_only global UI_Node UINodeNilSentinel =
   .parent   = &UINodeNilSentinel,
 };
 
-function void            ui_init(UI_Font font);
-function void            ui_begin(u32 window_width, u32 window_height, u32 mouse_x, u32 mouse_y, u32 mouse_delta_x, u32 mouse_delta_y, f32 delta_time, u64 frame_count);
-function void            ui_end();
-function b32             ui_is_mouse_in_ui();
-function void            ui_arena_window(String text, Arena *arena, s32 x, s32 y);
-function void            ui_toggle_color_theme_window();
-function void            ui_draw_color_theme_window();
-function u32             ui_get_commands_count();
-function UI_Command*     ui_get_commands();
-function UI_Node*       _ui_node_from_string(String unique, String string, UI_Node_Flags flags);
-function void           _ui_update_tree_nodes(UI_Node* node);
-function V2s32          _ui_get_node_absolute_top_left(UI_Node *node);
-function u32            _ui_get_node_depth(UI_Node *node);
-function void           _ui_render_ui_tree(UI_Node *node);
-function void           _ui_add_node_child(UI_Node *parent, UI_Node *child);
-function UI_Node_Cache* _ui_get_cached_node(u64 hash);
-function b32            _ui_is_mouse_in_node(UI_Node* node);
-function b32            _ui_is_mouse_in_rect(UI_Rect rect);
-function void           _ui_fill_signals_from_node(UI_Signal* signal);
-function String         _ui_clean_string(Arena* arena, String string);
-function void           _ui_purge_old_cached_nodes();
-function UI_Node *      _ui_tree_next(UI_Node *node);
-function void           _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
-function void           _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
-function void           _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 color, String text);
-function void inline    _ui_error(String message, String file, u32 line);
+fz_function void            ui_init(UI_Font font);
+fz_function void            ui_begin(u32 window_width, u32 window_height, u32 mouse_x, u32 mouse_y, u32 mouse_delta_x, u32 mouse_delta_y, f32 delta_time, u64 frame_count);
+fz_function void            ui_end();
+fz_function b32             ui_is_mouse_in_ui();
+fz_function void            ui_arena_window(String text, Arena *arena, s32 x, s32 y);
+fz_function void            ui_toggle_color_theme_window();
+fz_function void            ui_draw_color_theme_window();
+fz_function u32             ui_get_commands_count();
+fz_function UI_Command*     ui_get_commands();
+fz_function UI_Node*       _ui_node_from_string(String unique, String string, UI_Node_Flags flags);
+fz_function void           _ui_update_tree_nodes(UI_Node* node);
+fz_function V2s32          _ui_get_node_absolute_top_left(UI_Node *node);
+fz_function u32            _ui_get_node_depth(UI_Node *node);
+fz_function void           _ui_render_ui_tree(UI_Node *node);
+fz_function void           _ui_add_node_child(UI_Node *parent, UI_Node *child);
+fz_function UI_Node_Cache* _ui_get_cached_node(u64 hash);
+fz_function b32            _ui_is_mouse_in_node(UI_Node* node);
+fz_function b32            _ui_is_mouse_in_rect(UI_Rect rect);
+fz_function void           _ui_fill_signals_from_node(UI_Signal* signal);
+fz_function String         _ui_clean_string(Arena* arena, String string);
+fz_function void           _ui_purge_old_cached_nodes();
+fz_function UI_Node *      _ui_tree_next(UI_Node *node);
+fz_function void           _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
+fz_function void           _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
+fz_function void           _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 color, String text);
+fz_function void inline    _ui_error(String message, String file, u32 line);
 
 #if DEBUG
 // Error
 # define ui_error(msg) _ui_error((msg), S(__FILE__), __LINE__)
-function void inline _ui_error(String message, String file, u32 line);
+fz_function void inline _ui_error(String message, String file, u32 line);
 #else 
 # define ui_error(msg)
 #endif
