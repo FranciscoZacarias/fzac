@@ -132,7 +132,8 @@ function Matrix4 matrix4_rotate_Y(f32 angle); /* Creates a rotation matrix aroun
 function Matrix4 matrix4_rotate_Z(f32 angle); /* Creates a rotation matrix around the Z-axis by an angle in radians */
 function Matrix4 matrix4_rotate_XYZ(V3f32 angle); /* Creates a combined rotation matrix around the X, Y, and Z axes in order XYZ (angles in radians) */
 function Matrix4 matrix4_rotate_ZYX(V3f32 angle); /* Creates a combined rotation matrix around the Z, Y, and X axes in order ZYX (angles in radians) */
-function Matrix4 matrix4_scale(f32 x, f32 y, f32 z); /* Creates a scaling matrix with scale factors for each axis */
+function Matrix4 matrix4_scale(f32 scale); /* Creates a scaling matrix with scale factors for each axis */
+function Matrix4 matrix4_scale_xyz(f32 x, f32 y, f32 z); /* Creates a scaling matrix with scale factors for each axis */
 function Matrix4 matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 far_plane); /* Creates a perspective frustum projection matrix\n defined by the given left, right, bottom, top, near, and far planes */
 function Matrix4 matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane); /* Creates a perspective projection matrix using a vertical field of view in radians\n with the given aspect ratio, near, and far planes */
 function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane); /* Creates an orthographic projection matrix defined by the given planes */
@@ -1352,7 +1353,17 @@ matrix4_rotate_ZYX(V3f32 angle)
 }
 
 function Matrix4
-matrix4_scale(f32 x, f32 y, f32 z)
+matrix4_scale(f32 scale)
+{
+  Matrix4 result = matrix4_identity();
+  result.m0  = scale;
+  result.m5  = scale;
+  result.m10 = scale;
+  return result;
+}
+
+function Matrix4
+matrix4_scale_xyz(f32 x, f32 y, f32 z)
 {
   Matrix4 result = matrix4_identity();
   result.m0  = x;

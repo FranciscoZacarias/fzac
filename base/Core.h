@@ -59,7 +59,7 @@
 #endif
 
 /* === Code === */
-#define array_count(a) (sizeof(a)/sizeof((a)[0]))
+#define c_array_count(a) (sizeof(a)/sizeof((a)[0]))
 
 #define int_from_pointer(p) (u64)((u8*)p - (u8*)0)
 #define pointer_from_int(i) (void*)((u8*)0 + (i))

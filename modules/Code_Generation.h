@@ -744,7 +744,7 @@ _cgen_string_from_string(Arena *arena, String str)
       arg->name.cstring = name_str;
       arg->builtin_function = CGen_Builtin_Function_None;
 
-      for (u32 builtin_func = 0; builtin_func < array_count(cgen_builtin_function_names); builtin_func += 1)
+      for (u32 builtin_func = 0; builtin_func < c_array_count(cgen_builtin_function_names); builtin_func += 1)
       {
         if (string_equals(function_name, string_from_cstring((u8*)cgen_builtin_function_names[builtin_func]), true))
         {

@@ -1039,6 +1039,39 @@ glClearTexImage (GLuint texture, GLint level, GLenum format, GLenum type, const 
 #endif
 }
 
+typedef void (*PFNglBindBufferBasePROC)(GLenum target, GLuint index, GLuint buffer);
+global PFNglBindBufferBasePROC __glBindBufferBase = NULL;
+function inline void
+glBindBufferBase (GLenum target, GLuint index, GLuint buffer)
+{
+  __glBindBufferBase (target, index, buffer);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglTextureStorage3DPROC)(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+global PFNglTextureStorage3DPROC __glTextureStorage3D = NULL;
+function inline void
+glTextureStorage3D (GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
+{
+  __glTextureStorage3D (texture, levels, internalformat, width, height, depth);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
+typedef void (*PFNglTextureSubImage3DPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels);
+global PFNglTextureSubImage3DPROC __glTextureSubImage3D = NULL;
+function inline void
+glTextureSubImage3D (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels)
+{
+  __glTextureSubImage3D (texture, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+#if DEBUG_OPENGL_CHECK_ERRORS
+  opengl_check_errors();
+#endif
+}
+
 typedef GLuint (*PFNglCreateShaderProgramvPROC)(GLenum type, GLsizei count, const char *const* strings);
 global PFNglCreateShaderProgramvPROC __glCreateShaderProgramv = NULL;
 function inline GLuint

@@ -717,5 +717,26 @@ _opengl_load_functions()
     return false;
   }
 
+  __glBindBufferBase = (PFNglBindBufferBasePROC)_load_gl_function("glBindBufferBase"); 
+  if (!__glBindBufferBase)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glBindBufferBase"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glTextureStorage3D = (PFNglTextureStorage3DPROC)_load_gl_function("glTextureStorage3D"); 
+  if (!__glTextureStorage3D)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glTextureStorage3D"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
+  __glTextureSubImage3D = (PFNglTextureSubImage3DPROC)_load_gl_function("glTextureSubImage3D"); 
+  if (!__glTextureSubImage3D)
+  {
+    message_box(S("OpenGL"), S("Unable to load opengl function: glTextureSubImage3D"), S("OpenGL.cgen"), 0);
+    return false;
+  }
+
   return true;
 }

@@ -75,6 +75,8 @@ function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position s
     (out_ptr) = &(name)[--(name##_count)];   \
   )
 
+#define each_array(idx, arr) (u32 (idx)=0; (idx) < glue(arr,_count); (idx) += 1)
+
 // @Section: Implementation
 
 function void*

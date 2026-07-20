@@ -57,9 +57,7 @@ struct Profiler_Recording
 {
   Arena *arena;
 
-  Profiler_Event *events;
-  u64 events_capacity;
-  u64 events_count;  
+  Array(events, Profiler_Event);
   
   u64 time_us_start;
   u64 time_us_end;
@@ -81,10 +79,7 @@ struct Profiler_Context
   String file_output;
 
   // Recordings
-  Profiler_Recording *recordings;
-  u64 recordings_capacity;
-  u64 recordings_count;
-
+  Array(recordings, Profiler_Recording);
   Profiler_Recording *active_recording; // NULL if it's not recording
 };
 
@@ -178,8 +173,7 @@ _profiler_end()
 function void 
 _profiler_recording_start()
 {
-  Profiler_Recording *rec = NULL;
-  array_add(rec, ProfileContext.recordings);
+  Profiler_Recording *rec = array_add(ProfileContext.recordings);
   ProfileContext.active_recording = rec;
 
   memory_zero_struct(rec);
@@ -206,9 +200,7 @@ _profiler_recording_stop()
   String_Builder builder = string_builder_init(kilobytes(64));
   string_builder_pushf(&builder, "[Recording %u - "S_FMT"]\n\n", ProfileContext.recordings_count, S_ARG(_profiler_format_us(scratch.arena, ProfileContext.active_recording->time_us_end - ProfileContext.active_recording->time_us_start)));
 
-  Profiler_Event *event_stack = NULL;
-  u64 event_stack_count    = 0;
-  u64 event_stack_capacity = 0;
+  Array(event_stack, Profiler_Event);
   array_init(scratch.arena, event_stack, Profiler_Event, ProfileContext.active_recording->events_count);
 
   u64 nests = 0;
@@ -229,8 +221,7 @@ _profiler_recording_stop()
           for (u32 i = 0; i < nests; i += 1) string_builder_push(&builder, "  ");
           string_builder_push(&builder, "{\n");
 
-          Profiler_Event *stack_event;
-          array_add(stack_event, event_stack);
+          Profiler_Event *stack_event = array_add(event_stack);
           *stack_event = *event;
 
           nests += 1;
@@ -367,8 +358,7 @@ _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_
   {
     return NULL;
   }
-  Profiler_Event *result;
-  array_add(result, recording->events);
+  Profiler_Event *result = array_add(recording->events);
 
   result->kind = kind;
   result->timestamp_us = time_microseconds();

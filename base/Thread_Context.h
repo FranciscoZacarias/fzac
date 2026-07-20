@@ -44,7 +44,7 @@ thread_context_init_and_attach(Thread_Context* thread_context)
   memory_zero_struct(thread_context);
 
   thread_context->temporary_storage = arena_alloc();
-  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
+  for (u64 i = 0; i < c_array_count(thread_context->temporary_arenas); i += 1)
   {
     thread_context->temporary_arenas[i] = arena_alloc();
   }
@@ -54,7 +54,7 @@ thread_context_init_and_attach(Thread_Context* thread_context)
 function void
 thread_context_free()
 {
-  for(u64 i = 0; i < array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
+  for(u64 i = 0; i < c_array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
   {
     arena_free(ThreadContextThreadLocal->temporary_arenas[i]);
   }
@@ -73,7 +73,7 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
   assert(thread_context);
 
   Arena* result = 0;
-  for (u64 i = 0; i < array_count(thread_context->temporary_arenas); i += 1)
+  for (u64 i = 0; i < c_array_count(thread_context->temporary_arenas); i += 1)
   {
     Arena* candidate = thread_context->temporary_arenas[i];
     b32 has_conflict = 0;
