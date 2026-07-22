@@ -296,6 +296,7 @@ struct Window
 
 #if OS_WINDOWS
 
+  HINSTANCE hinstance;
   HWND  hwnd;
   HGLRC rc;
   HDC   dc;

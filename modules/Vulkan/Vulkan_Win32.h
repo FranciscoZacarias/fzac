@@ -28,24 +28,16 @@ vulkan_init()
     return result;
   }
 
-  __vkGetDeviceProcAddr =(PFN_vkGetDeviceProcAddr) __vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkGetDeviceProcAddr");
-  result = _vulkan_load_global_functions();
+  __vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)GetProcAddress( vulkan_library, "vkGetDeviceProcAddr");
+  if (!__vkGetDeviceProcAddr)
+  {
+    message_box(S("Vulkan"), S("Unable to load vkGetDeviceProcAddr"), S("Vulkan"), 0);
+    return result;
+  }
+
+  result = vulkan_load_global_functions();
+
   return result;
 }
-
-fz_function b32
-vulkan_instance_init(VkInstance instance)
-{
-  b32 result = _vulkan_load_instance_functions(instance);
-  return result;
-}
-
-fz_function b32
-vulkan_device_init(VkDevice device)
-{
-  b32 result = _vulkan_load_device_functions(device);
-  return result;
-}
-
 
 #endif // FZ_VULKAN_WIN32_H

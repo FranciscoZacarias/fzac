@@ -39,6 +39,7 @@ struct Log_State
   Log_Hook  hooks[LOG_MAX_HOOKS_COUNT];
   u32       hook_count;
   b8        inited;
+  b8        short_terminal_logs;
 };
 
 fz_global Log_State GlobalLogger = {0};
@@ -120,8 +121,22 @@ log_write(Log_Level level, const char* src_file, int src_line, const char* fmt, 
   va_end(args);
   Date_Time date_time   = datetime_now();
   String    time_string = datetime_to_string(scratch.arena, date_time, false);
-  String line      = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+  
+  String line;
+  if (GlobalLogger.short_terminal_logs)
+  {
+    String src_file_str = string_from_cstring((u8*)src_file);
+    u64 idx;
+    string_find_last(src_file_str, S("\\"), &idx);
+    src_file_str.cstring += idx + 1; // +1 to skip the backslack
+    line = Sf(scratch.arena, "%s[%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), log_level_str(level), src_file_str.cstring, src_line, S_ARG(msg));
+  }
+  else
+  {
+    line = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+  }
   string_print(line);
+
   String file_line = Sf(scratch.arena, S_FMT " [%s] %s:%d: " S_FMT "\n", S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   log_flush_to_file(file_line);
   for(u32 i = 0; i < GlobalLogger.hook_count; i++)
@@ -149,8 +164,22 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
   Scratch scratch = scratch_begin(0, 0);
   Date_Time date_time   = datetime_now();
   String    time_string = datetime_to_string(scratch.arena, date_time, false);
-  String line      = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+
+  String line;
+  if (GlobalLogger.short_terminal_logs)
+  {
+    String src_file_str = string_from_cstring((u8*)src_file);
+    u64 idx;
+    string_find_last(src_file_str, S("\\"), &idx);
+    src_file_str.cstring += idx + 1; // +1 to skip the backslack
+    line = Sf(scratch.arena, "%s[%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), log_level_str(level), src_file_str.cstring, src_line, S_ARG(msg));
+  }
+  else
+  {
+    line = Sf(scratch.arena, "%s" S_FMT " [%s] %s:%d: " S_FMT "\x1b[0m\n", log_level_color(level), S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
+  }
   string_print(line);
+  
   String file_line = Sf(scratch.arena, S_FMT " [%s] %s:%d: " S_FMT "\n", S_ARG(time_string), log_level_str(level), src_file, src_line, S_ARG(msg));
   log_flush_to_file(file_line);
   for(u32 i = 0; i < GlobalLogger.hook_count; i++)
@@ -169,7 +198,7 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
 }
 
 fz_function b32
-logging_init(Log_Level min_level, String file_path)
+logging_init(Log_Level min_level, String file_path, b8 use_short_logs)
 {
   if(!TimingInited)
   {
@@ -191,8 +220,10 @@ logging_init(Log_Level min_level, String file_path)
     GlobalLogger.file_enabled = true;
   }
   GlobalLogger.inited = true;
+  GlobalLogger.short_terminal_logs = use_short_logs;
   return true;
 }
+
 
 fz_function void
 logging_free(void)

@@ -1,7 +1,7 @@
 /* Generated code */
 
 fz_function b32
-_vulkan_load_global_functions()
+vulkan_load_global_functions()
 {
   __vkCreateInstance = (PFN_vkCreateInstance)__vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");
   if (!__vkCreateInstance)
@@ -35,7 +35,7 @@ _vulkan_load_global_functions()
 }
 
 fz_function b32
-_vulkan_load_instance_functions(VkInstance instance)
+vulkan_load_instance_functions(VkInstance instance)
 {
   __vkEnumeratePhysicalDevices = (PFN_vkEnumeratePhysicalDevices) __vkGetInstanceProcAddr(instance, "vkEnumeratePhysicalDevices");
   if (!__vkEnumeratePhysicalDevices)
@@ -44,10 +44,31 @@ _vulkan_load_instance_functions(VkInstance instance)
     return false;
   }
 
+  __vkEnumeratePhysicalDeviceGroups = (PFN_vkEnumeratePhysicalDeviceGroups) __vkGetInstanceProcAddr(instance, "vkEnumeratePhysicalDeviceGroups");
+  if (!__vkEnumeratePhysicalDeviceGroups)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkEnumeratePhysicalDeviceGroups"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkCreateDevice = (PFN_vkCreateDevice) __vkGetInstanceProcAddr(instance, "vkCreateDevice");
   if (!__vkCreateDevice)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateDevice"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkEnumerateDeviceExtensionProperties = (PFN_vkEnumerateDeviceExtensionProperties) __vkGetInstanceProcAddr(instance, "vkEnumerateDeviceExtensionProperties");
+  if (!__vkEnumerateDeviceExtensionProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkEnumerateDeviceExtensionProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkEnumerateDeviceLayerProperties = (PFN_vkEnumerateDeviceLayerProperties) __vkGetInstanceProcAddr(instance, "vkEnumerateDeviceLayerProperties");
+  if (!__vkEnumerateDeviceLayerProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkEnumerateDeviceLayerProperties"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -79,10 +100,52 @@ _vulkan_load_instance_functions(VkInstance instance)
     return false;
   }
 
+  __vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR) __vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
+  if (!__vkCreateWin32SurfaceKHR)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateWin32SurfaceKHR"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceToolPropertiesEXT = (PFN_vkGetPhysicalDeviceToolPropertiesEXT) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceToolPropertiesEXT");
+  if (!__vkGetPhysicalDeviceToolPropertiesEXT)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceToolPropertiesEXT"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) __vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+  if (!__vkCreateDebugUtilsMessengerEXT)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateDebugUtilsMessengerEXT"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkDestroyInstance = (PFN_vkDestroyInstance) __vkGetInstanceProcAddr(instance, "vkDestroyInstance");
   if (!__vkDestroyInstance)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyInstance"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR) __vkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR");
+  if (!__vkDestroySurfaceKHR)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroySurfaceKHR"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) __vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+  if (!__vkDestroyDebugUtilsMessengerEXT)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyDebugUtilsMessengerEXT"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkSubmitDebugUtilsMessageEXT = (PFN_vkSubmitDebugUtilsMessageEXT) __vkGetInstanceProcAddr(instance, "vkSubmitDebugUtilsMessageEXT");
+  if (!__vkSubmitDebugUtilsMessageEXT)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkSubmitDebugUtilsMessageEXT"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -128,11 +191,74 @@ _vulkan_load_instance_functions(VkInstance instance)
     return false;
   }
 
+  __vkGetPhysicalDeviceFormatProperties = (PFN_vkGetPhysicalDeviceFormatProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFormatProperties");
+  if (!__vkGetPhysicalDeviceFormatProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceFormatProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceImageFormatProperties = (PFN_vkGetPhysicalDeviceImageFormatProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceImageFormatProperties");
+  if (!__vkGetPhysicalDeviceImageFormatProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceImageFormatProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceFormatProperties2 = (PFN_vkGetPhysicalDeviceFormatProperties2) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFormatProperties2");
+  if (!__vkGetPhysicalDeviceFormatProperties2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceFormatProperties2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceImageFormatProperties2 = (PFN_vkGetPhysicalDeviceImageFormatProperties2) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceImageFormatProperties2");
+  if (!__vkGetPhysicalDeviceImageFormatProperties2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceImageFormatProperties2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceSparseImageFormatProperties = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceSparseImageFormatProperties");
+  if (!__vkGetPhysicalDeviceSparseImageFormatProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceSparseImageFormatProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceSparseImageFormatProperties2 = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceSparseImageFormatProperties2");
+  if (!__vkGetPhysicalDeviceSparseImageFormatProperties2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceSparseImageFormatProperties2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceExternalBufferProperties = (PFN_vkGetPhysicalDeviceExternalBufferProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalBufferProperties");
+  if (!__vkGetPhysicalDeviceExternalBufferProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceExternalBufferProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceExternalFenceProperties = (PFN_vkGetPhysicalDeviceExternalFenceProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalFenceProperties");
+  if (!__vkGetPhysicalDeviceExternalFenceProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceExternalFenceProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetPhysicalDeviceExternalSemaphoreProperties = (PFN_vkGetPhysicalDeviceExternalSemaphoreProperties) __vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalSemaphoreProperties");
+  if (!__vkGetPhysicalDeviceExternalSemaphoreProperties)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetPhysicalDeviceExternalSemaphoreProperties"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   return true;
 }
 
 fz_function b32
-_vulkan_load_device_functions(VkDevice device)
+vulkan_load_device_functions(VkDevice device)
 {
   __vkDeviceWaitIdle = (PFN_vkDeviceWaitIdle) __vkGetDeviceProcAddr(device, "vkDeviceWaitIdle");
   if (!__vkDeviceWaitIdle)
@@ -145,6 +271,13 @@ _vulkan_load_device_functions(VkDevice device)
   if (!__vkQueueSubmit)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkQueueSubmit"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkQueueSubmit2 = (PFN_vkQueueSubmit2) __vkGetDeviceProcAddr(device, "vkQueueSubmit2");
+  if (!__vkQueueSubmit2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkQueueSubmit2"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -173,13 +306,6 @@ _vulkan_load_device_functions(VkDevice device)
   if (!__vkAcquireNextImageKHR)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkAcquireNextImageKHR"), S("Vulkan.cgen"), 0);
-    return false;
-  }
-
-  __vkQueuePresentKHR = (PFN_vkQueuePresentKHR) __vkGetDeviceProcAddr(device, "vkQueuePresentKHR");
-  if (!__vkQueuePresentKHR)
-  {
-    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkQueuePresentKHR"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -239,6 +365,125 @@ _vulkan_load_device_functions(VkDevice device)
     return false;
   }
 
+  __vkCreateBuffer = (PFN_vkCreateBuffer) __vkGetDeviceProcAddr(device, "vkCreateBuffer");
+  if (!__vkCreateBuffer)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateBuffer"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateImage = (PFN_vkCreateImage) __vkGetDeviceProcAddr(device, "vkCreateImage");
+  if (!__vkCreateImage)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateImage"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateImageView = (PFN_vkCreateImageView) __vkGetDeviceProcAddr(device, "vkCreateImageView");
+  if (!__vkCreateImageView)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateImageView"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateSampler = (PFN_vkCreateSampler) __vkGetDeviceProcAddr(device, "vkCreateSampler");
+  if (!__vkCreateSampler)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateSampler"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkAllocateMemory = (PFN_vkAllocateMemory) __vkGetDeviceProcAddr(device, "vkAllocateMemory");
+  if (!__vkAllocateMemory)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkAllocateMemory"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateShaderModule = (PFN_vkCreateShaderModule) __vkGetDeviceProcAddr(device, "vkCreateShaderModule");
+  if (!__vkCreateShaderModule)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateShaderModule"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreatePipelineLayout = (PFN_vkCreatePipelineLayout) __vkGetDeviceProcAddr(device, "vkCreatePipelineLayout");
+  if (!__vkCreatePipelineLayout)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreatePipelineLayout"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateGraphicsPipelines = (PFN_vkCreateGraphicsPipelines) __vkGetDeviceProcAddr(device, "vkCreateGraphicsPipelines");
+  if (!__vkCreateGraphicsPipelines)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateGraphicsPipelines"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateComputePipelines = (PFN_vkCreateComputePipelines) __vkGetDeviceProcAddr(device, "vkCreateComputePipelines");
+  if (!__vkCreateComputePipelines)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateComputePipelines"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateDescriptorSetLayout = (PFN_vkCreateDescriptorSetLayout) __vkGetDeviceProcAddr(device, "vkCreateDescriptorSetLayout");
+  if (!__vkCreateDescriptorSetLayout)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateDescriptorSetLayout"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateDescriptorPool = (PFN_vkCreateDescriptorPool) __vkGetDeviceProcAddr(device, "vkCreateDescriptorPool");
+  if (!__vkCreateDescriptorPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateDescriptorPool"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkAllocateDescriptorSets = (PFN_vkAllocateDescriptorSets) __vkGetDeviceProcAddr(device, "vkAllocateDescriptorSets");
+  if (!__vkAllocateDescriptorSets)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkAllocateDescriptorSets"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateRenderPass = (PFN_vkCreateRenderPass) __vkGetDeviceProcAddr(device, "vkCreateRenderPass");
+  if (!__vkCreateRenderPass)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateRenderPass"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateRenderPass2 = (PFN_vkCreateRenderPass2) __vkGetDeviceProcAddr(device, "vkCreateRenderPass2");
+  if (!__vkCreateRenderPass2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateRenderPass2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateFramebuffer = (PFN_vkCreateFramebuffer) __vkGetDeviceProcAddr(device, "vkCreateFramebuffer");
+  if (!__vkCreateFramebuffer)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateFramebuffer"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCreateQueryPool = (PFN_vkCreateQueryPool) __vkGetDeviceProcAddr(device, "vkCreateQueryPool");
+  if (!__vkCreateQueryPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCreateQueryPool"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkGetQueryPoolResults = (PFN_vkGetQueryPoolResults) __vkGetDeviceProcAddr(device, "vkGetQueryPoolResults");
+  if (!__vkGetQueryPoolResults)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetQueryPoolResults"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkDestroyDevice = (PFN_vkDestroyDevice) __vkGetDeviceProcAddr(device, "vkDestroyDevice");
   if (!__vkDestroyDevice)
   {
@@ -253,6 +498,13 @@ _vulkan_load_device_functions(VkDevice device)
     return false;
   }
 
+  __vkGetDeviceQueue2 = (PFN_vkGetDeviceQueue2) __vkGetDeviceProcAddr(device, "vkGetDeviceQueue2");
+  if (!__vkGetDeviceQueue2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkGetDeviceQueue2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkDestroySwapchainKHR = (PFN_vkDestroySwapchainKHR) __vkGetDeviceProcAddr(device, "vkDestroySwapchainKHR");
   if (!__vkDestroySwapchainKHR)
   {
@@ -260,17 +512,101 @@ _vulkan_load_device_functions(VkDevice device)
     return false;
   }
 
-  __vkDestroyCommandPool = (PFN_vkDestroyCommandPool) __vkGetDeviceProcAddr(device, "vkDestroyCommandPool");
-  if (!__vkDestroyCommandPool)
+  __vkDestroyBuffer = (PFN_vkDestroyBuffer) __vkGetDeviceProcAddr(device, "vkDestroyBuffer");
+  if (!__vkDestroyBuffer)
   {
-    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyCommandPool"), S("Vulkan.cgen"), 0);
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyBuffer"), S("Vulkan.cgen"), 0);
     return false;
   }
 
-  __vkFreeCommandBuffers = (PFN_vkFreeCommandBuffers) __vkGetDeviceProcAddr(device, "vkFreeCommandBuffers");
-  if (!__vkFreeCommandBuffers)
+  __vkDestroyImage = (PFN_vkDestroyImage) __vkGetDeviceProcAddr(device, "vkDestroyImage");
+  if (!__vkDestroyImage)
   {
-    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkFreeCommandBuffers"), S("Vulkan.cgen"), 0);
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyImage"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyImageView = (PFN_vkDestroyImageView) __vkGetDeviceProcAddr(device, "vkDestroyImageView");
+  if (!__vkDestroyImageView)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyImageView"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroySampler = (PFN_vkDestroySampler) __vkGetDeviceProcAddr(device, "vkDestroySampler");
+  if (!__vkDestroySampler)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroySampler"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkFreeMemory = (PFN_vkFreeMemory) __vkGetDeviceProcAddr(device, "vkFreeMemory");
+  if (!__vkFreeMemory)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkFreeMemory"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyShaderModule = (PFN_vkDestroyShaderModule) __vkGetDeviceProcAddr(device, "vkDestroyShaderModule");
+  if (!__vkDestroyShaderModule)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyShaderModule"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyPipeline = (PFN_vkDestroyPipeline) __vkGetDeviceProcAddr(device, "vkDestroyPipeline");
+  if (!__vkDestroyPipeline)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyPipeline"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyPipelineLayout = (PFN_vkDestroyPipelineLayout) __vkGetDeviceProcAddr(device, "vkDestroyPipelineLayout");
+  if (!__vkDestroyPipelineLayout)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyPipelineLayout"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyDescriptorSetLayout = (PFN_vkDestroyDescriptorSetLayout) __vkGetDeviceProcAddr(device, "vkDestroyDescriptorSetLayout");
+  if (!__vkDestroyDescriptorSetLayout)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyDescriptorSetLayout"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyDescriptorPool = (PFN_vkDestroyDescriptorPool) __vkGetDeviceProcAddr(device, "vkDestroyDescriptorPool");
+  if (!__vkDestroyDescriptorPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyDescriptorPool"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkFreeDescriptorSets = (PFN_vkFreeDescriptorSets) __vkGetDeviceProcAddr(device, "vkFreeDescriptorSets");
+  if (!__vkFreeDescriptorSets)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkFreeDescriptorSets"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyRenderPass = (PFN_vkDestroyRenderPass) __vkGetDeviceProcAddr(device, "vkDestroyRenderPass");
+  if (!__vkDestroyRenderPass)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyRenderPass"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyFramebuffer = (PFN_vkDestroyFramebuffer) __vkGetDeviceProcAddr(device, "vkDestroyFramebuffer");
+  if (!__vkDestroyFramebuffer)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyFramebuffer"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyQueryPool = (PFN_vkDestroyQueryPool) __vkGetDeviceProcAddr(device, "vkDestroyQueryPool");
+  if (!__vkDestroyQueryPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyQueryPool"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -288,6 +624,27 @@ _vulkan_load_device_functions(VkDevice device)
     return false;
   }
 
+  __vkResetCommandPool = (PFN_vkResetCommandPool) __vkGetDeviceProcAddr(device, "vkResetCommandPool");
+  if (!__vkResetCommandPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkResetCommandPool"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkDestroyCommandPool = (PFN_vkDestroyCommandPool) __vkGetDeviceProcAddr(device, "vkDestroyCommandPool");
+  if (!__vkDestroyCommandPool)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkDestroyCommandPool"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkFreeCommandBuffers = (PFN_vkFreeCommandBuffers) __vkGetDeviceProcAddr(device, "vkFreeCommandBuffers");
+  if (!__vkFreeCommandBuffers)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkFreeCommandBuffers"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkCmdBeginRenderPass = (PFN_vkCmdBeginRenderPass) __vkGetDeviceProcAddr(device, "vkCmdBeginRenderPass");
   if (!__vkCmdBeginRenderPass)
   {
@@ -302,10 +659,31 @@ _vulkan_load_device_functions(VkDevice device)
     return false;
   }
 
+  __vkCmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2) __vkGetDeviceProcAddr(device, "vkCmdBeginRenderPass2");
+  if (!__vkCmdBeginRenderPass2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdBeginRenderPass2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2) __vkGetDeviceProcAddr(device, "vkCmdEndRenderPass2");
+  if (!__vkCmdEndRenderPass2)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdEndRenderPass2"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
   __vkCmdBindPipeline = (PFN_vkCmdBindPipeline) __vkGetDeviceProcAddr(device, "vkCmdBindPipeline");
   if (!__vkCmdBindPipeline)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdBindPipeline"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets) __vkGetDeviceProcAddr(device, "vkCmdBindDescriptorSets");
+  if (!__vkCmdBindDescriptorSets)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdBindDescriptorSets"), S("Vulkan.cgen"), 0);
     return false;
   }
 
@@ -341,6 +719,118 @@ _vulkan_load_device_functions(VkDevice device)
   if (!__vkCmdDispatch)
   {
     message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdDispatch"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdCopyBuffer = (PFN_vkCmdCopyBuffer) __vkGetDeviceProcAddr(device, "vkCmdCopyBuffer");
+  if (!__vkCmdCopyBuffer)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdCopyBuffer"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdCopyImage = (PFN_vkCmdCopyImage) __vkGetDeviceProcAddr(device, "vkCmdCopyImage");
+  if (!__vkCmdCopyImage)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdCopyImage"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdBlitImage = (PFN_vkCmdBlitImage) __vkGetDeviceProcAddr(device, "vkCmdBlitImage");
+  if (!__vkCmdBlitImage)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdBlitImage"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdCopyBufferToImage = (PFN_vkCmdCopyBufferToImage) __vkGetDeviceProcAddr(device, "vkCmdCopyBufferToImage");
+  if (!__vkCmdCopyBufferToImage)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdCopyBufferToImage"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdCopyImageToBuffer = (PFN_vkCmdCopyImageToBuffer) __vkGetDeviceProcAddr(device, "vkCmdCopyImageToBuffer");
+  if (!__vkCmdCopyImageToBuffer)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdCopyImageToBuffer"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdPipelineBarrier = (PFN_vkCmdPipelineBarrier) __vkGetDeviceProcAddr(device, "vkCmdPipelineBarrier");
+  if (!__vkCmdPipelineBarrier)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdPipelineBarrier"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdPushConstants = (PFN_vkCmdPushConstants) __vkGetDeviceProcAddr(device, "vkCmdPushConstants");
+  if (!__vkCmdPushConstants)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdPushConstants"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetViewport = (PFN_vkCmdSetViewport) __vkGetDeviceProcAddr(device, "vkCmdSetViewport");
+  if (!__vkCmdSetViewport)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetViewport"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetScissor = (PFN_vkCmdSetScissor) __vkGetDeviceProcAddr(device, "vkCmdSetScissor");
+  if (!__vkCmdSetScissor)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetScissor"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetLineWidth = (PFN_vkCmdSetLineWidth) __vkGetDeviceProcAddr(device, "vkCmdSetLineWidth");
+  if (!__vkCmdSetLineWidth)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetLineWidth"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetDepthBias = (PFN_vkCmdSetDepthBias) __vkGetDeviceProcAddr(device, "vkCmdSetDepthBias");
+  if (!__vkCmdSetDepthBias)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetDepthBias"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetBlendConstants = (PFN_vkCmdSetBlendConstants) __vkGetDeviceProcAddr(device, "vkCmdSetBlendConstants");
+  if (!__vkCmdSetBlendConstants)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetBlendConstants"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetDepthBounds = (PFN_vkCmdSetDepthBounds) __vkGetDeviceProcAddr(device, "vkCmdSetDepthBounds");
+  if (!__vkCmdSetDepthBounds)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetDepthBounds"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetStencilCompareMask = (PFN_vkCmdSetStencilCompareMask) __vkGetDeviceProcAddr(device, "vkCmdSetStencilCompareMask");
+  if (!__vkCmdSetStencilCompareMask)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetStencilCompareMask"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetStencilWriteMask = (PFN_vkCmdSetStencilWriteMask) __vkGetDeviceProcAddr(device, "vkCmdSetStencilWriteMask");
+  if (!__vkCmdSetStencilWriteMask)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetStencilWriteMask"), S("Vulkan.cgen"), 0);
+    return false;
+  }
+
+  __vkCmdSetStencilReference = (PFN_vkCmdSetStencilReference) __vkGetDeviceProcAddr(device, "vkCmdSetStencilReference");
+  if (!__vkCmdSetStencilReference)
+  {
+    message_box(S("Vulkan"), S("Unable to load Vulkan function: vkCmdSetStencilReference"), S("Vulkan.cgen"), 0);
     return false;
   }
 

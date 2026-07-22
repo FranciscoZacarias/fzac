@@ -55,6 +55,8 @@ window_create(String title, u32 width, u32 height, u32 x, u32 y)
   window->events_this_frame.capacity = 4096;
   window->events_this_frame.data     =  push_array(window->frame_arena, Window_Event, window->events_this_frame.capacity);
 
+  window->hinstance = (HINSTANCE)GetWindowLongPtr(window->hwnd, GWLP_HINSTANCE);
+
   ShowWindow(hwnd, SW_SHOW);
   UpdateWindow(hwnd);
 
