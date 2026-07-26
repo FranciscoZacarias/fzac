@@ -26,11 +26,11 @@ extern "C"
  * Platforms should define these so that Vulkan clients call Vulkan commands
  * with the same calling conventions that the Vulkan implementation expects.
  *
- * VKAPI_ATTR - Placed before the return type in function declarations.
- *              Useful for C++11 and GCC/Clang-style function attribute syntax.
- * VKAPI_CALL - Placed after the return type in function declarations.
+ * VKAPI_ATTR - Placed before the return type in fz_function declarations.
+ *              Useful for C++11 and GCC/Clang-style fz_function attribute syntax.
+ * VKAPI_CALL - Placed after the return type in fz_function declarations.
  *              Useful for MSVC-style calling convention syntax.
- * VKAPI_PTR  - Placed between the '(' and '*' in function pointer types.
+ * VKAPI_PTR  - Placed between the '(' and '*' in fz_function pointer types.
  *
  * Function declaration:  VKAPI_ATTR void VKAPI_CALL vkCommand(void);
  * Function pointer type: typedef void (VKAPI_PTR *PFN_vkCommand)(void);

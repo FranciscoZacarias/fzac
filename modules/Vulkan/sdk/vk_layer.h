@@ -102,7 +102,7 @@ typedef VkFlags VkLoaderFeatureFlags;
 typedef struct {
     VkStructureType sType; // VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO
     const void *pNext;
-    VkLayerFunction function;
+    VkLayerFunction fz_function;
     union {
         VkLayerInstanceLink *pLayerInfo;
         PFN_vkSetInstanceLoaderData pfnSetInstanceLoaderData;
@@ -123,7 +123,7 @@ typedef struct VkLayerDeviceLink_ {
 typedef struct {
     VkStructureType sType; // VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO
     const void *pNext;
-    VkLayerFunction function;
+    VkLayerFunction fz_function;
     union {
         VkLayerDeviceLink *pLayerInfo;
         PFN_vkSetDeviceLoaderData pfnSetDeviceLoaderData;

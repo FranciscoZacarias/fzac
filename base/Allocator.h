@@ -14,23 +14,23 @@ struct Allocator
 };
 
 // @Section: Malloc Allocator
-function void* _stdlib_alloc(u64 bytes, void* context); /* Allocates memory with the stdlib calloc function */
-function void* _stdlib_alloc_no_zero(u64 bytes, void* context); /* Allocates memory with the stdlib malloc function */
-function void* _stdlib_free(u64 bytes, void* ptr, void* context); /* Calls free on memory allocated with stdlib allocator */
+fz_function void* _stdlib_alloc(u64 bytes, void* context); /* Allocates memory with the stdlib calloc fz_function */
+fz_function void* _stdlib_alloc_no_zero(u64 bytes, void* context); /* Allocates memory with the stdlib malloc fz_function */
+fz_function void* _stdlib_free(u64 bytes, void* ptr, void* context); /* Calls free on memory allocated with stdlib allocator */
 
-function void*
+fz_function void*
 _stdlib_alloc(u64 bytes, void* context)
 {
   return calloc(1, (size_t)bytes);
 }
 
-function void*
+fz_function void*
 _stdlib_alloc_no_zero(u64 bytes, void* context)
 {
   return malloc((size_t)bytes);
 }
 
-function void*
+fz_function void*
 _stdlib_free(u64 bytes, void* ptr, void* context)
 {
   free(ptr); return NULL;

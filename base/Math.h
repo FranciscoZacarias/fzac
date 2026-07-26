@@ -13,68 +13,68 @@ typedef struct Quaternion Quaternion;
 typedef struct Transform  Transform;
 
 // @Section: f32
-function inline f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
-function inline f32 f32_lerp(f32 start, f32 end, f32 t);
+fz_function inline f32 f32_remap(f32 value, f32 min, f32 max); /* Remaps a value between 0.0 and 1.0 to an arbitrary min/max value */
+fz_function inline f32 f32_lerp(f32 start, f32 end, f32 t);
 
 // @Section: V2f32
-function f32   v2f32_length(V2f32 v); /* Returns the Euclidean length (magnitude) of a 2D vector */
-function f32   v2f32_length_squared(V2f32 v); /* Returns the squared length of a 2D vector (avoids sqrt) */
-function f32   v2f32_dot(V2f32 v1, V2f32 v2); /* Computes the dot product of two 2D vectors */
-function f32   v2f32_cross(V2f32 v1, V2f32 v2); /* Computes the scalar 2D cross product (v1.x*v2.y - v1.y*v2.x) */
-function f32   v2f32_distance(V2f32 v1, V2f32 v2); /* Returns the distance between two 2D points */
-function f32   v2f32_distance_squared(V2f32 v1, V2f32 v2); /* Returns the squared distance between two 2D points */
-function V2f32 v2f32_negate(V2f32 v); /* Negates a 2D vector */
-function V2f32 v2f32_div(V2f32 v1, V2f32 v2); /* Divides two 2D vectors component-wise */
-function V2f32 v2f32_normalize(V2f32 v); /* Returns a normalized (unit length) version of a 2D vector */
-function V2f32 v2f32_transform(V2f32 v, Matrix4 mat); /* Transforms a 2D vector by a 4x4 matrix */
-function V2f32 v2f32_lerp(V2f32 v1, V2f32 v2, f32 amount); /* Linearly interpolates between two 2D vectors */
-function V2f32 v2f32_reflect(V2f32 v, V2f32 normal); /* Reflects a 2D vector about a given normal */
-function V2f32 v2f32_rotate(V2f32 v, f32 angle); /* Rotates a 2D vector by an angle in radians */
-function V2f32 v2f32_move_towards(V2f32 v, V2f32 target, f32 max_distance); /* Moves a vector toward a target by a maximum distance */
-function V2f32 v2f32_invert(V2f32 v); /* Inverts each component of a 2D vector (1/x, 1/y) */
-function b32   v2f32_equals(V2f32 p, V2f32 q); /* Returns true if two 2D vectors are equal component-wise */
-function V2f32 v2f32_refract(V2f32 v, V2f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
-function V2f32 v2f32_snap45(V2f32 v); /* Snaps v to the closest 45 degree angle */
+fz_function f32   v2f32_length(V2f32 v); /* Returns the Euclidean length (magnitude) of a 2D vector */
+fz_function f32   v2f32_length_squared(V2f32 v); /* Returns the squared length of a 2D vector (avoids sqrt) */
+fz_function f32   v2f32_dot(V2f32 v1, V2f32 v2); /* Computes the dot product of two 2D vectors */
+fz_function f32   v2f32_cross(V2f32 v1, V2f32 v2); /* Computes the scalar 2D cross product (v1.x*v2.y - v1.y*v2.x) */
+fz_function f32   v2f32_distance(V2f32 v1, V2f32 v2); /* Returns the distance between two 2D points */
+fz_function f32   v2f32_distance_squared(V2f32 v1, V2f32 v2); /* Returns the squared distance between two 2D points */
+fz_function V2f32 v2f32_negate(V2f32 v); /* Negates a 2D vector */
+fz_function V2f32 v2f32_div(V2f32 v1, V2f32 v2); /* Divides two 2D vectors component-wise */
+fz_function V2f32 v2f32_normalize(V2f32 v); /* Returns a normalized (unit length) version of a 2D vector */
+fz_function V2f32 v2f32_transform(V2f32 v, Matrix4 mat); /* Transforms a 2D vector by a 4x4 matrix */
+fz_function V2f32 v2f32_lerp(V2f32 v1, V2f32 v2, f32 amount); /* Linearly interpolates between two 2D vectors */
+fz_function V2f32 v2f32_reflect(V2f32 v, V2f32 normal); /* Reflects a 2D vector about a given normal */
+fz_function V2f32 v2f32_rotate(V2f32 v, f32 angle); /* Rotates a 2D vector by an angle in radians */
+fz_function V2f32 v2f32_move_towards(V2f32 v, V2f32 target, f32 max_distance); /* Moves a vector toward a target by a maximum distance */
+fz_function V2f32 v2f32_invert(V2f32 v); /* Inverts each component of a 2D vector (1/x, 1/y) */
+fz_function b32   v2f32_equals(V2f32 p, V2f32 q); /* Returns true if two 2D vectors are equal component-wise */
+fz_function V2f32 v2f32_refract(V2f32 v, V2f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
+fz_function V2f32 v2f32_snap45(V2f32 v); /* Snaps v to the closest 45 degree angle */
 
 // @Section: V3f32
-function V3f32 v3f32_cross(V3f32 v1, V3f32 v2); /* Computes the cross product of two 3D vectors */
-function f32   v3f32_length(V3f32 v); /* Returns the Euclidean length (magnitude) of a 3D vector */
-function f32   v3f32_length_squared(V3f32 v); /* Returns the squared length of a 3D vector (avoids sqrt) */
-function f32   v3f32_dot(V3f32 v1, V3f32 v2); /* Computes the dot product of two 3D vectors */
-function f32   v3f32_distance(V3f32 v1, V3f32 v2); /* Returns the distance between two 3D points */
-function f32   v3f32_distance_squared(V3f32 v1, V3f32 v2); /* Returns the squared distance between two 3D points */
-function V3f32 v3f32_negate(V3f32 v); /* Negates a 3D vector */
-function V3f32 v3f32_div(V3f32 v1, V3f32 v2); /* Divides two 3D vectors component-wise */
-function V3f32 v3f32_normalize(V3f32 v); /* Returns a normalized (unit length) version of a 3D vector */
-function V3f32 v3f32_project(V3f32 v1, V3f32 v2); /* Projects vector v1 onto vector v2 */
-function V3f32 v3f32_reject(V3f32 v1, V3f32 v2); /* Calculates the rejection of the vector v1 on to v2 */
-function void  v3f32_ortho_normalize(V3f32 *v1, V3f32 *v2); /* Orthonormalizes provided vectors.\n Makes vectors normalized and orthogonal to each other.\n Implements the Gram-Schmidt process */
-function V3f32 v3f32_transform(V3f32 v, Matrix4 mat); /* Transforms a 3D vector by a 4x4 matrix */
-function V3f32 v3f32_rotate_by_quaternion(V3f32 v, Quaternion q); /* Rotates a 3D vector using a quaternion */
-function V3f32 v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle); /* Rotates a 3D vector around an axis by an angle in radians */
-function V3f32 v3f32_move_towards(V3f32 v, V3f32 target, f32 max_distance); /* Moves a vector toward a target by a maximum distance */
-function V3f32 v3f32_lerp(V3f32 v1, V3f32 v2, f32 amount); /* Linearly interpolates between two 3D vectors */
-function V3f32 v3f32_cubic_hermite(V3f32 v1, V3f32 tangent1, V3f32 v2, V3f32 tangent2, f32 amount); /* Calculates cubic hermite interpolation between two vectors and their tangents,\n as described in the GLTF 2.0 specification:\n https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic */
-function V3f32 v3f32_reflect(V3f32 v, V3f32 normal); /* Reflects a 3D vector about a given normal */
-function V3f32 v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c); /* Computes barycenter coordinates (u, v, w) for point p with respect to triangle (a, b, c).\n Assumes p is on the plane of the triangle */
-function V3f32 v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view); /* Projects a V3f32 from screen space into world space */
-function V3f32 v3f32_invert(V3f32 v); /* Inverts each component of a 3D vector (1/x, 1/y, 1/z) */
-function b32   v3f32_equals(V3f32 p, V3f32 q); /* Returns true if two 3D vectors are equal component-wise */
-function V3f32 v3f32_refract(V3f32 v, V3f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
+fz_function V3f32 v3f32_cross(V3f32 v1, V3f32 v2); /* Computes the cross product of two 3D vectors */
+fz_function f32   v3f32_length(V3f32 v); /* Returns the Euclidean length (magnitude) of a 3D vector */
+fz_function f32   v3f32_length_squared(V3f32 v); /* Returns the squared length of a 3D vector (avoids sqrt) */
+fz_function f32   v3f32_dot(V3f32 v1, V3f32 v2); /* Computes the dot product of two 3D vectors */
+fz_function f32   v3f32_distance(V3f32 v1, V3f32 v2); /* Returns the distance between two 3D points */
+fz_function f32   v3f32_distance_squared(V3f32 v1, V3f32 v2); /* Returns the squared distance between two 3D points */
+fz_function V3f32 v3f32_negate(V3f32 v); /* Negates a 3D vector */
+fz_function V3f32 v3f32_div(V3f32 v1, V3f32 v2); /* Divides two 3D vectors component-wise */
+fz_function V3f32 v3f32_normalize(V3f32 v); /* Returns a normalized (unit length) version of a 3D vector */
+fz_function V3f32 v3f32_project(V3f32 v1, V3f32 v2); /* Projects vector v1 onto vector v2 */
+fz_function V3f32 v3f32_reject(V3f32 v1, V3f32 v2); /* Calculates the rejection of the vector v1 on to v2 */
+fz_function void  v3f32_ortho_normalize(V3f32 *v1, V3f32 *v2); /* Orthonormalizes provided vectors.\n Makes vectors normalized and orthogonal to each other.\n Implements the Gram-Schmidt process */
+fz_function V3f32 v3f32_transform(V3f32 v, Matrix4 mat); /* Transforms a 3D vector by a 4x4 matrix */
+fz_function V3f32 v3f32_rotate_by_quaternion(V3f32 v, Quaternion q); /* Rotates a 3D vector using a quaternion */
+fz_function V3f32 v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle); /* Rotates a 3D vector around an axis by an angle in radians */
+fz_function V3f32 v3f32_move_towards(V3f32 v, V3f32 target, f32 max_distance); /* Moves a vector toward a target by a maximum distance */
+fz_function V3f32 v3f32_lerp(V3f32 v1, V3f32 v2, f32 amount); /* Linearly interpolates between two 3D vectors */
+fz_function V3f32 v3f32_cubic_hermite(V3f32 v1, V3f32 tangent1, V3f32 v2, V3f32 tangent2, f32 amount); /* Calculates cubic hermite interpolation between two vectors and their tangents,\n as described in the GLTF 2.0 specification:\n https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic */
+fz_function V3f32 v3f32_reflect(V3f32 v, V3f32 normal); /* Reflects a 3D vector about a given normal */
+fz_function V3f32 v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c); /* Computes barycenter coordinates (u, v, w) for point p with respect to triangle (a, b, c).\n Assumes p is on the plane of the triangle */
+fz_function V3f32 v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view); /* Projects a V3f32 from screen space into world space */
+fz_function V3f32 v3f32_invert(V3f32 v); /* Inverts each component of a 3D vector (1/x, 1/y, 1/z) */
+fz_function b32   v3f32_equals(V3f32 p, V3f32 q); /* Returns true if two 3D vectors are equal component-wise */
+fz_function V3f32 v3f32_refract(V3f32 v, V3f32 n, f32 r); /* Computes the direction of a refracted ray\n v: normalized direction of the incoming ray\n n: normalized normal vector of the interface of two optical media\n r: ratio of the refractive index of the medium from where the ray comes\n to the refractive index of the medium on the other side of the surface */
 
 // @Section: V4f32
-function f32   v4f32_length(V4f32 v); /* Returns the Euclidean length (magnitude) of a 4D vector */
-function f32   v4f32_length_squared(V4f32 v); /* Returns the squared length of a 4D vector (avoids sqrt) */
-function f32   v4f32_dot(V4f32 v1, V4f32 v2); /* Computes the dot product of two 4D vectors */
-function f32   v4f32_distance(V4f32 v1, V4f32 v2); /* Returns the distance between two 4D points */
-function f32   v4f32_distance_squared(V4f32 v1, V4f32 v2); /* Returns the squared distance between two 4D points */
-function V4f32 v4f32_negate(V4f32 v); /* Negates a 4D vector */
-function V4f32 v4f32_div(V4f32 v1, V4f32 v2); /* Divides two 4D vectors component-wise */
-function V4f32 v4f32_normalize(V4f32 v); /* Returns a normalized (unit length) version of a 4D vector */
-function V4f32 v4f32_lerp(V4f32 v1, V4f32 v2, f32 amount); /* Linearly interpolates between two 4D vectors */
-function V4f32 v4f32_move_towards(V4f32 v, V4f32 target, f32 maxDistance); /* Moves a 4D vector toward a target by a maximum distance */
-function V4f32 v4f32_invert(V4f32 v); /* Inverts each component of a 4D vector (1/x, 1/y, 1/z, 1/w) */
-function b32   v4f32_equals(V4f32 p, V4f32 q); /* Returns true if two 4D vectors are equal component-wise */
+fz_function f32   v4f32_length(V4f32 v); /* Returns the Euclidean length (magnitude) of a 4D vector */
+fz_function f32   v4f32_length_squared(V4f32 v); /* Returns the squared length of a 4D vector (avoids sqrt) */
+fz_function f32   v4f32_dot(V4f32 v1, V4f32 v2); /* Computes the dot product of two 4D vectors */
+fz_function f32   v4f32_distance(V4f32 v1, V4f32 v2); /* Returns the distance between two 4D points */
+fz_function f32   v4f32_distance_squared(V4f32 v1, V4f32 v2); /* Returns the squared distance between two 4D points */
+fz_function V4f32 v4f32_negate(V4f32 v); /* Negates a 4D vector */
+fz_function V4f32 v4f32_div(V4f32 v1, V4f32 v2); /* Divides two 4D vectors component-wise */
+fz_function V4f32 v4f32_normalize(V4f32 v); /* Returns a normalized (unit length) version of a 4D vector */
+fz_function V4f32 v4f32_lerp(V4f32 v1, V4f32 v2, f32 amount); /* Linearly interpolates between two 4D vectors */
+fz_function V4f32 v4f32_move_towards(V4f32 v, V4f32 target, f32 maxDistance); /* Moves a 4D vector toward a target by a maximum distance */
+fz_function V4f32 v4f32_invert(V4f32 v); /* Inverts each component of a 4D vector (1/x, 1/y, 1/z, 1/w) */
+fz_function b32   v4f32_equals(V4f32 p, V4f32 q); /* Returns true if two 4D vectors are equal component-wise */
 
 // @Section: Matrix3
 struct Matrix3
@@ -91,14 +91,14 @@ struct Matrix3
   0.0f, 0.0f, (diagonal)  }
 #define matrix3_identity() matrix3(1.0f)
 
-function Matrix3 matrix3_transpose(Matrix3 m); /* Transposes a 3x3 matrix */
-function Matrix3 matrix3_multiply(Matrix3 a, Matrix3 b); /* Multiplies two 3x3 matrices (a * b) */
-function V3f32   matrix3_multiply_v3f32(Matrix3 m, V3f32 v); /* Multiplies a 3x3 matrix by a 3D vector */
-function Matrix3 matrix3_translate(V2f32 translation); /* Creates a translation matrix for a 2D vector */
-function Matrix3 matrix3_rotate(f32 radians); /* Creates a rotation matrix (around origin) by given radians */
-function Matrix3 matrix3_scale(V2f32 scale); /* Creates a scaling matrix for a 2D vector */
-function Matrix3 matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top); /* Creates a 2D orthographic projection matrix */
-function Matrix3 matrix3_inverse(Matrix3 m);
+fz_function Matrix3 matrix3_transpose(Matrix3 m); /* Transposes a 3x3 matrix */
+fz_function Matrix3 matrix3_multiply(Matrix3 a, Matrix3 b); /* Multiplies two 3x3 matrices (a * b) */
+fz_function V3f32   matrix3_multiply_v3f32(Matrix3 m, V3f32 v); /* Multiplies a 3x3 matrix by a 3D vector */
+fz_function Matrix3 matrix3_translate(V2f32 translation); /* Creates a translation matrix for a 2D vector */
+fz_function Matrix3 matrix3_rotate(f32 radians); /* Creates a rotation matrix (around origin) by given radians */
+fz_function Matrix3 matrix3_scale(V2f32 scale); /* Creates a scaling matrix for a 2D vector */
+fz_function Matrix3 matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top); /* Creates a 2D orthographic projection matrix */
+fz_function Matrix3 matrix3_inverse(Matrix3 m);
 
 // @Section: Matrix4
 struct Matrix4
@@ -117,30 +117,30 @@ struct Matrix4
     0.0f, 0.0f, 0.0f, (diagonal)   }
 #define matrix4_identity() matrix4(1.0f)
 
-function f32     matrix4_determinant(Matrix4 mat); /* Computes the determinant of a 4x4 matrix */
-function f32     matrix4_trace(Matrix4 mat); /* Computes the trace of a 4x4 matrix (sum of diagonal elements) */
-function Matrix4 matrix4_transpose(Matrix4 mat); /* Returns the transpose of a 4x4 matrix */
-function Matrix4 matrix4_inverse(Matrix4 mat); /* Returns the inverse of a 4x4 matrix */
-function Matrix4 matrix4_add(Matrix4 left, Matrix4 right); /* Adds two 4x4 matrices component-wise */
-function Matrix4 matrix4_sub(Matrix4 left, Matrix4 right); /* Subtracts the right 4x4 matrix from the left component-wise */
-function Matrix4 matrix4_mul(Matrix4 left, Matrix4 right); /* Multiplies two 4x4 matrices */
-function V3f32   matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w);
-function Matrix4 matrix4_translate(f32 x, f32 y, f32 z); /* Creates a translation matrix for the given x, y, z offsets */
-function Matrix4 matrix4_rotate(V3f32 axis, f32 angle); /* Creates a rotation matrix around a given axis by an angle in radians */
-function Matrix4 matrix4_rotate_X(f32 angle); /* Creates a rotation matrix around the X-axis by an angle in radians */
-function Matrix4 matrix4_rotate_Y(f32 angle); /* Creates a rotation matrix around the Y-axis by an angle in radians */
-function Matrix4 matrix4_rotate_Z(f32 angle); /* Creates a rotation matrix around the Z-axis by an angle in radians */
-function Matrix4 matrix4_rotate_XYZ(V3f32 angle); /* Creates a combined rotation matrix around the X, Y, and Z axes in order XYZ (angles in radians) */
-function Matrix4 matrix4_rotate_ZYX(V3f32 angle); /* Creates a combined rotation matrix around the Z, Y, and X axes in order ZYX (angles in radians) */
-function Matrix4 matrix4_scale(f32 scale); /* Creates a scaling matrix with scale factors for each axis */
-function Matrix4 matrix4_scale_xyz(f32 x, f32 y, f32 z); /* Creates a scaling matrix with scale factors for each axis */
-function Matrix4 matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 far_plane); /* Creates a perspective frustum projection matrix\n defined by the given left, right, bottom, top, near, and far planes */
-function Matrix4 matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane); /* Creates a perspective projection matrix using a vertical field of view in radians\n with the given aspect ratio, near, and far planes */
-function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane); /* Creates an orthographic projection matrix defined by the given planes */
-function Matrix4 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
-function Matrix4 matrix4_from_quaternion(Quaternion q); /* Creates a Matrix4 from the given quaternion */
-function Matrix4 matrix4_from_transform(Transform t); /* Creates a Matrix4 from the given transform */
-function String  matrix4_to_string(Arena *arena, Matrix4 m); /* Creates a string out of a matrix4 */ 
+fz_function f32     matrix4_determinant(Matrix4 mat); /* Computes the determinant of a 4x4 matrix */
+fz_function f32     matrix4_trace(Matrix4 mat); /* Computes the trace of a 4x4 matrix (sum of diagonal elements) */
+fz_function Matrix4 matrix4_transpose(Matrix4 mat); /* Returns the transpose of a 4x4 matrix */
+fz_function Matrix4 matrix4_inverse(Matrix4 mat); /* Returns the inverse of a 4x4 matrix */
+fz_function Matrix4 matrix4_add(Matrix4 left, Matrix4 right); /* Adds two 4x4 matrices component-wise */
+fz_function Matrix4 matrix4_sub(Matrix4 left, Matrix4 right); /* Subtracts the right 4x4 matrix from the left component-wise */
+fz_function Matrix4 matrix4_mul(Matrix4 left, Matrix4 right); /* Multiplies two 4x4 matrices */
+fz_function V3f32   matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w);
+fz_function Matrix4 matrix4_translate(f32 x, f32 y, f32 z); /* Creates a translation matrix for the given x, y, z offsets */
+fz_function Matrix4 matrix4_rotate(V3f32 axis, f32 angle); /* Creates a rotation matrix around a given axis by an angle in radians */
+fz_function Matrix4 matrix4_rotate_X(f32 angle); /* Creates a rotation matrix around the X-axis by an angle in radians */
+fz_function Matrix4 matrix4_rotate_Y(f32 angle); /* Creates a rotation matrix around the Y-axis by an angle in radians */
+fz_function Matrix4 matrix4_rotate_Z(f32 angle); /* Creates a rotation matrix around the Z-axis by an angle in radians */
+fz_function Matrix4 matrix4_rotate_XYZ(V3f32 angle); /* Creates a combined rotation matrix around the X, Y, and Z axes in order XYZ (angles in radians) */
+fz_function Matrix4 matrix4_rotate_ZYX(V3f32 angle); /* Creates a combined rotation matrix around the Z, Y, and X axes in order ZYX (angles in radians) */
+fz_function Matrix4 matrix4_scale(f32 scale); /* Creates a scaling matrix with scale factors for each axis */
+fz_function Matrix4 matrix4_scale_xyz(f32 x, f32 y, f32 z); /* Creates a scaling matrix with scale factors for each axis */
+fz_function Matrix4 matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 far_plane); /* Creates a perspective frustum projection matrix\n defined by the given left, right, bottom, top, near, and far planes */
+fz_function Matrix4 matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane); /* Creates a perspective projection matrix using a vertical field of view in radians\n with the given aspect ratio, near, and far planes */
+fz_function Matrix4 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane); /* Creates an orthographic projection matrix defined by the given planes */
+fz_function Matrix4 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up); /* Creates a view matrix that looks from 'eye' toward 'target' using the 'up' direction */
+fz_function Matrix4 matrix4_from_quaternion(Quaternion q); /* Creates a Matrix4 from the given quaternion */
+fz_function Matrix4 matrix4_from_transform(Transform t); /* Creates a Matrix4 from the given transform */
+fz_function String  matrix4_to_string(Arena *arena, Matrix4 m); /* Creates a string out of a matrix4 */ 
 
 // @Section: Quaternion
 struct Quaternion { f32 x, y, z, w; };
@@ -148,32 +148,32 @@ struct Quaternion { f32 x, y, z, w; };
 #define quaternion_w(x,y,z,w) (Quaternion){(x),(y),(z),(w)}
 #define quaternion_identity() (Quaternion){0.0f,0.0f,0.0f,1.0f}
 
-function Quaternion quaternion_add(Quaternion q1, Quaternion q2); /* Adds two quaternions component-wise */
-function Quaternion quaternion_sub(Quaternion q1, Quaternion q2); /* Subtracts the second quaternion from the first component-wise */
-function f32        quaternion_length(Quaternion q); /* Returns the length (magnitude) of a quaternion */
-function Quaternion quaternion_normalize(Quaternion q); /* Returns a normalized (unit length) quaternion */
-function Quaternion quaternion_invert(Quaternion q); /* Returns the inverse of a quaternion */
-function Quaternion quaternion_mul(Quaternion q1, Quaternion q2); /* Multiplies two quaternions (combines rotations) */
-function Quaternion quaternion_scale(Quaternion q, f32 mul); /* Scales each component of a quaternion by a scalar */
-function Quaternion quaternion_div(Quaternion q1, Quaternion q2); /* Divides one quaternion by another (q1 * inverse(q2)) */
-function Quaternion quaternion_lerp(Quaternion q1, Quaternion q2, f32 amount); /* Performs linear interpolation between two quaternions */
-function Quaternion quaternion_nlerp(Quaternion q1, Quaternion q2, f32 amount); /* Calculates normalized linear interpolation (nlerp) between two quaternions.\n Provides a faster approximation of slerp */
-function Quaternion quaternion_slerp(Quaternion q1, Quaternion q2, f32 amount); /* Calculates spherical linear interpolation (slerp) between two quaternions */
-function Quaternion quaternion_cubic_hermite_spline(Quaternion q1, Quaternion out_tangent1, Quaternion q2, Quaternion in_tangent2, f32 t); /* Calculates quaternion cubic spline interpolation using the Cubic Hermite Spline algorithm,\n as described in the GLTF 2.0 specification:\n https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic */
-function Quaternion quaternion_from_v3f32_to_v3f32(V3f32 from, V3f32 to); /* Creates a quaternion representing the rotation from one vector to another */
-function Quaternion quaternion_from_matrix4(Matrix4 mat); /* Converts a rotation matrix to a quaternion */
-function Matrix4    quaternion_to_matrix4(Quaternion q); /* Converts a quaternion to a rotation matrix */
-function Quaternion quaternion_from_axis_angle(V3f32 axis, f32 angle); /* Creates a quaternion representing a rotation around an axis by an angle in radians */
-function Quaternion quaternion_from_x_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the x axis by an angle in radians */
-function Quaternion quaternion_from_y_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the y axis by an angle in radians */
-function Quaternion quaternion_from_z_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the z axis by an angle in radians */
-function void       quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle); /* Extracts the rotation axis and angle (in radians) from a quaternion */
-function Quaternion quaternion_from_euler(f32 pitch, f32 yaw, f32 roll); /* Creates a quaternion equivalent to Euler angles (Z-Y-X rotation order)\n Angles must be provided in radians */
-function V3f32      quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
-function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
-function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
-function V3f32      quaternion_rotate_v3f32(Quaternion q, V3f32 v);
-function String     quaternion_to_string(Arena *arena, Quaternion q); /* Creates a string out of a quaternion */
+fz_function Quaternion quaternion_add(Quaternion q1, Quaternion q2); /* Adds two quaternions component-wise */
+fz_function Quaternion quaternion_sub(Quaternion q1, Quaternion q2); /* Subtracts the second quaternion from the first component-wise */
+fz_function f32        quaternion_length(Quaternion q); /* Returns the length (magnitude) of a quaternion */
+fz_function Quaternion quaternion_normalize(Quaternion q); /* Returns a normalized (unit length) quaternion */
+fz_function Quaternion quaternion_invert(Quaternion q); /* Returns the inverse of a quaternion */
+fz_function Quaternion quaternion_mul(Quaternion q1, Quaternion q2); /* Multiplies two quaternions (combines rotations) */
+fz_function Quaternion quaternion_scale(Quaternion q, f32 mul); /* Scales each component of a quaternion by a scalar */
+fz_function Quaternion quaternion_div(Quaternion q1, Quaternion q2); /* Divides one quaternion by another (q1 * inverse(q2)) */
+fz_function Quaternion quaternion_lerp(Quaternion q1, Quaternion q2, f32 amount); /* Performs linear interpolation between two quaternions */
+fz_function Quaternion quaternion_nlerp(Quaternion q1, Quaternion q2, f32 amount); /* Calculates normalized linear interpolation (nlerp) between two quaternions.\n Provides a faster approximation of slerp */
+fz_function Quaternion quaternion_slerp(Quaternion q1, Quaternion q2, f32 amount); /* Calculates spherical linear interpolation (slerp) between two quaternions */
+fz_function Quaternion quaternion_cubic_hermite_spline(Quaternion q1, Quaternion out_tangent1, Quaternion q2, Quaternion in_tangent2, f32 t); /* Calculates quaternion cubic spline interpolation using the Cubic Hermite Spline algorithm,\n as described in the GLTF 2.0 specification:\n https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic */
+fz_function Quaternion quaternion_from_v3f32_to_v3f32(V3f32 from, V3f32 to); /* Creates a quaternion representing the rotation from one vector to another */
+fz_function Quaternion quaternion_from_matrix4(Matrix4 mat); /* Converts a rotation matrix to a quaternion */
+fz_function Matrix4    quaternion_to_matrix4(Quaternion q); /* Converts a quaternion to a rotation matrix */
+fz_function Quaternion quaternion_from_axis_angle(V3f32 axis, f32 angle); /* Creates a quaternion representing a rotation around an axis by an angle in radians */
+fz_function Quaternion quaternion_from_x_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the x axis by an angle in radians */
+fz_function Quaternion quaternion_from_y_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the y axis by an angle in radians */
+fz_function Quaternion quaternion_from_z_axis_angle(f32 angle); /* Creates a quaternion representing a rotation around the z axis by an angle in radians */
+fz_function void       quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle); /* Extracts the rotation axis and angle (in radians) from a quaternion */
+fz_function Quaternion quaternion_from_euler(f32 pitch, f32 yaw, f32 roll); /* Creates a quaternion equivalent to Euler angles (Z-Y-X rotation order)\n Angles must be provided in radians */
+fz_function V3f32      quaternion_to_euler(Quaternion q); /* Converts a quaternion to Euler angles (roll, pitch, yaw)\n Returns angles in radians as a V3f32 struct */
+fz_function Quaternion quaternion_transform(Quaternion q, Matrix4 mat); /* Transforms a quaternion by a 4x4 matrix */
+fz_function b32        quaternion_equals(Quaternion p, Quaternion q); /* Returns true if two quaternions are equal component-wise */
+fz_function V3f32      quaternion_rotate_v3f32(Quaternion q, V3f32 v);
+fz_function String     quaternion_to_string(Arena *arena, Quaternion q); /* Creates a string out of a quaternion */
 
 // @Section: Transform
 struct Transform 
@@ -185,82 +185,82 @@ struct Transform
 #define transform(t,r,s) (Transform){t,r,s}
 #define transform_identity() transform(v3f32_zero(), quaternion_identity(), v3f32(1.0f, 1.0f, 1.0f))
 
-function Transform transform_apply(Transform a, Transform b); /* Applies transform a onto transform b */
-function String    transform_to_string(Arena *arena, Transform t); /* Creates a string out of a transform */
+fz_function Transform transform_apply(Transform a, Transform b); /* Applies transform a onto transform b */
+fz_function String    transform_to_string(Arena *arena, Transform t); /* Creates a string out of a transform */
 
 // @Section: Implementation
 
 #include "generated/Math.cgen.c"
 
-function inline f32
+fz_function inline f32
 f32_remap(f32 value, f32 min, f32 max)
 {
   return min + (max - min) * clamp(value, 0.0f, 1.0f);;
 }
 
-function inline f32
+fz_function inline f32
 f32_lerp(f32 from, f32 to, f32 t)
 {
   return from + (to - from) * t;
 }
 
-function f32
+fz_function f32
 v2f32_length(V2f32 v)
 {
   f32 result = sqrtf((v.x*v.x) + (v.y*v.y));
   return result;
 }
 
-function f32
+fz_function f32
 v2f32_length_squared(V2f32 v)
 {
   f32 result = (v.x*v.x) + (v.y*v.y);
   return result;
 }
 
-function f32
+fz_function f32
 v2f32_dot(V2f32 v1, V2f32 v2)
 {
   f32 result = (v1.x*v2.x + v1.y*v2.y);
   return result;
 }
 
-function f32
+fz_function f32
 v2f32_cross(V2f32 v1, V2f32 v2)
 {
   f32 result = (v1.x*v2.y - v1.y*v2.x);
   return result;
 }
 
-function f32
+fz_function f32
 v2f32_distance(V2f32 v1, V2f32 v2)
 {
   f32 result = sqrtf((v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y));
   return result;
 }
 
-function f32
+fz_function f32
 v2f32_distance_squared(V2f32 v1, V2f32 v2)
 {
   f32 result = ((v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y));
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_negate(V2f32 v)
 {
   V2f32 result = { -v.x, -v.y };
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_div(V2f32 v1, V2f32 v2)
 {
   V2f32 result = { v1.x/v2.x, v1.y/v2.y };
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_normalize(V2f32 v)
 {
   V2f32 result = { 0 };
@@ -274,7 +274,7 @@ v2f32_normalize(V2f32 v)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_transform(V2f32 v, Matrix4 mat)
 {
   V2f32 result = { 0 };
@@ -286,7 +286,7 @@ v2f32_transform(V2f32 v, Matrix4 mat)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_lerp(V2f32 v1, V2f32 v2, f32 amount)
 {
   V2f32 result = { 0 };
@@ -295,7 +295,7 @@ v2f32_lerp(V2f32 v1, V2f32 v2, f32 amount)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_reflect(V2f32 v, V2f32 normal)
 {
   V2f32 result = { 0 };
@@ -305,7 +305,7 @@ v2f32_reflect(V2f32 v, V2f32 normal)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_rotate(V2f32 v, f32 angle)
 {
   V2f32 result = { 0 };
@@ -316,7 +316,7 @@ v2f32_rotate(V2f32 v, f32 angle)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_move_towards(V2f32 v, V2f32 target, f32 max_distance)
 {
   V2f32 result = { 0 };
@@ -333,14 +333,14 @@ v2f32_move_towards(V2f32 v, V2f32 target, f32 max_distance)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_invert(V2f32 v)
 {
   V2f32 result = { 1.0f/v.x, 1.0f/v.y };
   return result;
 }
 
-function b32
+fz_function b32
 v2f32_equals(V2f32 p, V2f32 q)
 {
   b32 result = ((fabsf(p.x - q.x)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.x), fabsf(q.x))))) &&
@@ -348,7 +348,7 @@ v2f32_equals(V2f32 p, V2f32 q)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_refract(V2f32 v, V2f32 n, f32 r)
 {
   V2f32 result = { 0 };
@@ -364,7 +364,7 @@ v2f32_refract(V2f32 v, V2f32 n, f32 r)
   return result;
 }
 
-function V2f32
+fz_function V2f32
 v2f32_snap45(V2f32 v)
 {
   // Source: https://www.shadertoy.com/view/M3ycWd
@@ -380,35 +380,35 @@ v2f32_snap45(V2f32 v)
   return v;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_cross(V3f32 v1, V3f32 v2)
 {
   V3f32 result = { v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x };
   return result;
 }
 
-function f32
+fz_function f32
 v3f32_length(const V3f32 v)
 {
   f32 result = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
   return result;
 }
 
-function f32
+fz_function f32
 v3f32_length_squared(const V3f32 v)
 {
   f32 result = v.x*v.x + v.y*v.y + v.z*v.z;
   return result;
 }
 
-function f32
+fz_function f32
 v3f32_dot(V3f32 v1, V3f32 v2)
 {
   f32 result = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z);
   return result;
 }
 
-function f32
+fz_function f32
 v3f32_distance(V3f32 v1, V3f32 v2)
 {
   f32 result = 0.0f;
@@ -419,7 +419,7 @@ v3f32_distance(V3f32 v1, V3f32 v2)
   return result;
 }
 
-function f32
+fz_function f32
 v3f32_distance_squared(V3f32 v1, V3f32 v2)
 {
   f32 result = 0.0f;
@@ -430,21 +430,21 @@ v3f32_distance_squared(V3f32 v1, V3f32 v2)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_negate(V3f32 v)
 {
   V3f32 result = { -v.x, -v.y, -v.z };
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_div(V3f32 v1, V3f32 v2)
 {
   V3f32 result = { v1.x/v2.x, v1.y/v2.y, v1.z/v2.z };
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_normalize(V3f32 v)
 {
   V3f32 result = v;
@@ -462,7 +462,7 @@ v3f32_normalize(V3f32 v)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_project(V3f32 v1, V3f32 v2)
 {
   V3f32 result = { 0 };
@@ -475,7 +475,7 @@ v3f32_project(V3f32 v1, V3f32 v2)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_reject(V3f32 v1, V3f32 v2)
 {
   V3f32 result = { 0 };
@@ -488,7 +488,7 @@ v3f32_reject(V3f32 v1, V3f32 v2)
   return result;
 }
 
-function void
+fz_function void
 v3f32_ortho_normalize(V3f32 *v1, V3f32 *v2)
 {
   f32 length = 0.0f;
@@ -521,7 +521,7 @@ v3f32_ortho_normalize(V3f32 *v1, V3f32 *v2)
   *v2 = vn2;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_transform(V3f32 v, Matrix4 mat)
 {
   V3f32 result = { 0 };
@@ -534,7 +534,7 @@ v3f32_transform(V3f32 v, Matrix4 mat)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_rotate_by_quaternion(V3f32 v, Quaternion q)
 {
   V3f32 result = { 0 };
@@ -544,7 +544,7 @@ v3f32_rotate_by_quaternion(V3f32 v, Quaternion q)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle)
 {
   // Using Euler-Rodrigues Formula
@@ -596,7 +596,7 @@ v3f32_rotate_by_axis_angle(V3f32 v, V3f32 axis, f32 angle)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_move_towards(V3f32 v, V3f32 target, f32 max_distance)
 {
   V3f32 result = { 0 };
@@ -615,7 +615,7 @@ v3f32_move_towards(V3f32 v, V3f32 target, f32 max_distance)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_lerp(V3f32 v1, V3f32 v2, f32 amount)
 {
   V3f32 result = { 0 };
@@ -625,7 +625,7 @@ v3f32_lerp(V3f32 v1, V3f32 v2, f32 amount)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_cubic_hermite(V3f32 v1, V3f32 tangent1, V3f32 v2, V3f32 tangent2, f32 amount)
 {
   V3f32 result = { 0 };
@@ -637,7 +637,7 @@ v3f32_cubic_hermite(V3f32 v1, V3f32 tangent1, V3f32 v2, V3f32 tangent2, f32 amou
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_reflect(V3f32 v, V3f32 normal)
 {
   V3f32 result = { 0 };
@@ -653,7 +653,7 @@ v3f32_reflect(V3f32 v, V3f32 normal)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c)
 {
   V3f32 result = { 0 };
@@ -676,7 +676,7 @@ v3f32_barycenter(V3f32 p, V3f32 a, V3f32 b, V3f32 c)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view)
 {
   V3f32 result = { 0 };
@@ -760,14 +760,14 @@ v3f32_unproject(V3f32 source, Matrix4 projection, Matrix4 view)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_invert(V3f32 v)
 {
   V3f32 result = { 1.0f/v.x, 1.0f/v.y, 1.0f/v.z };
   return result;
 }
 
-function b32
+fz_function b32
 v3f32_equals(V3f32 p, V3f32 q)
 {
   b32 result = ((fabsf(p.x - q.x)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.x), fabsf(q.x))))) &&
@@ -777,7 +777,7 @@ v3f32_equals(V3f32 p, V3f32 q)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 v3f32_refract(V3f32 v, V3f32 n, f32 r)
 {
   V3f32 result = { 0 };
@@ -794,28 +794,28 @@ v3f32_refract(V3f32 v, V3f32 n, f32 r)
   return result;
 }
 
-function f32
+fz_function f32
 v4f32_length(V4f32 v)
 {
   f32 result = sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
   return result;
 }
 
-function f32
+fz_function f32
 v4f32_length_squared(V4f32 v)
 {
   f32 result = (v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w);
   return result;
 }
 
-function f32
+fz_function f32
 v4f32_dot(V4f32 v1, V4f32 v2)
 {
   f32 result = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + v1.w*v2.w);
   return result;
 }
 
-function f32
+fz_function f32
 v4f32_distance(V4f32 v1, V4f32 v2)
 {
   f32 result = sqrtf(
@@ -824,7 +824,7 @@ v4f32_distance(V4f32 v1, V4f32 v2)
   return result;
 }
 
-function f32
+fz_function f32
 v4f32_distance_squared(V4f32 v1, V4f32 v2)
 {
   f32 result =
@@ -833,21 +833,21 @@ v4f32_distance_squared(V4f32 v1, V4f32 v2)
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_negate(V4f32 v)
 {
   V4f32 result = { -v.x, -v.y, -v.z, -v.w };
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_div(V4f32 v1, V4f32 v2)
 {
   V4f32 result = { v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w };
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_normalize(V4f32 v)
 {
   V4f32 result = { 0 };
@@ -863,7 +863,7 @@ v4f32_normalize(V4f32 v)
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_lerp(V4f32 v1, V4f32 v2, f32 amount)
 {
   V4f32 result = { 0 };
@@ -874,7 +874,7 @@ v4f32_lerp(V4f32 v1, V4f32 v2, f32 amount)
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_move_towards(V4f32 v, V4f32 target, f32 maxDistance)
 {
   V4f32 result = { 0 };
@@ -895,14 +895,14 @@ v4f32_move_towards(V4f32 v, V4f32 target, f32 maxDistance)
   return result;
 }
 
-function V4f32
+fz_function V4f32
 v4f32_invert(V4f32 v)
 {
   V4f32 result = { 1.0f/v.x, 1.0f/v.y, 1.0f/v.z, 1.0f/v.w };
   return result;
 }
 
-function b32
+fz_function b32
 v4f32_equals(V4f32 p, V4f32 q)
 {
   b32 result = ((fabsf(p.x - q.x)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.x), fabsf(q.x))))) &&
@@ -912,7 +912,7 @@ v4f32_equals(V4f32 p, V4f32 q)
   return result;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_transpose(Matrix3 m)
 {
   Matrix3 r;
@@ -922,7 +922,7 @@ matrix3_transpose(Matrix3 m)
   return r;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_multiply(Matrix3 a, Matrix3 b)
 {
   Matrix3 r;
@@ -940,7 +940,7 @@ matrix3_multiply(Matrix3 a, Matrix3 b)
   return r;
 }
 
-function V3f32
+fz_function V3f32
 matrix3_multiply_v3f32(Matrix3 m, V3f32 v)
 {
   V3f32 r;
@@ -950,7 +950,7 @@ matrix3_multiply_v3f32(Matrix3 m, V3f32 v)
   return r;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_translate(V2f32 t)
 {
   Matrix3 m = matrix3_identity();
@@ -959,7 +959,7 @@ matrix3_translate(V2f32 t)
   return m;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_rotate(f32 radians)
 {
   f32 c = cosf(radians);
@@ -971,7 +971,7 @@ matrix3_rotate(f32 radians)
   return m;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_scale(V2f32 s)
 {
   Matrix3 m = matrix3_identity();
@@ -980,7 +980,7 @@ matrix3_scale(V2f32 s)
   return m;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top)
 {
   Matrix3 m = matrix3_identity();
@@ -997,7 +997,7 @@ matrix3_ortho(f32 left, f32 right, f32 bottom, f32 top)
   return m;
 }
 
-function Matrix3
+fz_function Matrix3
 matrix3_inverse(Matrix3 m)
 {
   f32 c0 = m.m4*m.m8 - m.m7*m.m5;
@@ -1022,7 +1022,7 @@ matrix3_inverse(Matrix3 m)
   return r;
 }
 
-function f32
+fz_function f32
 matrix4_determinant(Matrix4 mat)
 {
   f32 result = 0.0f;
@@ -1041,14 +1041,14 @@ matrix4_determinant(Matrix4 mat)
   return result;
 }
 
-function f32
+fz_function f32
 matrix4_trace(Matrix4 mat)
 {
   f32 result = (mat.m0 + mat.m5 + mat.m10 + mat.m15);
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_transpose(Matrix4 mat)
 {
   Matrix4 result = { 0 };
@@ -1074,7 +1074,7 @@ matrix4_transpose(Matrix4 mat)
 }
 
 // Invert provided matrix
-function Matrix4
+fz_function Matrix4
 matrix4_inverse(Matrix4 mat)
 {
   Matrix4 result = { 0 };
@@ -1121,7 +1121,7 @@ matrix4_inverse(Matrix4 mat)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_add(Matrix4 left, Matrix4 right)
 {
   Matrix4 result = { 0 };
@@ -1146,7 +1146,7 @@ matrix4_add(Matrix4 left, Matrix4 right)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_sub(Matrix4 left, Matrix4 right)
 {
   Matrix4 result = { 0 };
@@ -1171,7 +1171,7 @@ matrix4_sub(Matrix4 left, Matrix4 right)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_mul(Matrix4 left, Matrix4 right)
 {
   Matrix4 result = { 0 };
@@ -1196,7 +1196,7 @@ matrix4_mul(Matrix4 left, Matrix4 right)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w)
 {
   V3f32 result;
@@ -1208,7 +1208,7 @@ matrix4_mul_v3f32(Matrix4 m, V3f32 v, f32 w)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_translate(f32 x, f32 y, f32 z)
 {
   Matrix4 result = matrix4_identity();
@@ -1218,7 +1218,7 @@ matrix4_translate(f32 x, f32 y, f32 z)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate(V3f32 axis, f32 angle) /* Angle in Radians */
 {
   Matrix4 result = { 0 };
@@ -1262,7 +1262,7 @@ matrix4_rotate(V3f32 axis, f32 angle) /* Angle in Radians */
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate_X(f32 angle)
 {
   Matrix4 result = matrix4_identity();
@@ -1275,7 +1275,7 @@ matrix4_rotate_X(f32 angle)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate_Y(f32 angle)
 {
   Matrix4 result = matrix4_identity();
@@ -1288,7 +1288,7 @@ matrix4_rotate_Y(f32 angle)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate_Z(f32 angle)
 {
   Matrix4 result = matrix4_identity();
@@ -1301,7 +1301,7 @@ matrix4_rotate_Z(f32 angle)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate_XYZ(V3f32 angle)
 {
   Matrix4 result = matrix4_identity();
@@ -1323,7 +1323,7 @@ matrix4_rotate_XYZ(V3f32 angle)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_rotate_ZYX(V3f32 angle)
 {
   Matrix4 result = { 0 };
@@ -1352,7 +1352,7 @@ matrix4_rotate_ZYX(V3f32 angle)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_scale(f32 scale)
 {
   Matrix4 result = matrix4_identity();
@@ -1362,7 +1362,7 @@ matrix4_scale(f32 scale)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_scale_xyz(f32 x, f32 y, f32 z)
 {
   Matrix4 result = matrix4_identity();
@@ -1372,7 +1372,7 @@ matrix4_scale_xyz(f32 x, f32 y, f32 z)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 far_plane)
 {
   Matrix4 result = { 0 };
@@ -1398,7 +1398,7 @@ matrix4_frustum(f64 left, f64 right, f64 bottom, f64 top, f64 near_plane, f64 fa
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plane, f64 far_plane)
 {
   Matrix4 result = {0};
@@ -1427,7 +1427,7 @@ matrix4_perspective(f64 fovY, f32 window_width, f32 window_height, f64 near_plan
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPlane)
 {
   Matrix4 result = { 0 };
@@ -1453,7 +1453,7 @@ matrix4_ortho(f64 left, f64 right, f64 bottom, f64 top, f64 nearPlane, f64 farPl
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up)
 {
   Matrix4 result = { 0 };
@@ -1508,7 +1508,7 @@ matrix4_look_at(V3f32 eye, V3f32 target, V3f32 up)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 matrix4_from_quaternion(Quaternion q)
 {
   Matrix4 result = matrix4_identity();
@@ -1538,7 +1538,7 @@ matrix4_from_quaternion(Quaternion q)
   return result;
 }
 
-function Matrix4 
+fz_function Matrix4 
 matrix4_from_transform(Transform t)
 {
   f32 qx = t.rotation.x;
@@ -1578,7 +1578,7 @@ matrix4_from_transform(Transform t)
   return result;
 }
 
-function String
+fz_function String
 matrix4_to_string(Arena *arena, Matrix4 m)
 {
   return Sf(arena,
@@ -1592,28 +1592,28 @@ matrix4_to_string(Arena *arena, Matrix4 m)
     m.m3,  m.m7,  m.m11, m.m15);
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_add(Quaternion q1, Quaternion q2)
 {
   Quaternion result = {q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w};
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_sub(Quaternion q1, Quaternion q2)
 {
   Quaternion result = {q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w};
   return result;
 }
 
-function f32
+fz_function f32
 quaternion_length(Quaternion q)
 {
   f32 result = sqrtf(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_normalize(Quaternion q)
 {
   Quaternion result = { 0 };
@@ -1630,7 +1630,7 @@ quaternion_normalize(Quaternion q)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_invert(Quaternion q)
 {
   Quaternion result = q;
@@ -1646,7 +1646,7 @@ quaternion_invert(Quaternion q)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_mul(Quaternion q1, Quaternion q2)
 {
   Quaternion result = { 0 };
@@ -1659,7 +1659,7 @@ quaternion_mul(Quaternion q1, Quaternion q2)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_scale(Quaternion q, f32 mul)
 {
   Quaternion result = { 0 };
@@ -1670,14 +1670,14 @@ quaternion_scale(Quaternion q, f32 mul)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_div(Quaternion q1, Quaternion q2)
 {
   Quaternion result = { q1.x/q2.x, q1.y/q2.y, q1.z/q2.z, q1.w/q2.w };
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_lerp(Quaternion q1, Quaternion q2, f32 amount)
 {
   Quaternion result = { 0 };
@@ -1690,7 +1690,7 @@ quaternion_lerp(Quaternion q1, Quaternion q2, f32 amount)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_nlerp(Quaternion q1, Quaternion q2, f32 amount)
 {
   Quaternion result = { 0 };
@@ -1715,7 +1715,7 @@ quaternion_nlerp(Quaternion q1, Quaternion q2, f32 amount)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_slerp(Quaternion q1, Quaternion q2, f32 amount)
 {
   Quaternion result = { 0 };
@@ -1760,7 +1760,7 @@ quaternion_slerp(Quaternion q1, Quaternion q2, f32 amount)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_cubic_hermite_spline(Quaternion q1, Quaternion out_tangent1, Quaternion q2, Quaternion in_tangent2, f32 t)
 {
   f32 t2 = t*t;
@@ -1785,7 +1785,7 @@ quaternion_cubic_hermite_spline(Quaternion q1, Quaternion out_tangent1, Quaterni
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_from_v3f32_to_v3f32(V3f32 from, V3f32 to)
 {
   Quaternion result = { 0 };
@@ -1813,7 +1813,7 @@ quaternion_from_v3f32_to_v3f32(V3f32 from, V3f32 to)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_from_matrix4(Matrix4 mat)
 {
   Quaternion result = { 0 };
@@ -1877,7 +1877,7 @@ quaternion_from_matrix4(Matrix4 mat)
   return result;
 }
 
-function Matrix4
+fz_function Matrix4
 quaternion_to_matrix4(Quaternion q)
 {
   Matrix4 result = matrix4_identity();
@@ -1902,7 +1902,7 @@ quaternion_to_matrix4(Quaternion q)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_from_axis_angle(V3f32 axis, f32 angle)
 {
   Quaternion result = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -1946,7 +1946,7 @@ quaternion_from_axis_angle(V3f32 axis, f32 angle)
   return result;
 }
 
-function Quaternion 
+fz_function Quaternion 
 quaternion_from_x_axis_angle(f32 angle)
 {
   Quaternion result;
@@ -1954,7 +1954,7 @@ quaternion_from_x_axis_angle(f32 angle)
   return result;
 }
 
-function Quaternion 
+fz_function Quaternion 
 quaternion_from_y_axis_angle(f32 angle)
 {
   Quaternion result;
@@ -1962,7 +1962,7 @@ quaternion_from_y_axis_angle(f32 angle)
   return result;
 }
 
-function Quaternion 
+fz_function Quaternion 
 quaternion_from_z_axis_angle(f32 angle)
 {
   Quaternion result;
@@ -1970,7 +1970,7 @@ quaternion_from_z_axis_angle(f32 angle)
   return result;
 }
 
-function void
+fz_function void
 quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle)
 {
   if (fabsf(q.w) > 1.0f)
@@ -2010,7 +2010,7 @@ quaternion_to_axis_angle(Quaternion q, V3f32 *out_axis, f32 *out_angle)
   *out_angle = resAngle;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_from_euler(f32 pitch, f32 yaw, f32 roll)
 {
   Quaternion result = { 0 };
@@ -2027,7 +2027,7 @@ quaternion_from_euler(f32 pitch, f32 yaw, f32 roll)
   return result;
 }
 
-function V3f32
+fz_function V3f32
 quaternion_to_euler(Quaternion q)
 {
   V3f32 result = { 0 };
@@ -2051,7 +2051,7 @@ quaternion_to_euler(Quaternion q)
   return result;
 }
 
-function Quaternion
+fz_function Quaternion
 quaternion_transform(Quaternion q, Matrix4 mat)
 {
   Quaternion result = { 0 };
@@ -2063,7 +2063,7 @@ quaternion_transform(Quaternion q, Matrix4 mat)
   return result;
 }
 
-function b32
+fz_function b32
 quaternion_equals(Quaternion p, Quaternion q)
 {
   b32 result = (((fabsf(p.x - q.x)) <= (F32_EPSILON*fmaxf(1.0f, fmaxf(fabsf(p.x), fabsf(q.x))))) &&
@@ -2077,7 +2077,7 @@ quaternion_equals(Quaternion p, Quaternion q)
   return result;
 }
 
-function V3f32      
+fz_function V3f32      
 quaternion_rotate_v3f32(Quaternion q, V3f32 v)
 {
   Quaternion q_norm = quaternion_normalize(q);
@@ -2088,13 +2088,13 @@ quaternion_rotate_v3f32(Quaternion q, V3f32 v)
   return (V3f32){result.x, result.y, result.z};
 }
 
-function String
+fz_function String
 quaternion_to_string(Arena *arena, Quaternion q)
 {
   return Sf(arena, "(%.2f, %.2f, %.2f, %.2f)", q.x, q.y, q.z, q.w);
 }
 
-function Transform
+fz_function Transform
 transform_apply(Transform t, Transform applied_to)
 {
   Transform result;
@@ -2108,7 +2108,7 @@ transform_apply(Transform t, Transform applied_to)
   return result;
 }
 
-function String
+fz_function String
 transform_to_string(Arena *arena, Transform t)
 {
   String translation = v3f32_to_string(arena, t.translation);
