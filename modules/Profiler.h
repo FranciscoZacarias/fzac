@@ -57,7 +57,7 @@ struct Profiler_Recording
 {
   Arena *arena;
 
-  Array(events, Profiler_Event);
+  Array_Members(events, Profiler_Event);
   
   u64 time_us_start;
   u64 time_us_end;
@@ -79,7 +79,7 @@ struct Profiler_Context
   String file_output;
 
   // Recordings
-  Array(recordings, Profiler_Recording);
+  Array_Members(recordings, Profiler_Recording);
   Profiler_Recording *active_recording; // NULL if it's not recording
 };
 
@@ -162,7 +162,7 @@ _profiler_init()
 
   ProfileContext.file_output  = PROFILER_OUTPUT_FILE;
   
-  array_init(ProfileContext.arena, ProfileContext.recordings, Profiler_Recording, PROFILER_RECORDINGS_CAPACITY);
+  array_members_init_with_arena(ProfileContext.arena, ProfileContext.recordings, Profiler_Recording, PROFILER_RECORDINGS_CAPACITY);
 }
 
 fz_function void
@@ -173,12 +173,12 @@ _profiler_end()
 fz_function void 
 _profiler_recording_start()
 {
-  Profiler_Recording *rec = array_add(ProfileContext.recordings);
+  Profiler_Recording *rec = array_members_add(ProfileContext.recordings);
   ProfileContext.active_recording = rec;
 
   memory_zero_struct(rec);
   rec->arena = arena_alloc();
-  array_init(rec->arena, rec->events, Profiler_Event, PROFILER_EVENTS_CAPACITY);
+  array_members_init_with_arena(rec->arena, rec->events, Profiler_Event, PROFILER_EVENTS_CAPACITY);
   rec->time_us_start = time_microseconds();
 
   // Output file
@@ -200,8 +200,8 @@ _profiler_recording_stop()
   String_Builder builder = string_builder_init(kilobytes(64));
   string_builder_pushf(&builder, "[Recording %u - "S_FMT"]\n\n", ProfileContext.recordings_count, S_ARG(_profiler_format_us(scratch.arena, ProfileContext.active_recording->time_us_end - ProfileContext.active_recording->time_us_start)));
 
-  Array(event_stack, Profiler_Event);
-  array_init(scratch.arena, event_stack, Profiler_Event, ProfileContext.active_recording->events_count);
+  Array_Members(event_stack, Profiler_Event);
+  array_members_init_with_arena(scratch.arena, event_stack, Profiler_Event, ProfileContext.active_recording->events_count);
 
   u64 nests = 0;
   u64 previous_frame_timestamp = 0;
@@ -221,7 +221,7 @@ _profiler_recording_stop()
           for (u32 i = 0; i < nests; i += 1) string_builder_push(&builder, "  ");
           string_builder_push(&builder, "{\n");
 
-          Profiler_Event *stack_event = array_add(event_stack);
+          Profiler_Event *stack_event = array_members_add(event_stack);
           *stack_event = *event;
 
           nests += 1;
@@ -232,7 +232,7 @@ _profiler_recording_stop()
           nests -= 1;
 
           Profiler_Event *begin_event;
-          array_pop(begin_event, event_stack);
+          array_members_pop(begin_event, event_stack);
           assert(begin_event->kind == Profiler_Event_Zone_Begin);
           u64 total_time = event->timestamp_us - begin_event->timestamp_us;
           for (u32 i = 0; i < nests; i += 1) string_builder_push(&builder, "  ");
@@ -358,7 +358,7 @@ _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_
   {
     return NULL;
   }
-  Profiler_Event *result = array_add(recording->events);
+  Profiler_Event *result = array_members_add(recording->events);
 
   result->kind = kind;
   result->timestamp_us = time_microseconds();

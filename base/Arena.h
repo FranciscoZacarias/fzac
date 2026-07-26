@@ -48,12 +48,12 @@ fz_function void    arena_temp_end(Scratch* temp);  /* Rolls back to the positio
 
 // Helper to push data into an arena backed array
 
-#define Array(name, type) \
+#define Array_Members(name, type) \
   type *name;             \
   u32 name##_count;       \
   u32 name##_capacity
 
-#define array_init(arena, name, type, capacity)  \
+#define array_members_init_with_arena(arena, name, type, capacity)  \
   statement(                                           \
     assert((arena) != NULL);                           \
     name##_count = 0;                                  \
@@ -61,9 +61,9 @@ fz_function void    arena_temp_end(Scratch* temp);  /* Rolls back to the positio
     name = push_array((arena), type, name##_capacity); \
   )
 
-#define array_add(name) _array_add_impl((void*)name, &(name##_count), name##_capacity, sizeof((name)[0]))
+#define array_members_add(name) _array_add_impl((void*)name, &(name##_count), name##_capacity, sizeof((name)[0]))
 
-#define array_pop(out_ptr, name)       \
+#define array_members_pop(out_ptr, name)       \
   statement(                                 \
     if ((name##_count) == 0)                 \
     {                                        \

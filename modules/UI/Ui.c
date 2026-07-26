@@ -49,17 +49,17 @@ ui_init(UI_Font font)
   UIContext.window_min_width  = 150;
   UIContext.window_min_height = 50;
 
-  array_init(UIContext.arena, UIContext.commands, UI_Command, UI_MAX_COMMANDS);
+  array_members_init_with_arena(UIContext.arena, UIContext.commands, UI_Command, UI_MAX_COMMANDS);
 
   UIContext.style.corner_roundness = 0;
   UIContext.style.border_thickness = 1.0f;
 
-  array_init(UIContext.arena, UIContext.cached_nodes, UI_Node_Cache, UI_MAX_CACHED_NODES);
+  array_members_init_with_arena(UIContext.arena, UIContext.cached_nodes, UI_Node_Cache, UI_MAX_CACHED_NODES);
   UIContext.cached_nodes_available = UIContext.cached_nodes_capacity;
   UIContext.cached_nodes_max_idle_lifetime_ms = UI_MAX_NODE_IDLE_LIFETIME_MS;
 
   UIContext.previous_frame.rects_arena = arena_alloc();
-  array_init(UIContext.previous_frame.rects_arena, UIContext.previous_frame.rects, UI_Rect, UI_MAX_PREVIOUS_FRAME_RECTS);
+  array_members_init_with_arena(UIContext.previous_frame.rects_arena, UIContext.previous_frame.rects, UI_Rect, UI_MAX_PREVIOUS_FRAME_RECTS);
 
   ui_init_stacks(UIContext);
 
@@ -125,7 +125,7 @@ ui_end()
   for (UI_Node *child = UIContext.root->first; child; child = child->next)
   {
     UI_Rect *rect;
-    array_add(rect, UIContext.previous_frame.rects);
+    array_members_add(rect, UIContext.previous_frame.rects);
     *rect = child->bounds;
   }
 
@@ -936,7 +936,7 @@ fz_function void
 _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
 {
   UI_Command *command;
-  array_add(command, UIContext.commands);
+  array_members_add(command, UIContext.commands);
 
   command->kind     = UI_Command_Kind_Draw_Rect;
   command->top_left = top_left;
@@ -954,7 +954,7 @@ fz_function void
 _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
 {
   UI_Command *command;
-  array_add(command, UIContext.commands);
+  array_members_add(command, UIContext.commands);
 
   command->kind     = UI_Command_Kind_Draw_Rect_With_Texture;
   command->top_left = top_left;
@@ -978,7 +978,7 @@ _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 
   // @TODO(fz): This max_width/max_height are probably just a V2f32 size?
 
   UI_Command *command;
-  array_add(command, UIContext.commands);
+  array_members_add(command, UIContext.commands);
 
   command->kind      = UI_Command_Kind_Draw_Text;
   command->top_left  = top_left;

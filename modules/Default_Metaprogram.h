@@ -45,9 +45,9 @@ struct DM_File
 {
   String name;
 
-  Array(enum_definitions, DM_Code_Enum);
-  Array(struct_definitions, DM_Code_Struct);
-  Array(function_definitions, DM_Code_Function);
+  Array_Members(enum_definitions, DM_Code_Enum);
+  Array_Members(struct_definitions, DM_Code_Struct);
+  Array_Members(function_definitions, DM_Code_Function);
 
   u32 lines_of_code;
   u32 significant_lines_of_code;
@@ -58,8 +58,8 @@ struct Default_Metaprogram
 {
   Arena *arena;
   
-  Array(files, DM_File);
-  Array(excluded_files, String);
+  Array_Members(files, DM_File);
+  Array_Members(excluded_files, String);
 };
 
 fz_function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
@@ -82,10 +82,10 @@ default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram
 {
   if (dm->excluded_files == NULL)
   {
-    array_init(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
+    array_members_init_with_arena(dm->arena, dm->excluded_files, String, METAPROGRAM_MAX_EXCLUDED_FILES);
   }
 
-  String *out = array_add(dm->excluded_files);
+  String *out = array_members_add(dm->excluded_files);
   *out = string_copy(dm->arena, file_name);
 }
 
@@ -94,7 +94,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
 {
   Scratch scratch = scratch_begin(0,0);
 
-  array_init(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
+  array_members_init_with_arena(dm->arena, dm->files, DM_File, METAPROGRAM_MAX_FILES);
   String_List files = file_get_files_in_path(dm->arena, src_directory, true);
 
   for (String_Node *next = files.first; next != NULL; next = next->next)
@@ -154,7 +154,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       continue;
     }
 
-    DM_File *dm_file = array_add(dm->files);
+    DM_File *dm_file = array_members_add(dm->files);
     memory_zero_struct(dm_file);
 
     // Counts lines of code
@@ -227,9 +227,9 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     }
 
     dm_file->name = string_copy(dm->arena, file_being_lexed);
-    array_init(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
-    array_init(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
-    array_init(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
+    array_members_init_with_arena(dm->arena, dm_file->function_definitions, DM_Code_Function, METAPROGRAM_MAX_FUNTIONS);
+    array_members_init_with_arena(dm->arena, dm_file->struct_definitions, DM_Code_Struct, METAPROGRAM_MAX_STRUCTS);
+    array_members_init_with_arena(dm->arena, dm_file->enum_definitions, DM_Code_Enum, METAPROGRAM_MAX_ENUMS);
 
     Lexer lexer;
     lexer_init_with_single_file_path(&lexer, file_being_lexed, Trivia_Whitespace|Trivia_Line_Break, Emit_String_Literals|Emit_Line_Comments|Emit_Block_Comments);
