@@ -97,7 +97,7 @@ dynamic_array_reset_impl(Dynamic_Array_Base* array)
   array->count = 0;
 }
 
-fz_function bool
+fz_function b32
 dynamic_array_reserve_impl(Dynamic_Array_Base* array, u64 element_size, u64 capacity)
 {
   if (capacity <= array->capacity)
@@ -124,7 +124,7 @@ dynamic_array_reserve_impl(Dynamic_Array_Base* array, u64 element_size, u64 capa
   return true;
 }
 
-fz_function bool
+fz_function b32
 dynamic_array_maybe_grow_impl(Dynamic_Array_Base* array, u64 element_size, u64 additional_elements)
 {
   u64 required = array->count + additional_elements;

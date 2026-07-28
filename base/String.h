@@ -45,7 +45,7 @@ struct String_List
 };
 
 fz_function String string_zero(); /* Initilizese a string with memory zero'd out */
-fz_function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */
+fz_function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */ // @TODO(Fz): The 'new' keyword may imply that we allocate memory. This is also kind of a useless function sicne String is small enough to be initialized just inline like { ... } . Either rename or remove I think.
 fz_function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
 fz_function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
 fz_function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */

@@ -32,9 +32,12 @@ fz_function b32  file_watch_changed(File_Watcher *watch);
 fz_function b32 file_exists(String path);
 fz_function b32 is_file(String path);
 
-fz_function b32 directory_create(String path);
-fz_function b32 is_directory(String path);
-fz_function b32 directory_exists(String path);
+fz_function b32    directory_create(String path);
+fz_function b32    is_directory(String path);
+fz_function b32    directory_exists(String path);
+fz_function String directory_get_current_working_directory(); /* Returns the current working directory */
+fz_function String directory_pop(String path); /* Given a path, pops one directory. E.g. 'D:\work\make_project\build' becomes 'D:\work\make_project'*/
+fz_function String directory_push(Arena *arena, String path, String dir); /* Given a path, goes up one directory. E.g. 'D:\work\make_project' with 'build' becomes 'D:\work\make_project\build'*/
 
 fz_function String full_path_from_relative_path(Arena* arena, String relative_path);
 
@@ -356,6 +359,45 @@ file_get_name_no_extension(String path)
       }
     }
   }
+  return result;
+}
+
+fz_function String
+directory_get_current_working_directory()
+{
+  static u8 buffer[MAX_PATH];
+
+  DWORD len = GetCurrentDirectoryA(MAX_PATH, (LPSTR)buffer);
+  if (len == 0 || len >= MAX_PATH)
+  {
+    return S("");
+  }
+
+  String result = (String){ .count = (u64)len, .cstring = buffer };
+  return result;
+}
+
+fz_function String 
+directory_pop(String path)
+{
+  u64 index;
+  string_find_last(path, S("\\"), &index);
+  if (index == U64_MAX)
+  {
+    return S("");
+  }
+  String result;
+  result.cstring = path.cstring;
+  result.count   = index;
+
+  return result;
+}
+
+fz_function String 
+directory_push(Arena *arena, String path, String dir)
+{
+  String result = string_join(arena, path, S("\\"));
+  result = string_join(arena, result, dir);
   return result;
 }
 

@@ -103,7 +103,9 @@ log_fatal_popup(String msg, const char* src_file, int src_line)
   Scratch scratch = scratch_begin(0, 0);
   String  file    = string_new(cstring_length((u8*)src_file), (u8*)src_file);
   String  body    = Sf(scratch.arena, "Fatal Error\n" S_FMT "\n\nat " S_FMT ":%d", S_ARG(msg), S_ARG(file), src_line);
-  message_box_with_debugger(S("Fatal Error"), body, file, (u32)src_line);
+  message_box(S("Fatal Error"), body, file, (u32)src_line);
+  // @TODO(fz): previously it has message_box_with_debugger.
+  // We need a debugger check here in order ot use it, otherwise its just annoying to use this if there is no debugger and we cant close it with enter.
   scratch_end(&scratch);
 }
 

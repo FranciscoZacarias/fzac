@@ -190,7 +190,7 @@ fz_function String    transform_to_string(Arena *arena, Transform t); /* Creates
 
 // @Section: Implementation
 
-#include "generated/Math.cgen.c"
+#include "Math/generated/Math.cgen.c"
 
 fz_function inline f32
 f32_remap(f32 value, f32 min, f32 max)
