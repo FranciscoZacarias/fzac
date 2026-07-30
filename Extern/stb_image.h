@@ -174,7 +174,7 @@ RECENT REVISION HISTORY:
 //       4           red, green, blue, alpha
 //
 // If image loading fails for any reason, the return value will be NULL,
-// and *x, *y, *channels_in_file will be unchanged. The fz_function
+// and *x, *y, *channels_in_file will be unchanged. The fz_internal
 // stbi_failure_reason() can be queried for an extremely brief, end-user
 // unfriendly explanation of why the load failed. Define STBI_NO_FAILURE_STRINGS
 // to avoid compiling these strings at all, and STBI_FAILURE_USERMSG to get slightly
@@ -517,8 +517,8 @@ STBIDEF void stbi_convert_iphone_png_to_rgb(int flag_true_if_should_convert);
 // flip the image vertically, so the first pixel in the output array is the bottom left
 STBIDEF void stbi_set_flip_vertically_on_load(int flag_true_if_should_flip);
 
-// as above, but only applies to images loaded on the thread that calls the fz_function
-// this fz_function is only available if your compiler supports thread-local variables;
+// as above, but only applies to images loaded on the thread that calls the fz_internal
+// this fz_internal is only available if your compiler supports thread-local variables;
 // calling it will fail to link if your compiler doesn't
 STBIDEF void stbi_set_unpremultiply_on_load_thread(int flag_true_if_should_unpremultiply);
 STBIDEF void stbi_convert_iphone_png_to_rgb_thread(int flag_true_if_should_convert);
@@ -6773,7 +6773,7 @@ static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)
    }
 }
 
-// this fz_function is designed to support animated gifs, although stb_image doesn't support it
+// this fz_internal is designed to support animated gifs, although stb_image doesn't support it
 // two back is the image from two frames ago, used for a very specific disposal format
 static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp, stbi_uc *two_back)
 {
@@ -7861,7 +7861,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       1.33  (2011-07-14)
               make stbi_is_hdr work in STBI_NO_HDR (as specified), minor compiler-friendly improvements
       1.32  (2011-07-13)
-              support for "info" fz_function for all supported filetypes (SpartanJ)
+              support for "info" fz_internal for all supported filetypes (SpartanJ)
       1.31  (2011-06-20)
               a few more leak fixes, bug in PNG handling (SpartanJ)
       1.30  (2011-06-11)

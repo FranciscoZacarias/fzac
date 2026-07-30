@@ -1,4 +1,4 @@
-fz_function void
+fz_internal void
 console_attach()
 {
   b32 attached = AttachConsole(ATTACH_PARENT_PROCESS);
@@ -29,7 +29,7 @@ console_attach()
   }
 }
 
-fz_function void
+fz_internal void
 clipboard_write(String str)
 {
   if(!OpenClipboard(0))
@@ -54,7 +54,7 @@ clipboard_write(String str)
   CloseClipboard();
 }
 
-fz_function String
+fz_internal String
 clipboard_read(Arena *arena)
 {
   String result = {0};
@@ -91,7 +91,7 @@ clipboard_read(Arena *arena)
   return result;
 }
 
-fz_function V2f32 
+fz_internal V2f32 
 cursor_get_position(Window *window)
 {
   V2f32 result = {0};
@@ -107,7 +107,7 @@ cursor_get_position(Window *window)
   return result;
 }
 
-fz_function void
+fz_internal void
 cursor_lock(Window *window)
 {
   if (window->input.is_cursor_locked)
@@ -137,7 +137,7 @@ cursor_lock(Window *window)
   window->input.is_cursor_locked = true;
 }
 
-fz_function void
+fz_internal void
 cursor_unlock()
 {
   Window *window = &GlobalWindow;
@@ -152,13 +152,13 @@ cursor_unlock()
   window->input.is_cursor_locked = false;
 }
 
-fz_function b32
+fz_internal b32
 cursor_is_locked()
 {
   return GlobalWindow.input.is_cursor_locked;
 }
 
-fz_function void
+fz_internal void
 cursor_hide(b32 hide)
 {
   // Win32 quirk. It has an internal counter required to show the cursor.
@@ -167,7 +167,7 @@ cursor_hide(b32 hide)
   while (ShowCursor(hide ? false : true) < 0  && !hide);
 }
 
-fz_function void
+fz_internal void
 cursor_set_position(Window *window, s32 x, s32 y)
 {
   POINT point;
@@ -179,7 +179,7 @@ cursor_set_position(Window *window, s32 x, s32 y)
   SetCursorPos(point.x, point.y);
 }
 
-fz_function void
+fz_internal void
 cursor_set_icon(Cursor_Type type)
 {
   HCURSOR hCursor = NULL;

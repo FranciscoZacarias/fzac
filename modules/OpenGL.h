@@ -2,7 +2,7 @@
 #define OPENGL_H
 
 // Opengl Debug:
-// Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl fz_function call
+// Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl fz_internal call
 // Define DEBUG to enable debug output and opengl debug message callback
 
 #include "Platform.h"
@@ -29,25 +29,25 @@ struct Opengl_Compile_Shader_Result
 };
 
 // @Section: Opengl entry point
-fz_function b32   opengl_init(b32 set_vsync); /* Initializes opengl context */
-fz_function void  opengl_end();  /* Deletes opengl context */
-fz_function Opengl_Compile_Shader_Result opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type);
-fz_function Opengl_Compile_Shader_Result opengl_compile_shader_from_file(Arena *arena, String label, String file_path, GLenum shader_type);
+fz_internal b32   opengl_init(b32 set_vsync); /* Initializes opengl context */
+fz_internal void  opengl_end();  /* Deletes opengl context */
+fz_internal Opengl_Compile_Shader_Result opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type);
+fz_internal Opengl_Compile_Shader_Result opengl_compile_shader_from_file(Arena *arena, String label, String file_path, GLenum shader_type);
 #define opengl_check_errors() _opengl_check_error(S(__FILE__), __LINE__)
 
 // @Section: Settings
-fz_function void opengl_set_vsync(b32 state); /* Enables vsync */
+fz_internal void opengl_set_vsync(b32 state); /* Enables vsync */
 
 // @Section: Opengl helpers
-fz_function void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
-fz_function void           _opengl_check_error(String file, u32 line); /* Checks for opengl errors and terminates the program. */
-fz_function void*          _load_gl_function(const char *name); /* Helper to load a single opengl fz_function */
+fz_internal void  APIENTRY _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user); /* Opengl debug callback */
+fz_internal void           _opengl_check_error(String file, u32 line); /* Checks for opengl errors and terminates the program. */
+fz_internal void*          _load_gl_function(const char *name); /* Helper to load a single opengl fz_internal */
 
 // @Section: Implementation
 #include "OpenGL/generated/Opengl.cgen.h"
 #include "OpenGL/generated/Opengl.cgen.c"
 
-fz_function Opengl_Compile_Shader_Result 
+fz_internal Opengl_Compile_Shader_Result 
 opengl_compile_shader_from_source(Arena *arena, String label, String source, GLenum shader_type)
 {
   Opengl_Compile_Shader_Result result = {0}; 
@@ -88,7 +88,7 @@ opengl_compile_shader_from_source(Arena *arena, String label, String source, GLe
   return result;
 }
 
-fz_function Opengl_Compile_Shader_Result 
+fz_internal Opengl_Compile_Shader_Result 
 opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GLenum shader_type)
 {
   Opengl_Compile_Shader_Result result = {0};
@@ -108,7 +108,7 @@ opengl_compile_shader_from_file(Arena* arena, String label, String file_path, GL
   return result;
 }
 
-fz_function void
+fz_internal void
 _opengl_check_error(String file, u32 line)
 {
   GLenum err = glGetError();
@@ -134,7 +134,7 @@ _opengl_check_error(String file, u32 line)
   }
 }
 
-fz_function void APIENTRY
+fz_internal void APIENTRY
 _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user)
 {
   if (id == 131218) return; // @TODO(fz): Deal with this

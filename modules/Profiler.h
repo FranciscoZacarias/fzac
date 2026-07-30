@@ -131,29 +131,29 @@ fz_global Profiler_Context ProfileContext;
 
 // @Section: Internal
 
-fz_function void _profiler_init();
-fz_function void _profiler_end();
+fz_internal void _profiler_init();
+fz_internal void _profiler_end();
 
-fz_function void _profiler_recording_start();
-fz_function void _profiler_recording_stop();
+fz_internal void _profiler_recording_start();
+fz_internal void _profiler_recording_stop();
 
-fz_function void _profiler_frame();
+fz_internal void _profiler_frame();
 
-fz_function void _profiler_zone_begin(String name);
-fz_function void _profiler_zone_end();
+fz_internal void _profiler_zone_begin(String name);
+fz_internal void _profiler_zone_end();
 
-fz_function void _profiler_thread(String name);
+fz_internal void _profiler_thread(String name);
 
-fz_function void _profiler_plot_s64(String name, s64 value);
-fz_function void _profiler_plot_u64(String name, u64 value);
-fz_function void _profiler_plot_f64(String name, f64 value);
+fz_internal void _profiler_plot_s64(String name, s64 value);
+fz_internal void _profiler_plot_u64(String name, u64 value);
+fz_internal void _profiler_plot_f64(String name, f64 value);
 
 // Helpers
-fz_function Profiler_Event* _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_Kind kind);
-fz_function String         _profiler_format_us(Arena *arena, u64 us);
+fz_internal Profiler_Event* _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_Kind kind);
+fz_internal String         _profiler_format_us(Arena *arena, u64 us);
 
 // @Section: Implementation
-fz_function void
+fz_internal void
 _profiler_init()
 {
   memory_zero_struct(&ProfileContext);
@@ -165,12 +165,12 @@ _profiler_init()
   array_members_init_with_arena(ProfileContext.arena, ProfileContext.recordings, Profiler_Recording, PROFILER_RECORDINGS_CAPACITY);
 }
 
-fz_function void
+fz_internal void
 _profiler_end()
 {
 }
 
-fz_function void 
+fz_internal void 
 _profiler_recording_start()
 {
   Profiler_Recording *rec = array_members_add(ProfileContext.recordings);
@@ -189,7 +189,7 @@ _profiler_recording_start()
   file_create(ProfileContext.file_output);
 }
 
-fz_function void 
+fz_internal void 
 _profiler_recording_stop()
 {
   Scratch scratch = scratch_begin(0,0);
@@ -277,7 +277,7 @@ _profiler_recording_stop()
   scratch_end(&scratch);
 }
 
-fz_function void 
+fz_internal void 
 _profiler_zone_begin(String name)
 {
   if (!ProfileContext.active_recording)
@@ -288,7 +288,7 @@ _profiler_zone_begin(String name)
   event->zone_begin.name = string_copy(ProfileContext.active_recording->arena, name);
 }
 
-fz_function void 
+fz_internal void 
 _profiler_zone_end()
 {
   if (!ProfileContext.active_recording)
@@ -298,7 +298,7 @@ _profiler_zone_end()
   _profiler_push_event_to_recording(ProfileContext.active_recording, Profiler_Event_Zone_End);
 }
 
-fz_function void
+fz_internal void
 _profiler_frame()
 {
   ProfileContext.total_frames += 1;
@@ -312,7 +312,7 @@ _profiler_frame()
   ProfileContext.previous_frame_event->timestamp_us = time_microseconds();
 }
 
-fz_function void 
+fz_internal void 
 _profiler_plot_s64(String name, s64 value)
 {
   if (!ProfileContext.active_recording)
@@ -325,7 +325,7 @@ _profiler_plot_s64(String name, s64 value)
   event->plot.value.s64 = value;
 }
 
-fz_function void 
+fz_internal void 
 _profiler_plot_u64(String name, u64 value)
 {
   if (!ProfileContext.active_recording)
@@ -338,7 +338,7 @@ _profiler_plot_u64(String name, u64 value)
   event->plot.value.u64 = value;
 }
 
-fz_function void 
+fz_internal void 
 _profiler_plot_f64(String name, f64 value)
 {
   if (!ProfileContext.active_recording)
@@ -351,7 +351,7 @@ _profiler_plot_f64(String name, f64 value)
   event->plot.value.f64 = value;
 }
 
-fz_function Profiler_Event*
+fz_internal Profiler_Event*
 _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_Kind kind)
 {
   if (!ProfileContext.active_recording)
@@ -366,7 +366,7 @@ _profiler_push_event_to_recording(Profiler_Recording *recording, Profiler_Event_
   return result;
 }
 
-fz_function String
+fz_internal String
 _profiler_format_us(Arena *arena, u64 us)
 {
   String result;

@@ -13,32 +13,32 @@ struct Thread_Context
 C_LINKAGE thread_static Thread_Context* ThreadContextThreadLocal = 0;
 fz_global Thread_Context MainThreadContext;
 
-fz_function void            thread_context_init_and_attach(Thread_Context* thread_context); /* Initializes a thread context with DEFAULT_ARENAS_PER_THREAD_CONTEXT arenas */
-fz_function void            thread_context_free(); /* Frees the thread context */
-fz_function Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count); /* Returns a scratch arena */
-fz_function Thread_Context* thread_context_get_equipped(); /* Returns currently attached thread_context */
+fz_internal void            thread_context_init_and_attach(Thread_Context* thread_context); /* Initializes a thread context with DEFAULT_ARENAS_PER_THREAD_CONTEXT arenas */
+fz_internal void            thread_context_free(); /* Frees the thread context */
+fz_internal Arena*         _thread_context_get_scratch(Arena** conflicts, u64 count); /* Returns a scratch arena */
+fz_internal Thread_Context* thread_context_get_equipped(); /* Returns currently attached thread_context */
 
-fz_function Arena* get_temporary_storage();
-fz_function void   clear_temporary_storage();
+fz_internal Arena* get_temporary_storage();
+fz_internal void   clear_temporary_storage();
 
 #define scratch_begin(conflicts, count) arena_temp_begin(_thread_context_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) arena_temp_end(scratch)
 
-fz_function Arena* 
+fz_internal Arena* 
 get_temporary_storage()
 {
   Thread_Context *ctx = thread_context_get_equipped();
   return ctx->temporary_storage;
 }
 
-fz_function void   
+fz_internal void   
 clear_temporary_storage()
 {
   Thread_Context *ctx = thread_context_get_equipped();
   arena_clear(ctx->temporary_storage);
 }
 
-fz_function void
+fz_internal void
 thread_context_init_and_attach(Thread_Context* thread_context)
 {
   memory_zero_struct(thread_context);
@@ -51,7 +51,7 @@ thread_context_init_and_attach(Thread_Context* thread_context)
   ThreadContextThreadLocal = thread_context;
 }
 
-fz_function void
+fz_internal void
 thread_context_free()
 {
   for(u64 i = 0; i < c_array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
@@ -60,13 +60,13 @@ thread_context_free()
   }
 }
 
-fz_function Thread_Context*
+fz_internal Thread_Context*
 thread_context_get_equipped()
 {
   return ThreadContextThreadLocal;
 }
 
-fz_function Arena*
+fz_internal Arena*
 _thread_context_get_scratch(Arena **conflicts, u64 count)
 {
   Thread_Context *thread_context = thread_context_get_equipped();

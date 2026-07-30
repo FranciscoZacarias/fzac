@@ -3,7 +3,7 @@
 
 static HMODULE vulkan_library = NULL;
 
-fz_function b32
+fz_internal b32
 vulkan_init()
 {
   b32 result = false;

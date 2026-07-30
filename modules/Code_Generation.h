@@ -74,7 +74,7 @@
 
 // Functions that you can call on a string variable, when you refer to it in a generator. 
 // For example, you have a column called name and you would refer to it as $(name) which would resolve to, let's say, francisco.
-// For the fz_function capitalize(), you would call it like $(name.capitalize()), which would then resolve to Francisco
+// For the fz_internal capitalize(), you would call it like $(name.capitalize()), which would then resolve to Francisco
 typedef enum
 {
   CGen_Builtin_Function_None,
@@ -166,18 +166,18 @@ struct CGen_Context
   Array_Members(files, CGen_File);
 };
 
-fz_function CGen_Context cgen_run(String source_directory); /* Runs the code generator on any .cgen file */
-fz_function void cgen_execute_commands(CGen_Context *ctx); /* Runs all commands in the Code Generator Context */
-fz_function void cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a table */
-fz_function void cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a generator */
+fz_internal CGen_Context cgen_run(String source_directory); /* Runs the code generator on any .cgen file */
+fz_internal void cgen_execute_commands(CGen_Context *ctx); /* Runs all commands in the Code Generator Context */
+fz_internal void cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a table */
+fz_internal void cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file); /* Parses a generator */
 
-fz_function String      _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index); /* Replaces a CGen_String with the appropriate row values of the given table */
-fz_function CGen_String _cgen_string_from_string(Arena *arena, String str); /* Creates a CGen_String from a String */
-fz_function b32         _cgen_token_is_acceptable_row_value(Token *token); /* Checks if a token is a valid row value */
+fz_internal String      _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index); /* Replaces a CGen_String with the appropriate row values of the given table */
+fz_internal CGen_String _cgen_string_from_string(Arena *arena, String str); /* Creates a CGen_String from a String */
+fz_internal b32         _cgen_token_is_acceptable_row_value(Token *token); /* Checks if a token is a valid row value */
 
 // @Section: Implementation
 
-fz_function CGen_Context
+fz_internal CGen_Context
 cgen_run(String source_directory)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -257,7 +257,7 @@ cgen_run(String source_directory)
   return result;
 }
 
-fz_function void
+fz_internal void
 cgen_execute_commands(CGen_Context *ctx)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -367,7 +367,7 @@ cgen_execute_commands(CGen_Context *ctx)
   scratch_end(&scratch);
 }
 
-fz_function void
+fz_internal void
 cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -492,7 +492,7 @@ cgen_parse_table(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
   scratch_end(&scratch);
 }
 
-fz_function void
+fz_internal void
 cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -647,7 +647,7 @@ cgen_parse_generator(CGen_Context *ctx, Lexer *lexer, CGen_File *file)
   scratch_end(&scratch);
 }
 
-fz_function CGen_String
+fz_internal CGen_String
 _cgen_string_from_string(Arena *arena, String str)
 {
   Scratch scratch = scratch_begin(0, 0);
@@ -763,7 +763,7 @@ _cgen_string_from_string(Arena *arena, String str)
   return result;
 }
 
-fz_function String
+fz_internal String
 _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *table, u64 row_index)
 {
   Scratch scratch = scratch_begin(&arena, 1);
@@ -908,7 +908,7 @@ _cgen_string_replace_arguments(Arena *arena, CGen_String cgen_str, CGen_Table *t
   return result;
 }
 
-fz_function b32
+fz_internal b32
 _cgen_token_is_acceptable_row_value(Token *token)
 {
   b32 result = false;

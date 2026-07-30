@@ -82,7 +82,7 @@
 #define WGL_SAMPLES_ARB              0x2042
 #define WGL_SAMPLE_BUFFERS_ARB       0x2041
 
-// @Section: Define wgl fz_function pointers
+// @Section: Define wgl fz_internal pointers
 #define WGL_FUNC(ret,name,params) typedef ret (* PFN##name##PROC) params;
   #include "OpenGL_Win32_WGL.inl"
 #undef WGL_FUNC
@@ -93,11 +93,11 @@
 #undef WGL_FUNC
 
 // @Section: Functions
-fz_function b32 _win32_load_wgl_functions(); /* Opens webgl functions */
+fz_internal b32 _win32_load_wgl_functions(); /* Opens webgl functions */
 
 // @Section: Implementation
 
-fz_function void*
+fz_internal void*
 _load_gl_function(const char *name)
 {
   void* proc = (void*)wglGetProcAddress(name);
@@ -125,7 +125,7 @@ _load_gl_function(const char *name)
   return proc;
 }
 
-fz_function b32
+fz_internal b32
 opengl_init(b32 set_vsync)
 {
   if (!WindowClassInited)
@@ -269,20 +269,20 @@ opengl_init(b32 set_vsync)
   return true;
 }
 
-fz_function void
+fz_internal void
 opengl_end(Window* window)
 {
   wglMakeCurrent(NULL, NULL);
   wglDeleteContext(GlobalWindow.rc);
 }
 
-fz_function void
+fz_internal void
 opengl_set_vsync(b32 state)
 {
   wglSwapIntervalEXT(state);
 }
 
-fz_function b32
+fz_internal b32
 _win32_load_wgl_functions()
 {
   // to get WGL functions we need valid GL context, so create dummy window for dummy GL context

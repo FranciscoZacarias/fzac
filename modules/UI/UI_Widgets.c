@@ -1,26 +1,26 @@
 #define ui_window(text, x, y, width, height) defer_loop(ui_window_begin((text), (x), (y), (width), (height)), ui_window_end())
 
-fz_function UI_Signal ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height);
-fz_function void      ui_window_end();
-fz_function UI_Signal ui_button(String text);
-fz_function UI_Signal ui_text(String text);
-fz_function UI_Signal ui_textf(String fmt, ...);
-fz_function UI_Signal ui_text_colored(String text, V4f32 color);
-fz_function UI_Signal ui_textf_colored(V4f32 color, String fmt, ...);
-fz_function UI_Signal ui_checkbox(String text, b8 *checked);
-fz_function UI_Signal ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders);
-fz_function UI_Signal ui_image(String unique, s32 texture_index, V2f32 uv_min, V2f32 uv_max);
-fz_function UI_Signal ui_slider_f32(String unique, String text, f32 *val, f32 min, f32 max, f32 width);
-fz_function UI_Signal ui_slider_s32(String unique, String text, s32 *val, s32 min, s32 max, f32 width);
-fz_function UI_Signal ui_slider_u32(String unique, String text, u32 *val, u32 min, u32 max, f32 width);
+fz_internal UI_Signal ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height);
+fz_internal void      ui_window_end();
+fz_internal UI_Signal ui_button(String text);
+fz_internal UI_Signal ui_text(String text);
+fz_internal UI_Signal ui_textf(String fmt, ...);
+fz_internal UI_Signal ui_text_colored(String text, V4f32 color);
+fz_internal UI_Signal ui_textf_colored(V4f32 color, String fmt, ...);
+fz_internal UI_Signal ui_checkbox(String text, b8 *checked);
+fz_internal UI_Signal ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders);
+fz_internal UI_Signal ui_image(String unique, s32 texture_index, V2f32 uv_min, V2f32 uv_max);
+fz_internal UI_Signal ui_slider_f32(String unique, String text, f32 *val, f32 min, f32 max, f32 width);
+fz_internal UI_Signal ui_slider_s32(String unique, String text, s32 *val, s32 min, s32 max, f32 width);
+fz_internal UI_Signal ui_slider_u32(String unique, String text, u32 *val, u32 min, u32 max, f32 width);
 
 // Debug stuff
-fz_function void ui_toggle_color_theme_window();
-fz_function void ui_draw_color_theme_window();
-fz_function void ui_toggle_debug_window();
-fz_function void ui_draw_debug_window();
+fz_internal void ui_toggle_color_theme_window();
+fz_internal void ui_draw_color_theme_window();
+fz_internal void ui_toggle_debug_window();
+fz_internal void ui_draw_debug_window();
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 {
   UI_Signal signal = {0};
@@ -602,7 +602,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
   return signal;
 }
 
-fz_function void
+fz_internal void
 ui_window_end()
 {
   UI_Node *body_node = ui_stack_parent_pop();
@@ -632,7 +632,7 @@ ui_window_end()
   _ui_update_tree_nodes(window_node);
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_button(String text)
 {
   UI_Text_Metrics text_metrics = ui_measure_text(text);
@@ -655,13 +655,13 @@ ui_button(String text)
   return signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_text(String text)
 {
   return ui_textf(text);
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_textf(String fmt, ...)
 {
   va_list args;
@@ -691,13 +691,13 @@ ui_textf(String fmt, ...)
   return signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_text_colored(String text, V4f32 color)
 {
   return ui_textf_colored(color, text);
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_textf_colored(V4f32 color, String fmt, ...)
 {
   va_list args;
@@ -728,7 +728,7 @@ ui_textf_colored(V4f32 color, String fmt, ...)
   return signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_checkbox(String text, b8 *checked)
 {
   UI_Text_Metrics text_metrics = ui_measure_text(text);
@@ -850,7 +850,7 @@ ui_checkbox(String text, b8 *checked)
   return result_signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders)
 {
   UI_Signal color_widget_signal = (UI_Signal){0};
@@ -1011,7 +1011,7 @@ ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders)
   return color_widget_signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_image(String unique, s32 texture_handle, V2f32 uv_min, V2f32 uv_max)
 {
   UI_Texture texture = {texture_handle};
@@ -1040,7 +1040,7 @@ ui_image(String unique, s32 texture_handle, V2f32 uv_min, V2f32 uv_max)
   return image_signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_slider_f32(String unique, String text, f32 *val, f32 min, f32 max, f32 width)
 {
   *val = clamp(*val, min, max);
@@ -1115,7 +1115,7 @@ ui_slider_f32(String unique, String text, f32 *val, f32 min, f32 max, f32 width)
   return slider_signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_slider_s32(String unique, String text, s32 *val, s32 min, s32 max, f32 width)
 {
   *val = clamp(*val, min, max);
@@ -1191,7 +1191,7 @@ ui_slider_s32(String unique, String text, s32 *val, s32 min, s32 max, f32 width)
   return slider_signal;
 }
 
-fz_function UI_Signal
+fz_internal UI_Signal
 ui_slider_u32(String unique, String text, u32 *val, u32 min, u32 max, f32 width)
 {
   *val = clamp(*val, min, max);
@@ -1267,13 +1267,13 @@ ui_slider_u32(String unique, String text, u32 *val, u32 min, u32 max, f32 width)
   return slider_signal;
 }
 
-fz_function void
+fz_internal void
 ui_toggle_color_theme_window()
 {
   UIContext.debug.draw_color_theme_window = !UIContext.debug.draw_color_theme_window;
 }
 
-fz_function void
+fz_internal void
 ui_draw_color_theme_window()
 {
   ui_window(S("Color Theme"), UIContext.window_width - 800, 5, 350, 500)
@@ -1304,13 +1304,13 @@ ui_draw_color_theme_window()
   }
 }
 
-fz_function void
+fz_internal void
 ui_toggle_debug_window()
 {
   UIContext.debug.draw_debug_window = !UIContext.debug.draw_debug_window;
 }
 
-fz_function void
+fz_internal void
 ui_draw_debug_window()
 {
   UI_Node *active = NULL;

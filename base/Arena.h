@@ -20,21 +20,21 @@ struct Arena
 
 /* NOTE: ARENA_HEADER_SIZE must be computed at runtime because memory_get_page_size()
    is a runtime value, not a compile-time constant. Use arena_header_size() instead. */
-fz_function u64 arena_header_size();
+fz_internal u64 arena_header_size();
 
-fz_function Arena* arena_alloc();                           /* Allocates an arena with the default reserve and commit size */
-fz_function Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
+fz_internal Arena* arena_alloc();                           /* Allocates an arena with the default reserve and commit size */
+fz_internal Arena* arena_alloc_sized(u64 reserve, u64 commit); /* Allocates an arena with specific reserve and commit size */
 
 #define        push_array(arena, type, count)         (type*) _push_array((arena), sizeof(type)*(count))
 #define        push_struct(arena, type)               (type*) _push_array((arena), sizeof(type))
 #define        push_array_no_zero(arena, type, count) (type*) _push_array_no_zero((arena), sizeof(type)*(count))
-fz_function void  arena_pop(Arena* arena, u64 size);        /* Moves the arena pointer back by <size> bytes */
-fz_function void  arena_pop_to(Arena* arena, u64 pos);      /* Moves the arena pointer to the specific <pos> position */
-fz_function void  arena_clear(Arena* arena);                /* Resets the arena position */
-fz_function void  arena_free(Arena* arena);                 /* Frees the arena's memory */
+fz_internal void  arena_pop(Arena* arena, u64 size);        /* Moves the arena pointer back by <size> bytes */
+fz_internal void  arena_pop_to(Arena* arena, u64 pos);      /* Moves the arena pointer to the specific <pos> position */
+fz_internal void  arena_clear(Arena* arena);                /* Resets the arena position */
+fz_internal void  arena_free(Arena* arena);                 /* Frees the arena's memory */
 
-fz_function void* _push_array(Arena* arena, u64 size);          /* Pushes zeroed data into the arena */
-fz_function void* _push_array_no_zero(Arena* arena, u64 size);  /* Pushes data into the arena without zeroing */
+fz_internal void* _push_array(Arena* arena, u64 size);          /* Pushes zeroed data into the arena */
+fz_internal void* _push_array_no_zero(Arena* arena, u64 size);  /* Pushes data into the arena without zeroing */
 
 typedef struct Scratch Scratch;
 struct Scratch
@@ -43,8 +43,8 @@ struct Scratch
   u64 temp_position;
 };
 
-fz_function Scratch arena_temp_begin(Arena* arena); /* Saves the current position for later rollback */
-fz_function void    arena_temp_end(Scratch* temp);  /* Rolls back to the position saved in arena_temp_begin */
+fz_internal Scratch arena_temp_begin(Arena* arena); /* Saves the current position for later rollback */
+fz_internal void    arena_temp_end(Scratch* temp);  /* Rolls back to the position saved in arena_temp_begin */
 
 // Helper to push data into an arena backed array
 
@@ -79,7 +79,7 @@ fz_function void    arena_temp_end(Scratch* temp);  /* Rolls back to the positio
 
 // @Section: Implementation
 
-fz_function void*
+fz_internal void*
 _array_add_impl(void* array, u32* count, u32 capacity, u64 element_size)
 {
   if (*count >= capacity)
@@ -93,19 +93,19 @@ _array_add_impl(void* array, u32* count, u32 capacity, u64 element_size)
   return result;
 }
 
-fz_function u64
+fz_internal u64
 arena_header_size()
 {
   return align_power_of_two(sizeof(Arena), memory_get_page_size());
 }
 
-fz_function Arena*
+fz_internal Arena*
 arena_alloc()
 {
   return arena_alloc_sized(ARENA_RESERVE_SIZE, ARENA_COMMIT_SIZE);
 }
 
-fz_function Arena*
+fz_internal Arena*
 arena_alloc_sized(u64 reserve, u64 commit)
 {
   u64 page_size = memory_get_page_size();
@@ -142,7 +142,7 @@ arena_alloc_sized(u64 reserve, u64 commit)
   return arena;
 }
 
-fz_function void*
+fz_internal void*
 _push_array(Arena* arena, u64 size)
 {
   void* result = _push_array_no_zero(arena, size);
@@ -153,7 +153,7 @@ _push_array(Arena* arena, u64 size)
   return result;
 }
 
-fz_function void*
+fz_internal void*
 _push_array_no_zero(Arena* arena, u64 size)
 {
   if (!arena || size == 0)
@@ -194,7 +194,7 @@ _push_array_no_zero(Arena* arena, u64 size)
   return result;
 }
 
-fz_function void
+fz_internal void
 arena_pop(Arena* arena, u64 size)
 {
   if (!arena) { return; }
@@ -208,7 +208,7 @@ arena_pop(Arena* arena, u64 size)
   arena->position -= size;
 }
 
-fz_function void
+fz_internal void
 arena_pop_to(Arena* arena, u64 pos)
 {
   if (!arena) { return; }
@@ -227,20 +227,20 @@ arena_pop_to(Arena* arena, u64 pos)
   arena->position = pos;
 }
 
-fz_function void
+fz_internal void
 arena_clear(Arena* arena)
 {
   arena_pop_to(arena, arena_header_size());
 }
 
-fz_function void
+fz_internal void
 arena_free(Arena* arena)
 {
   if (!arena) { return; }
   memory_free((u8*)arena, arena->reserved);
 }
 
-fz_function Scratch
+fz_internal Scratch
 arena_temp_begin(Arena* arena)
 {
   Scratch temp;
@@ -249,7 +249,7 @@ arena_temp_begin(Arena* arena)
   return temp;
 }
 
-fz_function void
+fz_internal void
 arena_temp_end(Scratch* temp)
 {
   if (!temp || !temp->arena) { return; }

@@ -12,8 +12,8 @@
 /* === Static is Ambiguous === */
 #define fz_local_persist   static
 #define fz_global          static
-#define fz_function        static
-#define fz_function_no_reflection static
+#define fz_internal        static
+#define fz_internal_no_reflection static
 
 /* === Readonly === */
 #if OS_WINDOWS

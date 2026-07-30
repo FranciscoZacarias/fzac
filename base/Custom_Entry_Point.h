@@ -13,11 +13,11 @@
   
   // Metaprogram
   #define METAPROGRAM_SRC_DIRECTORY S("../src")
-  fz_function void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data);  /* Metaprogram entry point, defined by user. */
+  fz_internal void metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data);  /* Metaprogram entry point, defined by user. */
   raddbg_entry_point(metaprogram_entry_point);
-  fz_function void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  fz_internal void metaprogram_main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
   
-  fz_function void
+  fz_internal void
   metaprogram_main_thread_base_entry_point(String command_line)
   {
     fz_local_persist Thread_Context thread_context;
@@ -50,11 +50,11 @@
     arena_free(DefaultMetaprogram.arena);
   }
 #else
-  fz_function void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
+  fz_internal void entry_point(Command_Line *command_line); /* Application entry point, defined by user. */
   raddbg_entry_point(entry_point);
-  fz_function void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
+  fz_internal void main_thread_base_entry_point(String command_line); /* Internal entry point for the main thread in the 'fzac' codebase */
   
-  fz_function void
+  fz_internal void
   main_thread_base_entry_point(String command_line)
   {
     fz_local_persist Thread_Context thread_context;

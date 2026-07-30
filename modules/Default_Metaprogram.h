@@ -62,8 +62,8 @@ struct Default_Metaprogram
   Array_Members(excluded_files, String);
 };
 
-fz_function void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
-fz_function void default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name);
+fz_internal void default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data);
+fz_internal void default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name);
 
 #define dm_log_fatal_if(cond, msg) \
   statement( \
@@ -77,7 +77,7 @@ fz_function void default_metaprogram_exclude_file_from_being_forward_declared(De
       __VA_ARGS__, S_ARG(file_being_lexed), lexer.current_line_number); \
   )
 
-fz_function void 
+fz_internal void 
 default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram *dm, String file_name)
 {
   if (dm->excluded_files == NULL)
@@ -89,7 +89,7 @@ default_metaprogram_exclude_file_from_being_forward_declared(Default_Metaprogram
   *out = string_copy(dm->arena, file_name);
 }
 
-fz_function void
+fz_internal void
 default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String src_directory, String *global_headers_extra_data)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -255,7 +255,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
 
       if (token->kind == Token_Identifier)
       {
-        if (string_equals(token->value, S("fz_function"), true) && is_first_token_on_line)
+        if (string_equals(token->value, S("fz_internal"), true) && is_first_token_on_line)
         {
           lexer_eat_token(&lexer);
           DM_Code_Function parsed_function = {0};
@@ -280,7 +280,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-          assert(last_identifier.count > 0 && "Expected fz_function name before '('");
+          assert(last_identifier.count > 0 && "Expected fz_internal name before '('");
           parsed_function.name = string_copy(dm->arena, last_identifier);
           parsed_function.return_type = string_builder_to_string(dm->arena, &return_type_builder);
           string_builder_free(&return_type_builder);
@@ -306,7 +306,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
             lexer_eat_token(&lexer);
             token = lexer_peek_token(&lexer);
           }
-          assert(token->kind != Token_End_Of_File && "Expected ';' or '{' after fz_function signature");
+          assert(token->kind != Token_End_Of_File && "Expected ';' or '{' after fz_internal signature");
 
           if (token->kind == Token_Open_Brace)
           {
@@ -601,7 +601,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       {
         continue;
       }
-      string_builder_pushf(builder, "fz_function %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
+      string_builder_pushf(builder, "fz_internal %-16s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
         string_builder_pushf(builder, "%s", code_function->arguments.cstring);
@@ -661,7 +661,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
       {
         continue;
       }
-      string_builder_pushf(builder, "fz_function %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
+      string_builder_pushf(builder, "fz_internal %-20s %s(", code_function->return_type.cstring, code_function->name.cstring);
       if (code_function->arguments.count > 0)
       {
         string_builder_pushf(builder, "%s", code_function->arguments.cstring);

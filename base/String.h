@@ -2,15 +2,15 @@
 #define STRING_H
 
 // @Section: 8 bit characters
-fz_function b32 char_is_alpha(u8 c); /* Check if character is alphabetic. */
-fz_function b32 char_is_alphanumeric(u8 c); /* Check if character is alphanumeric. */
-fz_function b32 char_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
-fz_function b32 char_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
-fz_function b32 char_is_digit(u8 c); /* Check if character is digit 0-9. */
-fz_function b32 char_is_symbol(u8 c); /* Check if character is symbol/punctuation. */
-fz_function b32 char_is_space(u8 c); /* Check if character is whitespace. */
-fz_function u8  char_to_upper(u8 c); /* Convert character to uppercase. */
-fz_function u8  char_to_lower(u8 c); /* Convert character to lowercase. */
+fz_internal b32 char_is_alpha(u8 c); /* Check if character is alphabetic. */
+fz_internal b32 char_is_alphanumeric(u8 c); /* Check if character is alphanumeric. */
+fz_internal b32 char_is_alpha_upper(u8 c); /* Check if character is uppercase letter. */
+fz_internal b32 char_is_alpha_lower(u8 c); /* Check if character is lowercase letter. */
+fz_internal b32 char_is_digit(u8 c); /* Check if character is digit 0-9. */
+fz_internal b32 char_is_symbol(u8 c); /* Check if character is symbol/punctuation. */
+fz_internal b32 char_is_space(u8 c); /* Check if character is whitespace. */
+fz_internal u8  char_to_upper(u8 c); /* Convert character to uppercase. */
+fz_internal u8  char_to_lower(u8 c); /* Convert character to lowercase. */
 
 // @Section: 8 Bit strings
 typedef struct String String; /* 8 bit string. */
@@ -44,43 +44,43 @@ struct String_List
   u64 total_size;
 };
 
-fz_function String string_zero(); /* Initilizese a string with memory zero'd out */
-fz_function String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */ // @TODO(Fz): The 'new' keyword may imply that we allocate memory. This is also kind of a useless function sicne String is small enough to be initialized just inline like { ... } . Either rename or remove I think.
-fz_function String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
-fz_function String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
-fz_function String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
-fz_function b8     string_starts_with(String str, String begins_with); /* Checks if str begins with begins_with */
-fz_function b8     string_ends_with(String str, String ends_with); /* Checks if str ends with ends_with */
-fz_function String string_replace_first(Arena* arena, String str, String a, String b); /* Replaces string a with string c in string str */
-fz_function String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
-fz_function String string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement); /* Replaces a range starting at start up to length with replacement */
-fz_function String string_replace_backslash_n(Arena *arena, String str); /* Replaces the string "\n" with the characater \n */
-fz_function String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
-fz_function String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
-fz_function b32    string_contains(String str, String substring); /* Check if str contains substring. */
-fz_function String string_to_lower(Arena* arena, String str); /* Returns the same string but in lowercase. */
-fz_function b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
-fz_function b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
-fz_function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
-fz_function String string_from_format_va(Arena *arena, char const *fmt, va_list args); /* Creates a string from var args */
-fz_function b32    string_equals(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
-fz_function String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
-fz_function u64    string_hash(String str); /* Hashes a string into a u64 */
-fz_function void   string_print(String str); /* Prints a string */
+fz_internal String string_zero(); /* Initilizese a string with memory zero'd out */
+fz_internal String string_new(u64 size, u8* str); /* Create a new String with given size and data pointer. */ // @TODO(Fz): The 'new' keyword may imply that we allocate memory. This is also kind of a useless function sicne String is small enough to be initialized just inline like { ... } . Either rename or remove I think.
+fz_internal String string_copy(Arena* arena, String source); /* Allocate and copy source string into arena (null-terminated). */
+fz_internal String string_range(Arena* arena, u8* first, u8* range); /* Create null-terminated String from first pointer to range pointer (exclusive). */
+fz_internal String string_join(Arena* arena, String a, String b); /* Allocate concatenated string a+b in arena (null-terminated). */
+fz_internal b8     string_starts_with(String str, String begins_with); /* Checks if str begins with begins_with */
+fz_internal b8     string_ends_with(String str, String ends_with); /* Checks if str ends with ends_with */
+fz_internal String string_replace_first(Arena* arena, String str, String a, String b); /* Replaces string a with string c in string str */
+fz_internal String string_replace_all(Arena *arena, String str, String a, String b); /* Replaces all instances of a substr a with substr b */
+fz_internal String string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement); /* Replaces a range starting at start up to length with replacement */
+fz_internal String string_replace_backslash_n(Arena *arena, String str); /* Replaces the string "\n" with the characater \n */
+fz_internal String string_trim(Arena* arena, String str); /* Remove leading and trailing whitespace (null-terminated). */
+fz_internal String string_substring(Arena* arena, String str, u64 start, u64 end); /* Returns a null-terminated substring */
+fz_internal b32    string_contains(String str, String substring); /* Check if str contains substring. */
+fz_internal String string_to_lower(Arena* arena, String str); /* Returns the same string but in lowercase. */
+fz_internal b32    string_find_first(String str, String substring, u64* index); /* Find first occurrence of substring, write index. */
+fz_internal b32    string_find_last(String str, String substring, u64* index); /* Find last occurrence of substring, write index. */
+fz_internal String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena. */
+fz_internal String string_from_format_va(Arena *arena, char const *fmt, va_list args); /* Creates a string from var args */
+fz_internal b32    string_equals(String a, String b, b32 case_sensitive); /* Compare strings for equality with case sensitivity option. */
+fz_internal String string_from_format(Arena* arena, char const* fmt, ...); /* Printf-style string formatting into arena (null-terminated). */
+fz_internal u64    string_hash(String str); /* Hashes a string into a u64 */
+fz_internal void   string_print(String str); /* Prints a string */
 
-fz_function u32    u32_from_string(String str); /* Converts a string to u32 */
+fz_internal u32    u32_from_string(String str); /* Converts a string to u32 */
 
-fz_function String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
-fz_function String_List string_list_new(); /* Create new list with single string element. */
-fz_function void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
-fz_function void        string_list_push_after(String_List* list, String_Node* prev, String_Node* node); /* Adds a <node> to a string list after the node <prev> */
-fz_function String      string_list_remove_first(String_List* list); /* Remove and return first element from list. */
-fz_function String      string_list_remove_last(String_List* list); /* Remove and return last element from list. */
-fz_function String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string (null-terminated). */
+fz_internal String_List string_split(Arena* arena, String str, String split_character); /* Split string by delimiter into list. */
+fz_internal String_List string_list_new(); /* Create new list with single string element. */
+fz_internal void        string_list_push(Arena* arena, String_List* list, String str); /* Add string to end of list. */
+fz_internal void        string_list_push_after(String_List* list, String_Node* prev, String_Node* node); /* Adds a <node> to a string list after the node <prev> */
+fz_internal String      string_list_remove_first(String_List* list); /* Remove and return first element from list. */
+fz_internal String      string_list_remove_last(String_List* list); /* Remove and return last element from list. */
+fz_internal String      string_list_join(Arena* arena, String_List* list); /* Concatenate all list elements into single string (null-terminated). */
 
-fz_function String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
-fz_function u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
-fz_function b32     s64_from_string(String str, s64* out); /* Converts a String to an s64 */
+fz_internal String  string_from_cstring(u8* cstring); /* Create String from null-terminated C string. */
+fz_internal u64     cstring_length(u8* cstring); /* Get length of null-terminated C string. */
+fz_internal b32     s64_from_string(String str, s64* out); /* Converts a String to an s64 */
 
 #if OS_WINDOWS
 // @Section: 16 bit character
@@ -106,37 +106,37 @@ struct Text
 
 // @Section: 8 Bit character implementation
 
-fz_function b32
+fz_internal b32
 char_is_alpha(u8 c)
 {
   return char_is_alpha_upper(c) || char_is_alpha_lower(c);
 }
 
-fz_function b32
+fz_internal b32
 char_is_alphanumeric(u8 c)
 {
   return char_is_alpha(c) || char_is_digit(c);
 }
 
-fz_function b32
+fz_internal b32
 char_is_alpha_upper(u8 c)
 {
   return c >= 'A' && c <= 'Z';
 }
 
-fz_function b32
+fz_internal b32
 char_is_alpha_lower(u8 c)
 {
   return c >= 'a' && c <= 'z';
 }
 
-fz_function b32
+fz_internal b32
 char_is_digit(u8 c)
 {
   return c >= '0' && c <= '9';
 }
 
-fz_function b32
+fz_internal b32
 char_is_symbol(u8 c)
 {
   return (c == '~' || c == '!'  || c == '$' || c == '%' || c == '^' ||
@@ -147,20 +147,20 @@ char_is_symbol(u8 c)
           c == ',' || c == ';'  || c == ':' || c == '@');
 }
 
-fz_function b32
+fz_internal b32
 char_is_space(u8 c)
 {
   return c == ' ' || c == '\r' || c == '\t' || c == '\f' || c == '\v' || c == '\n';
 }
 
-fz_function u8
+fz_internal u8
 char_to_upper(u8 c)
 {
   u8 is_lower = (c >= 'a') & (c <= 'z');
   return c - is_lower * ('a' - 'A');
 }
 
-fz_function u8
+fz_internal u8
 char_to_lower(u8 c)
 {
   u8 is_upper = (c >= 'A') & (c <= 'Z');
@@ -169,7 +169,7 @@ char_to_lower(u8 c)
 
 // @Section: 8 Bit string implementation
 
-fz_function String
+fz_internal String
 string_zero()
 {
   String result;
@@ -177,14 +177,14 @@ string_zero()
   return result;
 }
 
-fz_function String
+fz_internal String
 string_new(u64 size, u8* str)
 {
   String result = { size, str };
   return result;
 }
 
-fz_function String
+fz_internal String
 string_copy(Arena* arena, String source)
 {
   String result;
@@ -195,7 +195,7 @@ string_copy(Arena* arena, String source)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_range(Arena* arena, u8* first, u8* range)
 {
   u64 count = (u64)(range - first);
@@ -207,7 +207,7 @@ string_range(Arena* arena, u8* first, u8* range)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_join(Arena* arena, String a, String b)
 {
   String result = { 0 };
@@ -219,7 +219,7 @@ string_join(Arena* arena, String a, String b)
   return result;
 }
 
-fz_function b8
+fz_internal b8
 string_starts_with(String str, String begins_with)
 {
   b8 result = false;
@@ -244,7 +244,7 @@ string_starts_with(String str, String begins_with)
   return result;
 }
 
-fz_function b8
+fz_internal b8
 string_ends_with(String str, String ends_with)
 {
   b8 result = false;
@@ -270,7 +270,7 @@ string_ends_with(String str, String ends_with)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_replace_first(Arena* arena, String str, String a, String b)
 {
   String result = str;
@@ -293,7 +293,7 @@ string_replace_first(Arena* arena, String str, String a, String b)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_replace_all(Arena *arena, String str, String a, String b)
 {
   String result = str;
@@ -316,7 +316,7 @@ string_replace_all(Arena *arena, String str, String a, String b)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_replace_range(Arena* arena, String str, u64 start, u64 length, String replacement)
 {
   u64 new_size = str.count - length + replacement.count;
@@ -334,7 +334,7 @@ string_replace_range(Arena* arena, String str, u64 start, u64 length, String rep
   return result;
 }
 
-fz_function String
+fz_internal String
 string_replace_backslash_n(Arena *arena, String in)
 {
   u8 *destination = push_array(arena, u8, in.count + 1);
@@ -362,7 +362,7 @@ string_replace_backslash_n(Arena *arena, String in)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_trim(Arena* arena, String str)
 {
   u64 start = 0;
@@ -405,7 +405,7 @@ string_trim(Arena* arena, String str)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_substring(Arena* arena, String str, u64 start, u64 end)
 {
   String result = {0};
@@ -425,14 +425,14 @@ string_substring(Arena* arena, String str, u64 start, u64 end)
   return result;
 }
 
-fz_function b32
+fz_internal b32
 string_contains(String str, String substring)
 {
   u64 index;
   return string_find_first(str, substring, &index);
 }
 
-fz_function String
+fz_internal String
 string_to_lower(Arena* arena, String str)
 {
   String result = string_copy(arena, str);
@@ -443,7 +443,7 @@ string_to_lower(Arena* arena, String str)
   return result;
 }
 
-fz_function b32
+fz_internal b32
 string_find_first(String str, String substring, u64* index)
 {
   if (substring.count > str.count) return false;
@@ -461,7 +461,7 @@ string_find_first(String str, String substring, u64* index)
   return result;
 }
 
-fz_function b32
+fz_internal b32
 string_find_last(String str, String substring, u64* index)
 {
   if (substring.count > str.count) return false;
@@ -479,7 +479,7 @@ string_find_last(String str, String substring, u64* index)
   return result;
 }
 
-fz_function b32
+fz_internal b32
 string_equals(String a, String b, b32 case_sensitive)
 {
   if(a.count != b.count)
@@ -504,7 +504,7 @@ string_equals(String a, String b, b32 case_sensitive)
   return true;
 }
 
-fz_function String
+fz_internal String
 string_from_format(Arena *arena, char const *fmt, ...)
 {
   va_list args;
@@ -514,7 +514,7 @@ string_from_format(Arena *arena, char const *fmt, ...)
   return s;
 }
 
-fz_function String
+fz_internal String
 string_from_format_va(Arena *arena, char const *fmt, va_list args)
 {
   Scratch scratch = scratch_begin(&arena,1);
@@ -557,7 +557,7 @@ string_from_format_va(Arena *arena, char const *fmt, va_list args)
   return result;
 }
 
-fz_function u64
+fz_internal u64
 string_hash(String str)
 {
   u64 hash = 5381;
@@ -569,14 +569,14 @@ string_hash(String str)
   return hash;
 }
 
-fz_function void
+fz_internal void
 string_print(String str)
 {
   printf(S_FMT, S_ARG(str));
   
 }
 
-fz_function u32
+fz_internal u32
 u32_from_string(String string)
 {
   u32 result = 0;
@@ -593,7 +593,7 @@ u32_from_string(String string)
   return result;
 }
 
-fz_function String_List
+fz_internal String_List
 string_split(Arena* arena, String str, String delimiter)
 {
   String_List result = {0};
@@ -634,7 +634,7 @@ string_split(Arena* arena, String str, String delimiter)
   return result;
 }
 
-fz_function String_List
+fz_internal String_List
 string_list_new()
 {
   String_List result = {0};
@@ -645,7 +645,7 @@ string_list_new()
   return result;
 }
 
-fz_function void
+fz_internal void
 string_list_push(Arena* arena, String_List* list, String str)
 {
   String_Node* node = push_array(arena, String_Node, sizeof(String_Node));
@@ -664,7 +664,7 @@ string_list_push(Arena* arena, String_List* list, String str)
   list->total_size += node->value.count;
 }
 
-fz_function void
+fz_internal void
 string_list_push_after(String_List* list, String_Node* prev, String_Node* node)
 {
   assert(prev);
@@ -682,7 +682,7 @@ string_list_push_after(String_List* list, String_Node* prev, String_Node* node)
   list->total_size += node->value.count;
 }
 
-fz_function String
+fz_internal String
 string_list_remove_first(String_List* list)
 {
   String result = {0};
@@ -707,7 +707,7 @@ string_list_remove_first(String_List* list)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_list_remove_last(String_List* list)
 {
   String result = {0};
@@ -738,7 +738,7 @@ string_list_remove_last(String_List* list)
   return result;
 }
 
-fz_function String
+fz_internal String
 string_list_join(Arena* arena, String_List* list)
 {
   u8* dst = push_array(arena, u8, list->total_size + 1);
@@ -752,14 +752,14 @@ string_list_join(Arena* arena, String_List* list)
   return string_new(list->total_size, dst);
 }
 
-fz_function String
+fz_internal String
 string_from_cstring(u8* cstring)
 {
   String result = string_new(cstring_length(cstring), cstring);
   return result;
 }
 
-fz_function u64
+fz_internal u64
 cstring_length(u8* cstring)
 {
   u64 result = 0;
@@ -770,7 +770,7 @@ cstring_length(u8* cstring)
   return result;
 }
 
-fz_function b32
+fz_internal b32
 s64_from_string(String str, s64* out)
 {
   if(str.count == 0) return false;

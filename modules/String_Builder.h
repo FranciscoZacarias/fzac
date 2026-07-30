@@ -13,21 +13,21 @@ struct String_Builder
   u64    capacity;
 };
 
-fz_function String_Builder string_builder_init(u64 initial_capacity);                        /* Allocates an internal arena and initializes the builder */
-fz_function void           string_builder_pushf(String_Builder* builder, const char* fmt, ...); /* Appends a formatted cstring */
-fz_function void           string_builder_push(String_Builder* builder, const char* text);      /* Appends a literal cstring */
-fz_function void           string_builder_push_string(String_Builder* builder, String str);     /* Appends a String */
-fz_function void           string_builder_push_char(String_Builder* builder, u8 c);             /* Appends a single character */
-fz_function void           string_builder_clear(String_Builder* builder);                       /* Resets write position, keeps allocated memory */
-fz_function void           string_builder_free(String_Builder* builder);                        /* Frees the internal arena, invalidates all builder memory */
-fz_function String         string_builder_to_string(Arena* arena, String_Builder* builder);     /* Copies builder contents into a permanent string on arena */
+fz_internal String_Builder string_builder_init(u64 initial_capacity);                        /* Allocates an internal arena and initializes the builder */
+fz_internal void           string_builder_pushf(String_Builder* builder, const char* fmt, ...); /* Appends a formatted cstring */
+fz_internal void           string_builder_push(String_Builder* builder, const char* text);      /* Appends a literal cstring */
+fz_internal void           string_builder_push_string(String_Builder* builder, String str);     /* Appends a String */
+fz_internal void           string_builder_push_char(String_Builder* builder, u8 c);             /* Appends a single character */
+fz_internal void           string_builder_clear(String_Builder* builder);                       /* Resets write position, keeps allocated memory */
+fz_internal void           string_builder_free(String_Builder* builder);                        /* Frees the internal arena, invalidates all builder memory */
+fz_internal String         string_builder_to_string(Arena* arena, String_Builder* builder);     /* Copies builder contents into a permanent string on arena */
 
 // @Section: Implementation
 
 /* Grows the builder to fit at least <needed> bytes of capacity.
    Pushes a new block into the internal arena and copies existing content.
    The old block is abandoned — arena_clear on string_builder_free reclaims it. */
-fz_function b8
+fz_internal b8
 _string_builder_grow(String_Builder* builder, u64 needed)
 {
   u64 new_capacity = builder->capacity > 0 ? builder->capacity : 64;
@@ -50,7 +50,7 @@ _string_builder_grow(String_Builder* builder, u64 needed)
   return 1;
 }
 
-fz_function String_Builder
+fz_internal String_Builder
 string_builder_init(u64 initial_capacity)
 {
   String_Builder builder = {0};
@@ -81,7 +81,7 @@ string_builder_init(u64 initial_capacity)
   return builder;
 }
 
-fz_function void
+fz_internal void
 string_builder_pushf(String_Builder* builder, const char* fmt, ...)
 {
   if (!builder || !builder->arena || !fmt) { return; }
@@ -107,7 +107,7 @@ string_builder_pushf(String_Builder* builder, const char* fmt, ...)
   }
 }
 
-fz_function void
+fz_internal void
 string_builder_push(String_Builder* builder, const char* text)
 {
   if (!builder || !builder->arena || !text) { return; }
@@ -124,7 +124,7 @@ string_builder_push(String_Builder* builder, const char* text)
   builder->count += len;
 }
 
-fz_function void
+fz_internal void
 string_builder_push_string(String_Builder* builder, String str)
 {
   if (!builder || !builder->arena || !str.cstring || str.count == 0) { return; }
@@ -138,7 +138,7 @@ string_builder_push_string(String_Builder* builder, String str)
   builder->count += str.count;
 }
 
-fz_function void
+fz_internal void
 string_builder_push_char(String_Builder* builder, u8 c)
 {
   if (!builder || !builder->arena) { return; }
@@ -152,7 +152,7 @@ string_builder_push_char(String_Builder* builder, u8 c)
   builder->count += 1;
 }
 
-fz_function void
+fz_internal void
 string_builder_clear(String_Builder* builder)
 {
   if (!builder || !builder->arena) { return; }
@@ -165,7 +165,7 @@ string_builder_clear(String_Builder* builder)
   arena_clear(builder->arena);
 }
 
-fz_function void
+fz_internal void
 string_builder_free(String_Builder* builder)
 {
   if (!builder || !builder->arena) { return; }
@@ -178,7 +178,7 @@ string_builder_free(String_Builder* builder)
   builder->capacity = 0;
 }
 
-fz_function String
+fz_internal String
 string_builder_to_string(Arena* arena, String_Builder* builder)
 {
   if (!builder || builder->count == 0)

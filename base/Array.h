@@ -28,7 +28,7 @@ struct Static_Array_Base
 #define static_array_find()
 #define static_array_reset()
 
-fz_function void
+fz_internal void
 static_array_init_impl(Static_Array_Base* array, void* memory, u64 capacity)
 {
   array->data     = memory;
@@ -69,7 +69,7 @@ struct Dynamic_Array_Base
 #define dynamic_array_reserve(array, element_size, capacity)      dynamic_array_reserve_impl((Dynamic_Array_Base*)(array), (element_size), (capacity))
 #define dynamic_array_maybe_grow(array, element_size, additional) dynamic_array_maybe_grow_impl((Dynamic_Array_Base*)(array), (element_size), (additional))
 
-fz_function void
+fz_internal void
 dynamic_array_init_impl(Dynamic_Array_Base* array, Allocator allocator)
 {
   array->data      = NULL;
@@ -78,7 +78,7 @@ dynamic_array_init_impl(Dynamic_Array_Base* array, Allocator allocator)
   array->allocator = allocator;
 }
 
-fz_function void
+fz_internal void
 dynamic_array_free_impl(Dynamic_Array_Base* array, u64 element_size)
 {
   if (array->data)
@@ -91,13 +91,13 @@ dynamic_array_free_impl(Dynamic_Array_Base* array, u64 element_size)
   array->capacity = 0;
 }
 
-fz_function void
+fz_internal void
 dynamic_array_reset_impl(Dynamic_Array_Base* array)
 {
   array->count = 0;
 }
 
-fz_function b32
+fz_internal b32
 dynamic_array_reserve_impl(Dynamic_Array_Base* array, u64 element_size, u64 capacity)
 {
   if (capacity <= array->capacity)
@@ -124,7 +124,7 @@ dynamic_array_reserve_impl(Dynamic_Array_Base* array, u64 element_size, u64 capa
   return true;
 }
 
-fz_function b32
+fz_internal b32
 dynamic_array_maybe_grow_impl(Dynamic_Array_Base* array, u64 element_size, u64 additional_elements)
 {
   u64 required = array->count + additional_elements;

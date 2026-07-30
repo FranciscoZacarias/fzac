@@ -17,31 +17,31 @@ struct Date_Time
 
 b8 TimingInited = false;
 
-fz_function void      time_init(); /* Initializes timer module */
-fz_function u64       time_microseconds(); /* Time in microseconds */
-fz_function u64       time_milliseconds(); /* Time in milliseconds */
-fz_function f64       time_seconds(); /* Time inseconds */
-fz_function u64       get_epoch_microseconds(); /* Wall clock time since unix epoch (1970-01-01) in microseconds */
-fz_function Date_Time datetime_now(); /* Current local date and time */
-fz_function String    datetime_to_string(Arena* arena, Date_Time date, b32 include_ms); /* Returns a verbose datetime string */
+fz_internal void      time_init(); /* Initializes timer module */
+fz_internal u64       time_microseconds(); /* Time in microseconds */
+fz_internal u64       time_milliseconds(); /* Time in milliseconds */
+fz_internal f64       time_seconds(); /* Time inseconds */
+fz_internal u64       get_epoch_microseconds(); /* Wall clock time since unix epoch (1970-01-01) in microseconds */
+fz_internal Date_Time datetime_now(); /* Current local date and time */
+fz_internal String    datetime_to_string(Arena* arena, Date_Time date, b32 include_ms); /* Returns a verbose datetime string */
 
-fz_function Timer timer_start(); /* Returns a started timer */
-fz_function u64   timer_microseconds(Timer *timer); /* Returns timer's elapsed time in microseconds */
-fz_function u64   timer_milliseconds(Timer *timer); /* Returns timer's elapsed time in milliseconds */
-fz_function f64   timer_seconds(Timer *timer); /* Returns timer's elapsed time in seconds */
-fz_function void  timer_reset(Timer *timer); /* Resets a timer */
+fz_internal Timer timer_start(); /* Returns a started timer */
+fz_internal u64   timer_microseconds(Timer *timer); /* Returns timer's elapsed time in microseconds */
+fz_internal u64   timer_milliseconds(Timer *timer); /* Returns timer's elapsed time in milliseconds */
+fz_internal f64   timer_seconds(Timer *timer); /* Returns timer's elapsed time in seconds */
+fz_internal void  timer_reset(Timer *timer); /* Resets a timer */
 
-fz_function f64 milliseconds_from_microseconds(u64 us);
-fz_function f64 seconds_from_microseconds(u64 us);
+fz_internal f64 milliseconds_from_microseconds(u64 us);
+fz_internal f64 seconds_from_microseconds(u64 us);
 
-fz_function f64
+fz_internal f64
 milliseconds_from_microseconds(u64 us)
 {
   f64 result = (f64)(us) / 1000.0;
   return result;
 }
 
-fz_function f64
+fz_internal f64
 seconds_from_microseconds(u64 us)
 {
   return (f64)us / 1000000.0;
@@ -51,7 +51,7 @@ seconds_from_microseconds(u64 us)
 
 fz_global LARGE_INTEGER Win32PerformanceFrequency;
 
-fz_function void
+fz_internal void
 time_init() // @TODO(Fz): This should just be inited by default?
 {
   if (!TimingInited)
@@ -61,7 +61,7 @@ time_init() // @TODO(Fz): This should just be inited by default?
   }
 }
 
-fz_function u64
+fz_internal u64
 time_microseconds()
 {
   LARGE_INTEGER counter;
@@ -69,7 +69,7 @@ time_microseconds()
   return (counter.QuadPart * 1000000) / Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function u64
+fz_internal u64
 time_milliseconds()
 {
   LARGE_INTEGER counter;
@@ -77,7 +77,7 @@ time_milliseconds()
   return (counter.QuadPart * 1000) / Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function f64
+fz_internal f64
 time_seconds()
 {
   LARGE_INTEGER counter;
@@ -85,7 +85,7 @@ time_seconds()
   return (f64)counter.QuadPart / (f64)Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function u64
+fz_internal u64
 get_epoch_microseconds()
 {
   FILETIME ft;
@@ -94,7 +94,7 @@ get_epoch_microseconds()
   return (uli.QuadPart - 116444736000000000ULL) / 10;
 }
 
-fz_function Date_Time
+fz_internal Date_Time
 datetime_now()
 {
   SYSTEMTIME st;
@@ -112,7 +112,7 @@ datetime_now()
   return result;
 }
 
-fz_function String
+fz_internal String
 datetime_to_string(Arena *arena, Date_Time dt, b32 include_ms)
 {
   fz_local_persist const char* months[] = 
@@ -140,7 +140,7 @@ datetime_to_string(Arena *arena, Date_Time dt, b32 include_ms)
   return result;
 }
 
-fz_function Timer
+fz_internal Timer
 timer_start()
 {
   Timer timer;
@@ -148,7 +148,7 @@ timer_start()
   return timer;
 }
 
-fz_function u64
+fz_internal u64
 timer_microseconds(Timer *timer)
 {
   LARGE_INTEGER now;
@@ -157,7 +157,7 @@ timer_microseconds(Timer *timer)
   return ((now.QuadPart - start) * 1000000) / Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function u64
+fz_internal u64
 timer_milliseconds(Timer *timer)
 {
   LARGE_INTEGER now;
@@ -166,7 +166,7 @@ timer_milliseconds(Timer *timer)
   return ((now.QuadPart - start) * 1000) / Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function f64
+fz_internal f64
 timer_seconds(Timer *timer)
 {
   LARGE_INTEGER now;
@@ -175,7 +175,7 @@ timer_seconds(Timer *timer)
   return (f64)(now.QuadPart - start) / (f64)Win32PerformanceFrequency.QuadPart;
 }
 
-fz_function void
+fz_internal void
 timer_reset(Timer *timer)
 {
   QueryPerformanceCounter((LARGE_INTEGER*)&timer->opaque[0]);

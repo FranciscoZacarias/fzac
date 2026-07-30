@@ -386,13 +386,13 @@ Vulkan_Device_Function_Void_Table (name args call_args)
 
 #define check_vk_result(result, message) if (result != VK_SUCCESS) { log_error("Error: %s, code %x", message, result); }
 
-fz_function b32 vulkan_load_global_functions();
-fz_function b32 vulkan_load_instance_functions(VkInstance instance);
-fz_function b32 vulkan_load_device_functions(VkDevice device);\n\n`
+fz_internal b32 vulkan_load_global_functions();
+fz_internal b32 vulkan_load_instance_functions(VkInstance instance);
+fz_internal b32 vulkan_load_device_functions(VkDevice device);\n\n`
 
 @foreach(Vulkan_Global_Function_Return_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function $(return_type)
+fz_internal $(return_type)
 $(name) $(args)
 {
   $(return_type) result = __$(name) $(call_args);
@@ -404,7 +404,7 @@ $(name) $(args)
 
 @foreach(Vulkan_Global_Function_Void_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function void
+fz_internal void
 $(name) $(args)
 {
   __$(name) $(call_args);
@@ -412,7 +412,7 @@ $(name) $(args)
 
 @foreach(Vulkan_Instance_Function_Return_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function $(return_type)
+fz_internal $(return_type)
 $(name) $(args)
 {
   $(return_type) result = __$(name) $(call_args);
@@ -424,7 +424,7 @@ $(name) $(args)
 
 @foreach(Vulkan_Instance_Function_Void_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function void
+fz_internal void
 $(name) $(args)
 {
   __$(name) $(call_args);
@@ -432,7 +432,7 @@ $(name) $(args)
 
 @foreach(Vulkan_Device_Function_Return_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function $(return_type)
+fz_internal $(return_type)
 $(name) $(args)
 {
   $(return_type) result = __$(name) $(call_args);
@@ -444,7 +444,7 @@ $(name) $(args)
 
 @foreach(Vulkan_Device_Function_Void_Table)
 `fz_global PFN_$(name) __$(name) = NULL;
-fz_function void
+fz_internal void
 $(name) $(args)
 {
   __$(name) $(call_args);
@@ -456,7 +456,7 @@ $(name) $(args)
 @Generator(Vulkan.cgen.c)
 {
 
-`fz_function b32\nvulkan_load_global_functions()\n{\n`
+`fz_internal b32\nvulkan_load_global_functions()\n{\n`
 
 @foreach(Vulkan_Global_Function_Return_Table)
 `  __$(name) = (PFN_$(name))__vkGetInstanceProcAddr(VK_NULL_HANDLE, "$(name)");
@@ -477,7 +477,7 @@ $(name) $(args)
 `  return true;\n}\n\n`
 
 
-`fz_function b32\nvulkan_load_instance_functions(VkInstance instance)\n{\n`
+`fz_internal b32\nvulkan_load_instance_functions(VkInstance instance)\n{\n`
 
 @foreach(Vulkan_Instance_Function_Return_Table)
 
@@ -498,7 +498,7 @@ $(name) $(args)
 
 `  return true;\n}\n\n`
 
-`fz_function b32\nvulkan_load_device_functions(VkDevice device)\n{\n`
+`fz_internal b32\nvulkan_load_device_functions(VkDevice device)\n{\n`
 
 @foreach(Vulkan_Device_Function_Return_Table)
 

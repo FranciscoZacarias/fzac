@@ -211,7 +211,7 @@ typedef struct VkCudaFunctionCreateInfoNV {
 typedef struct VkCudaLaunchInfoNV {
     VkStructureType        sType;
     const void*            pNext;
-    VkCudaFunctionNV       fz_function;
+    VkCudaFunctionNV       fz_internal;
     uint32_t               gridDimX;
     uint32_t               gridDimY;
     uint32_t               gridDimZ;
@@ -242,7 +242,7 @@ typedef VkResult (VKAPI_PTR *PFN_vkCreateCudaModuleNV)(VkDevice device, const Vk
 typedef VkResult (VKAPI_PTR *PFN_vkGetCudaModuleCacheNV)(VkDevice device, VkCudaModuleNV module, size_t* pCacheSize, void* pCacheData);
 typedef VkResult (VKAPI_PTR *PFN_vkCreateCudaFunctionNV)(VkDevice device, const VkCudaFunctionCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCudaFunctionNV* pFunction);
 typedef void (VKAPI_PTR *PFN_vkDestroyCudaModuleNV)(VkDevice device, VkCudaModuleNV module, const VkAllocationCallbacks* pAllocator);
-typedef void (VKAPI_PTR *PFN_vkDestroyCudaFunctionNV)(VkDevice device, VkCudaFunctionNV fz_function, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkDestroyCudaFunctionNV)(VkDevice device, VkCudaFunctionNV fz_internal, const VkAllocationCallbacks* pAllocator);
 typedef void (VKAPI_PTR *PFN_vkCmdCudaLaunchKernelNV)(VkCommandBuffer commandBuffer, const VkCudaLaunchInfoNV* pLaunchInfo);
 
 #ifndef VK_NO_PROTOTYPES
@@ -280,7 +280,7 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyCudaModuleNV(
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR void VKAPI_CALL vkDestroyCudaFunctionNV(
     VkDevice                                    device,
-    VkCudaFunctionNV                            fz_function,
+    VkCudaFunctionNV                            fz_internal,
     const VkAllocationCallbacks*                pAllocator);
 #endif
 

@@ -41,13 +41,13 @@
  *
  * It is proposed in four flavors, in three families:
  * 1. @ref XXH32_family
- *   - Classic 32-bit hash fz_function. Simple, compact, and runs on almost all
+ *   - Classic 32-bit hash fz_internal. Simple, compact, and runs on almost all
  *     32-bit and 64-bit systems.
  * 2. @ref XXH64_family
  *   - Classic 64-bit adaptation of XXH32. Just as simple, and runs well on most
  *     64-bit systems (but _not_ 32-bit systems).
  * 3. @ref XXH3_family
- *   - Modern 64-bit and 128-bit hash fz_function family which features improved
+ *   - Modern 64-bit and 128-bit hash fz_internal family which features improved
  *     strength and performance across the board, especially on smaller data.
  *     It benefits greatly from SIMD and 64-bit without requiring it.
  *
@@ -121,7 +121,7 @@
  *   #include <string.h>
  *   #include "xxhash.h"
  *
- *   // Example for a fz_function which hashes a null terminated string with XXH32().
+ *   // Example for a fz_internal which hashes a null terminated string with XXH32().
  *   XXH32_hash_t hash_string(const char* string, XXH32_hash_t seed)
  *   {
  *       // NULL pointers are only valid if the length is zero
@@ -143,7 +143,7 @@
  *   #include <stdio.h>
  *   #include <assert.h>
  *   #include "xxhash.h"
- *   // Example for a fz_function which hashes a FILE incrementally with XXH3_64bits().
+ *   // Example for a fz_internal which hashes a FILE incrementally with XXH3_64bits().
  *   XXH64_hash_t hashFile(FILE* f)
  *   {
  *       // Allocate a state struct. Do not just use malloc() or new.
@@ -176,11 +176,11 @@
  *
  * Then, feed the hash state by calling `XXH*_update()` as many times as necessary.
  *
- * The fz_function returns an error code, with 0 meaning OK, and any other value
+ * The fz_internal returns an error code, with 0 meaning OK, and any other value
  * meaning there is an error.
  *
  * Finally, a hash value can be produced anytime, by using `XXH*_digest()`.
- * This fz_function returns the nn-bits hash as an int or long long.
+ * This fz_internal returns the nn-bits hash as an int or long long.
  *
  * It's still possible to continue inserting input into the hash state after a
  * digest, and generate new hash values later on by invoking `XXH*_digest()`.
@@ -216,7 +216,7 @@
  *   #include <stdio.h>
  *   #include "xxhash.h"
  *
- *   // Example for a fz_function which prints XXH32_hash_t in human readable format
+ *   // Example for a fz_internal which prints XXH32_hash_t in human readable format
  *   void printXxh32(XXH32_hash_t hash)
  *   {
  *       XXH32_canonical_t cano;
@@ -228,7 +228,7 @@
  *       printf("\n");
  *   }
  *
- *   // Example for a fz_function which converts XXH32_canonical_t to XXH32_hash_t
+ *   // Example for a fz_internal which converts XXH32_canonical_t to XXH32_hash_t
  *   XXH32_hash_t convertCanonicalToXxh32(XXH32_canonical_t cano)
  *   {
  *       XXH32_hash_t hash = XXH32_hashFromCanonical(&cano);
@@ -699,7 +699,7 @@ XXH_PUBLIC_API void XXH32_copyState(XXH32_state_t* dst_state, const XXH32_state_
  * @return @ref XXH_OK on success.
  * @return @ref XXH_ERROR on failure.
  *
- * @note This fz_function resets and seeds a state. Call it before @ref XXH32_update().
+ * @note This fz_internal resets and seeds a state. Call it before @ref XXH32_update().
  *
  * @see @ref streaming_example "Streaming Example"
  */
@@ -965,7 +965,7 @@ XXH_PUBLIC_API void XXH64_copyState(XXH_NOESCAPE XXH64_state_t* dst_state, const
  * @return @ref XXH_OK on success.
  * @return @ref XXH_ERROR on failure.
  *
- * @note This fz_function resets and seeds a state. Call it before @ref XXH64_update().
+ * @note This fz_internal resets and seeds a state. Call it before @ref XXH64_update().
  *
  * @see @ref streaming_example "Streaming Example"
  */
@@ -1259,8 +1259,8 @@ XXH_PUBLIC_API void XXH3_copyState(XXH_NOESCAPE XXH3_state_t* dst_state, XXH_NOE
  * @return @ref XXH_ERROR on failure.
  *
  * @note
- *   - This fz_function resets `statePtr` and generate a secret with default parameters.
- *   - Call this fz_function before @ref XXH3_64bits_update().
+ *   - This fz_internal resets `statePtr` and generate a secret with default parameters.
+ *   - Call this fz_internal before @ref XXH3_64bits_update().
  *   - Digest will be equivalent to `XXH3_64bits()`.
  *
  * @see @ref streaming_example "Streaming Example"
@@ -1281,8 +1281,8 @@ XXH_PUBLIC_API XXH_errorcode XXH3_64bits_reset(XXH_NOESCAPE XXH3_state_t* stateP
  * @return @ref XXH_ERROR on failure.
  *
  * @note
- *   - This fz_function resets `statePtr` and generate a secret from `seed`.
- *   - Call this fz_function before @ref XXH3_64bits_update().
+ *   - This fz_internal resets `statePtr` and generate a secret from `seed`.
+ *   - Call this fz_internal before @ref XXH3_64bits_update().
  *   - Digest will be equivalent to `XXH3_64bits_withSeed()`.
  *
  * @see @ref streaming_example "Streaming Example"
@@ -1471,7 +1471,7 @@ XXH_PUBLIC_API XXH_PUREF XXH128_hash_t XXH3_128bits_withSecret(XXH_NOESCAPE cons
  * @return @ref XXH_ERROR on failure.
  *
  * @note
- *   - This fz_function resets `statePtr` and generate a secret with default parameters.
+ *   - This fz_internal resets `statePtr` and generate a secret with default parameters.
  *   - Call it before @ref XXH3_128bits_update().
  *   - Digest will be equivalent to `XXH3_128bits()`.
  *
@@ -1492,7 +1492,7 @@ XXH_PUBLIC_API XXH_errorcode XXH3_128bits_reset(XXH_NOESCAPE XXH3_state_t* state
  * @return @ref XXH_ERROR on failure.
  *
  * @note
- *   - This fz_function resets `statePtr` and generate a secret from `seed`.
+ *   - This fz_internal resets `statePtr` and generate a secret from `seed`.
  *   - Call it before @ref XXH3_128bits_update().
  *   - Digest will be equivalent to `XXH3_128bits_withSeed()`.
  *
@@ -1850,7 +1850,7 @@ XXH_PUBLIC_API XXH_PUREF XXH128_hash_t XXH128(XXH_NOESCAPE const void* data, siz
  * than 64-bit seed, as it becomes much more difficult for an external actor to
  * guess how to impact the calculation logic.
  *
- * The fz_function accepts as input a custom seed of any length and any content,
+ * The fz_internal accepts as input a custom seed of any length and any content,
  * and derives from it a high-entropy secret of length @p secretSize into an
  * already allocated buffer @p secretBuffer.
  *
@@ -2029,7 +2029,7 @@ XXH3_64bits_reset_withSecretandSeed(XXH_NOESCAPE XXH3_state_t* statePtr,
  *
  * @see XXH3_64bits_withSecretandSeed(). Contract is identical.
  *
- * Note: there was a bug in an earlier version of this fz_function (<= v0.8.2)
+ * Note: there was a bug in an earlier version of this fz_internal (<= v0.8.2)
  * that would make it generate an incorrect hash value
  * when @p seed == 0 and @p length < XXH3_MIDSIZE_MAX
  * and @p secret is different from XXH3_generateSecret_fromSeed().
@@ -2119,7 +2119,7 @@ XXH3_128bits_reset_withSecretandSeed(XXH_NOESCAPE XXH3_state_t* statePtr,
  *  - `XXH_FORCE_MEMORY_ACCESS=0` (default): `memcpy`
  *   @par
  *     Use `memcpy()`. Safe and portable. Note that most modern compilers will
- *     eliminate the fz_function call and treat it as an unaligned access.
+ *     eliminate the fz_internal call and treat it as an unaligned access.
  *
  *  - `XXH_FORCE_MEMORY_ACCESS=1`: `__attribute__((aligned(1)))`
  *   @par
@@ -2245,7 +2245,7 @@ XXH3_128bits_reset_withSecretandSeed(XXH_NOESCAPE XXH3_state_t* statePtr,
  * happens when xxHash is compiled into a fz_global symbol. Therefore, if
  * @ref XXH_INLINE_ALL is *not* defined, this will be defined to 0.
  *
- * Additionally, this defaults to 0 on GCC 12+, which has an issue with fz_function pointers
+ * Additionally, this defaults to 0 on GCC 12+, which has an issue with fz_internal pointers
  * that are *sometimes* force inline on -Og, and it is impossible to automatically
  * detect this optimization level.
  */
@@ -2374,13 +2374,13 @@ static void XXH_free(void* p) { (void)p; }
 
 /*!
  * @internal
- * @brief Modify this fz_function to use a different routine than malloc().
+ * @brief Modify this fz_internal to use a different routine than malloc().
  */
 static XXH_MALLOCF void* XXH_malloc(size_t s) { return malloc(s); }
 
 /*!
  * @internal
- * @brief Modify this fz_function to use a different routine than free().
+ * @brief Modify this fz_internal to use a different routine than free().
  */
 static void XXH_free(void* p) { free(p); }
 
@@ -3846,7 +3846,7 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(XXH_NOESCAPE const XXH64_can
 #ifndef XXH_HAS_INCLUDE
 #  ifdef __has_include
 /*
- * Not defined as XXH_HAS_INCLUDE(x) (fz_function-like) because
+ * Not defined as XXH_HAS_INCLUDE(x) (fz_internal-like) because
  * this causes segfaults in Apple Clang 4.2 (on Mac OS X 10.7 Lion)
  */
 #    define XXH_HAS_INCLUDE __has_include
@@ -3886,7 +3886,7 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(XXH_NOESCAPE const XXH64_can
 
 /*
  * One goal of XXH3 is to make it fast on both 32-bit and 64-bit, while
- * remaining a true 64-bit/128-bit hash fz_function.
+ * remaining a true 64-bit/128-bit hash fz_internal.
  *
  * This is done by prioritizing a subset of 64-bit operations that can be
  * emulated without too many steps on the average 32-bit machine.
@@ -4099,7 +4099,7 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(XXH_NOESCAPE const XXH64_can
  *
  * Fortunately, we can control the first one with a pragma that forces GCC into
  * -O2, but the other one we can't control without "failed to inline always
- * inline fz_function due to target mismatch" warnings.
+ * inline fz_internal due to target mismatch" warnings.
  */
 #if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
   && defined(__GNUC__) && !defined(__clang__) /* GCC, not Clang */ \
@@ -4588,7 +4588,7 @@ XXH_mult64to128(xxh_u64 lhs, xxh_u64 rhs)
 /*!
  * @brief Calculates a 64-bit to 128-bit multiply, then XOR folds it.
  *
- * The reason for the separate fz_function is to prevent passing too many structs
+ * The reason for the separate fz_internal is to prevent passing too many structs
  * around by value. This will hopefully inline the multiply, but we don't force it.
  *
  * @param lhs , rhs The 64-bit integers to multiply
@@ -4752,10 +4752,10 @@ XXH3_len_0to16_64b(const xxh_u8* input, size_t len, const xxh_u8* secret, XXH64_
  * and/or proper seeding:
  *
  * This only has a 1 in 2^63 chance of 8 consecutive bytes cancelling out, in a
- * fz_function that is only called up to 16 times per hash with up to 240 bytes of
+ * fz_internal that is only called up to 16 times per hash with up to 240 bytes of
  * input.
  *
- * This is not too bad for a non-cryptographic hash fz_function, especially with
+ * This is not too bad for a non-cryptographic hash fz_internal, especially with
  * only 64 bit outputs.
  *
  * The 128-bit variant (which trades some speed for strength) is NOT affected
@@ -4915,14 +4915,14 @@ XXH3_len_129to240_64b(const xxh_u8* XXH_RESTRICT input, size_t len,
 #endif  /* XXH_PREFETCH_DIST */
 
 /*
- * These macros are to generate an XXH3_accumulate() fz_function.
+ * These macros are to generate an XXH3_accumulate() fz_internal.
  * The two arguments select the name suffix and target attribute.
  *
  * The name of this symbol is XXH3_accumulate_<name>() and it calls
  * XXH3_accumulate_512_<name>().
  *
- * It may be useful to hand implement this fz_function if the compiler fails to
- * optimize the inline fz_function.
+ * It may be useful to hand implement this fz_internal if the compiler fails to
+ * optimize the inline fz_internal.
  */
 #define XXH3_ACCUMULATE_TEMPLATE(name)                      \
 void                                                        \
@@ -6002,7 +6002,7 @@ XXH_mult32to64_add64(xxh_u64 lhs, xxh_u64 rhs, xxh_u64 acc)
  * @internal
  * @brief Scalar round for @ref XXH3_accumulate_512_scalar().
  *
- * This is extracted to its own fz_function because the NEON path uses a combination
+ * This is extracted to its own fz_internal because the NEON path uses a combination
  * of NEON and scalar.
  */
 XXH_FORCE_INLINE void
@@ -6051,7 +6051,7 @@ XXH_FORCE_INLINE XXH3_ACCUMULATE_TEMPLATE(scalar)
  * @internal
  * @brief Scalar scramble step for @ref XXH3_scrambleAcc_scalar().
  *
- * This is extracted to its own fz_function because the NEON path uses a combination
+ * This is extracted to its own fz_internal because the NEON path uses a combination
  * of NEON and scalar.
  */
 XXH_FORCE_INLINE void
@@ -6340,8 +6340,8 @@ XXH3_hashLong_64b_withSecret(const void* XXH_RESTRICT input, size_t len,
 
 /*
  * It's preferable for performance that XXH3_hashLong is not inlined,
- * as it results in a smaller fz_function for small data, easier to the instruction cache.
- * Note that inside this no_inline fz_function, we do inline the internal loop,
+ * as it results in a smaller fz_internal for small data, easier to the instruction cache.
+ * Note that inside this no_inline fz_internal, we do inline the internal loop,
  * and provide a statically defined secret size to allow optimization of vector loop.
  */
 XXH_NO_INLINE XXH_PUREF XXH64_hash_t
@@ -6410,7 +6410,7 @@ XXH3_64bits_internal(const void* XXH_RESTRICT input, size_t len,
      * it should be done here.
      * For now, it's a contract pre-condition.
      * Adding a check and a branch here would cost performance at every hash.
-     * Also, note that fz_function signature doesn't offer room to return an error.
+     * Also, note that fz_internal signature doesn't offer room to return an error.
      */
     if (len <= 16)
         return XXH3_len_0to16_64b((const xxh_u8*)input, len, (const xxh_u8*)secret, seed64);
@@ -6693,7 +6693,7 @@ XXH3_consumeStripes(xxh_u64* XXH_RESTRICT acc,
 #   define XXH3_STREAM_USE_STACK 1
 # endif
 #endif
-/* This fz_function accepts f_acc and f_scramble as fz_function pointers,
+/* This fz_internal accepts f_acc and f_scramble as fz_internal pointers,
  * making it possible to implement multiple variants with different acc & scramble stages.
  * This is notably useful to implement multiple vector variants with different intrinsics.
  */

@@ -46,21 +46,21 @@ struct Camera3D
   Camera3D_Input_Config input_config;
 };
 
-fz_function Camera3D* camera3d_init(Arena *arena, Window *window, f32 speed, f32 near_plane, f32 far_plane);
-fz_function void      camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time); /* This would be the default behaviour attached to the camera. User can implement it's own update functions and not call these. */
-fz_function void      camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
-fz_function V3f32     camera3d_get_forward(Camera3D *camera);
-fz_function V3f32     camera3d_get_right(Camera3D *camera);
-fz_function V3f32     camera3d_get_up(Camera3D *camera);
-fz_function Matrix4   camera3d_projection(Camera3D *camera, f32 width, f32 height, f32 near_plane, f32 far_plane);
-fz_function Matrix4   camera3d_view(Camera3D *camera);
-fz_function void      camera3d_look_at(Camera3D *camera, V3f32 target);
-fz_function void      camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll);
-fz_function void      camera3d_set_speed(Camera3D *camera, u32 speed);
+fz_internal Camera3D* camera3d_init(Arena *arena, Window *window, f32 speed, f32 near_plane, f32 far_plane);
+fz_internal void      camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time); /* This would be the default behaviour attached to the camera. User can implement it's own update functions and not call these. */
+fz_internal void      camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time);
+fz_internal V3f32     camera3d_get_forward(Camera3D *camera);
+fz_internal V3f32     camera3d_get_right(Camera3D *camera);
+fz_internal V3f32     camera3d_get_up(Camera3D *camera);
+fz_internal Matrix4   camera3d_projection(Camera3D *camera, f32 width, f32 height, f32 near_plane, f32 far_plane);
+fz_internal Matrix4   camera3d_view(Camera3D *camera);
+fz_internal void      camera3d_look_at(Camera3D *camera, V3f32 target);
+fz_internal void      camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll);
+fz_internal void      camera3d_set_speed(Camera3D *camera, u32 speed);
 
 #endif // CAMERA3D_H
 
-fz_function Camera3D*
+fz_internal Camera3D*
 camera3d_init(Arena *arena, Window *window, f32 speed, f32 near_plane, f32 far_plane)
 {
   Camera3D *result = push_array(arena, Camera3D, 1);
@@ -92,7 +92,7 @@ camera3d_init(Arena *arena, Window *window, f32 speed, f32 near_plane, f32 far_p
   return result;
 }
 
-fz_function void
+fz_internal void
 camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time)
 {
   fz_local_persist b32   was_right_mouse_button_down = false;
@@ -137,7 +137,7 @@ camera3d_default_update(Window *window, Camera3D* camera, f32 delta_time)
   }
 }
 
-fz_function void
+fz_internal void
 camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time)
 {
   f32 dx = mouse_delta.x * camera->sensitivity;
@@ -163,7 +163,7 @@ camera3d_update_move(Camera3D *camera, V2s32 mouse_delta, f32 delta_time)
   camera->projection = camera3d_projection(camera, get_window_width(), get_window_height(), camera->near_plane, camera->far_plane);
 }
 
-fz_function V3f32
+fz_internal V3f32
 camera3d_get_forward(Camera3D *camera)
 {
   f32 pitch_rad = radians_from_degrees(camera->pitch);
@@ -175,14 +175,14 @@ camera3d_get_forward(Camera3D *camera)
   return forward;
 }
 
-fz_function V3f32
+fz_internal V3f32
 camera3d_get_right(Camera3D *camera)
 {
   V3f32 forward = camera3d_get_forward(camera);
   return v3f32_normalize(v3f32_cross(forward, WORLD_UP));
 }
 
-fz_function V3f32
+fz_internal V3f32
 camera3d_get_up(Camera3D *camera)
 {
   V3f32 forward = camera3d_get_forward(camera);
@@ -190,14 +190,14 @@ camera3d_get_up(Camera3D *camera)
   return v3f32_cross(right, forward);
 }
 
-fz_function Matrix4
+fz_internal Matrix4
 camera3d_projection(Camera3D *camera, f32 width, f32 height, f32 near_plane, f32 far_plane)
 {
   Matrix4 result = matrix4_perspective(camera->fov, get_window_width(), get_window_height(), near_plane, far_plane);
   return result;
 }
 
-fz_function Matrix4
+fz_internal Matrix4
 camera3d_view(Camera3D *camera)
 {
   V3f32 forward = camera3d_get_forward(camera);
@@ -206,7 +206,7 @@ camera3d_view(Camera3D *camera)
   return matrix4_look_at(camera->position, target, up);
 }
 
-fz_function void
+fz_internal void
 camera3d_look_at(Camera3D *camera, V3f32 target)
 {
   V3f32 direction = v3f32_normalize(v3f32_sub(target, camera->position));
@@ -214,14 +214,14 @@ camera3d_look_at(Camera3D *camera, V3f32 target)
   camera->yaw     = degrees_from_radians(atan2f(-direction.x, -direction.z));
 }
 
-fz_function void
+fz_internal void
 camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll)
 {
   camera->pitch = pitch;
   camera->yaw   = yaw;
 }
 
-fz_function void
+fz_internal void
 camera3d_set_speed(Camera3D *camera, u32 speed)
 {
   camera->speed = (f32)speed;

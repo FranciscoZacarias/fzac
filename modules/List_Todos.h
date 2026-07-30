@@ -38,10 +38,10 @@ struct List_Todos
   Array_Members(files, LT_File);
 };
 
-fz_function List_Todos list_todos(String src_directory);
-fz_function void print_list_todos(List_Todos *todos);
+fz_internal List_Todos list_todos(String src_directory);
+fz_internal void print_list_todos(List_Todos *todos);
 
-fz_function List_Todos 
+fz_internal List_Todos 
 list_todos(String src_directory)
 {
   Scratch scratch = scratch_begin(0,0);
@@ -180,7 +180,7 @@ list_todos(String src_directory)
   return todos;
 }
 
-fz_function void
+fz_internal void
 print_list_todos(List_Todos *todos)
 {
   String_Builder builder = string_builder_init(kilobytes(64));

@@ -12,15 +12,15 @@ struct Camera2D
   f32 far_plane;
 };
 
-fz_function Camera2D camera2d_init(u32 window_width, u32 window_height);
-fz_function void    _camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height);
-fz_function void     camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height);
-fz_function void     camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height);
-fz_function void     camera2d_reset(Camera2D *camera2d); /* Resets camera zoom and position */
+fz_internal Camera2D camera2d_init(u32 window_width, u32 window_height);
+fz_internal void    _camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height);
+fz_internal void     camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height);
+fz_internal void     camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height);
+fz_internal void     camera2d_reset(Camera2D *camera2d); /* Resets camera zoom and position */
 
 #endif // CAMERA2D_H
 
-fz_function Camera2D
+fz_internal Camera2D
 camera2d_init(u32 window_width, u32 window_height)
 {
   Camera2D camera2d;
@@ -31,7 +31,7 @@ camera2d_init(u32 window_width, u32 window_height)
   return camera2d;
 }
 
-fz_function void
+fz_internal void
 _camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height)
 {
   f32 half_width  = (window_width  * 0.5f) / camera2d->zoom;
@@ -40,14 +40,14 @@ _camera2d_update(Camera2D *camera2d, u32 window_width, u32 window_height)
   camera2d->view       = matrix3_translate(v2f32(-camera2d->position.x, -camera2d->position.y));
 }
 
-fz_function void
+fz_internal void
 camera2d_move(Camera2D *camera2d, V2f32 delta, u32 window_width, u32 window_height)
 {
   camera2d->position = v2f32_add(camera2d->position, delta);
   _camera2d_update(camera2d, window_width, window_height);
 }
 
-fz_function void
+fz_internal void
 camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height)
 {
   f32 new_zoom = camera2d->zoom + delta;
@@ -58,7 +58,7 @@ camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_width, u32 window_height
   _camera2d_update(camera2d, window_width, window_height);
 }
 
-fz_function void
+fz_internal void
 camera2d_reset(Camera2D *camera2d)
 {
   camera2d->zoom = 1.0f;

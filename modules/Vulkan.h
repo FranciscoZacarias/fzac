@@ -16,7 +16,7 @@
 PFN_vkGetInstanceProcAddr __vkGetInstanceProcAddr = NULL;
 PFN_vkGetDeviceProcAddr   __vkGetDeviceProcAddr   = NULL;
 
-fz_function b32 vulkan_init();
+fz_internal b32 vulkan_init();
 VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *data, void *user);
 
 // @Section: Implementation
