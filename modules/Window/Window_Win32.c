@@ -12,12 +12,12 @@ fz_internal LRESULT CALLBACK _window_procedure(HWND hwnd, UINT message, WPARAM w
 
 // @TODO(Fz): Add resize callback
 
-fz_internal Window*
+fz_internal OS_Window*
 window_create(String title, u32 width, u32 height, u32 x, u32 y)
 {
   if (!WindowClassInited) _init_window_class();
 
-  Window *window = &GlobalWindow;
+  OS_Window *window = &GlobalWindow;
   memory_zero_struct(window);
 
   window->title  = title;
@@ -82,7 +82,7 @@ fz_internal LRESULT CALLBACK
 _window_procedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
   Event_Array* events = &GlobalWindow.events_this_frame;
-  Window *window = &GlobalWindow;
+  OS_Window *window = &GlobalWindow;
 
   switch (message)
   {
@@ -294,7 +294,7 @@ _init_window_class()
 fz_internal void
 window_update_events()
 {
-  Window *window = &GlobalWindow;
+  OS_Window *window = &GlobalWindow;
 
   window->events_this_frame.count = 0;
   arena_clear(window->frame_arena);
@@ -614,7 +614,7 @@ get_window_height()
 }
 
 fz_internal V2s32
-get_window_center(Window *window)
+get_window_center(OS_Window *window)
 {
   V2s32 result = v2s32(get_window_width() / 2, get_window_height() / 2);
   return result;

@@ -134,7 +134,7 @@ enum
   Emit_Character_Literals = (1 << 1), /* Emits a Token_Character_Literal like 'c', instead of 3 tokens like "'", "c", "'" */
   Emit_Line_Comments      = (1 << 2), /* Emits a line comment made made with '//' as a single token like: Token_Line_Comment "// This is a whole line comment" */
   Emit_Hash_Comments      = (1 << 3), /* Emits a line comment made made with '#' as a single token like: Token_Line_Comment "# This is a whole line comment" */
-  Emit_Block_Comments     = (1 << 4), /* Emits a block comment made with made with /* */
+  Emit_Block_Comments     = (1 << 4), /* Emits a block comment made with made with */
   Emit_String_Backtick    = (1 << 5), /* Emits a Token_String_Backtick like `This is a backtick string` instead of each individual token */
 
   Emit_All = Emit_String_Literals|Emit_Character_Literals|Emit_Line_Comments|Emit_Block_Comments,
@@ -303,6 +303,7 @@ lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_St
     Token* token = lexer_peek_token(lexer);
     if (token->kind == Token_End_Of_File) break;
 
+    #if 0
     String value = token->value;
     switch (token->kind)
     {
@@ -311,10 +312,11 @@ lexer_dump_tokens(Lexer* lexer, String path, Trivia_Flags trivia_tokens, Emit_St
       case Token_Form_Feed:       value = S("\\f"); break;
       case Token_Vertical_Tab:    value = S("\\v"); break;
       case Token_Line_Break:      value = S("\\n"); break;
-   }
-
+    }
     // @TODO(fz): replace token_to_string
-    //printf("Token: (%d:%d) %s '"S_FMT"' \n", token->l0, token->c0, token_to_string(token->kind), S_ARG(value));
+    printf("Token: (%d:%d) %s '"S_FMT"' \n", token->l0, token->c0, token_to_string(token->kind), S_ARG(value));
+    #endif
+
     lexer_eat_token(lexer);
   }
 }

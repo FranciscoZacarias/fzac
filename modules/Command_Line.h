@@ -11,6 +11,16 @@
 #define TEMP_BUFFER_SIZE 2048
 #define PARSED_BUFFER_SIZE 4096
 
+#if OS_WINDOWS
+  #define COMMAND_LINE_MAX_PATH MAX_PATH
+#else
+  #define COMMAND_LINE_MAX_PATH 260
+#endif
+
+#if OS_LINUX
+  #include <unistd.h>
+#endif
+
 typedef struct Command_Line_Arg Command_Line_Arg;
 typedef struct Command_Line Command_Line;
 
@@ -59,7 +69,7 @@ _command_line_strip_quotes(String in)
 {
   if (in.count >= 2 && in.cstring[0] == '"' && in.cstring[in.count - 1] == '"')
   {
-    return string_new(in.count - 2,  in.cstring + 1);
+    return string_new(in.count - 2, in.cstring + 1);
   }
   return in;
 }
@@ -112,7 +122,8 @@ command_line_parse_from_argc_argv(s32 argc, u8** argv)
   if (argc > 0)
   {
     String first_arg = string_new(cstring_length(argv[0]), argv[0]);
-    String_List arg_list = string_list_new(scratch.arena, first_arg);
+    String_List arg_list = string_list_new();
+    string_list_push(scratch.arena, &arg_list, first_arg);
     for (s32 idx = 1; idx < argc; idx += 1)
     {
       String arg = string_new(cstring_length(argv[idx]), argv[idx]);
@@ -134,8 +145,20 @@ command_line_parse(String input)
     return result;
   }
 
-  fz_local_persist u8 exe_buffer[MAX_PATH];
-  DWORD exe_len = GetModuleFileNameA(0, (LPSTR)exe_buffer, MAX_PATH);
+  fz_local_persist u8 exe_buffer[COMMAND_LINE_MAX_PATH];
+  u64 exe_len = 0;
+
+#if OS_WINDOWS
+  exe_len = (u64)GetModuleFileNameA(0, (LPSTR)exe_buffer, COMMAND_LINE_MAX_PATH);
+#elif OS_LINUX
+  ssize_t bytes_read = readlink("/proc/self/exe", (char*)exe_buffer, COMMAND_LINE_MAX_PATH - 1);
+  if (bytes_read > 0)
+  {
+    exe_len = (u64)bytes_read;
+    exe_buffer[exe_len] = 0;
+  }
+#endif
+
   result.executable = (String){ exe_len, exe_buffer };
 
   // Copy input into stable memory

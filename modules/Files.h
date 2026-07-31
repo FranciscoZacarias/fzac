@@ -35,7 +35,7 @@ fz_internal b32 is_file(String path);
 fz_internal b32    directory_create(String path);
 fz_internal b32    is_directory(String path);
 fz_internal b32    directory_exists(String path);
-fz_internal String directory_get_current_working_directory(); /* Returns the current working directory */
+fz_internal String directory_get_current_working_directory(void); /* Returns the current working directory */
 fz_internal String directory_pop(String path); /* Given a path, pops one directory. E.g. 'D:\work\make_project\build' becomes 'D:\work\make_project'*/
 fz_internal String directory_push(Arena *arena, String path, String dir); /* Given a path, goes up one directory. E.g. 'D:\work\make_project' with 'build' becomes 'D:\work\make_project\build'*/
 
@@ -164,7 +164,6 @@ file_create(String path)
   }
   else
   {
-    // @TODO(fz): Handle error
     result = false;
   }
   return result;
@@ -261,7 +260,7 @@ file_load(Arena* arena, String path)
   if(file == INVALID_HANDLE_VALUE) return result;
 
   DWORD file_size = GetFileSize(file, 0);
-  u8* buffer = push_array(arena, u8, file_size + 1); // +1 for null terminator
+  u8* buffer = push_array(arena, u8, file_size + 1);
   DWORD read = 0;
   if(ReadFile(file, buffer, file_size, &read, 0) && read == file_size)
   {
@@ -305,65 +304,7 @@ file_get_files_in_path(Arena* arena, String path, b32 recursive)
 }
 
 fz_internal String
-file_get_extension(String path)
-{
-  String result = {0};
-
-  if(path.count == 0 || path.cstring == 0) return result;
-
-  s64 last_dot = -1;
-  s64 last_sep = -1;
-
-  for(s64 i = 0; i < (s64)path.count; ++i)
-  {
-    u8 c = path.cstring[i];
-
-    if(c == '/' || c == '\\')
-    {
-      last_sep = i;
-      last_dot = -1; // dots before a separator don't count
-    }
-    else if(c == '.')
-    {
-      last_dot = i;
-    }
-  }
-
-  if(last_dot < 0 || last_dot + 1 >= (s64)path.count) return result;
-
-  result.cstring = path.cstring + last_dot + 1;
-  result.count   = path.count - (last_dot + 1);
-
-  return result;
-}
-
-fz_internal String 
-file_get_name_no_extension(String path)
-{
-  String result  = S("");
-  u64 dot_position;
-  if (string_find_last(path, S("."), &dot_position))
-  {
-    result.cstring = path.cstring;
-    result.count   = path.count - (path.count - dot_position);
-    for (u32 i = result.count-1; i > 0; i -= 1)
-    {
-      if (result.cstring[i] == '\\' || result.cstring[i] == '/')
-      {
-        if (result.count >= i+1)
-        {
-          result.cstring = result.cstring + i + 1;
-          result.count   = result.count - i - 1;
-        }
-        break;
-      }
-    }
-  }
-  return result;
-}
-
-fz_internal String
-directory_get_current_working_directory()
+directory_get_current_working_directory(void)
 {
   static u8 buffer[MAX_PATH];
 
@@ -377,45 +318,6 @@ directory_get_current_working_directory()
   return result;
 }
 
-fz_internal String 
-directory_pop(String path)
-{
-  u64 index;
-  string_find_last(path, S("\\"), &index);
-  if (index == U64_MAX)
-  {
-    return S("");
-  }
-  String result;
-  result.cstring = path.cstring;
-  result.count   = index;
-
-  return result;
-}
-
-fz_internal String 
-directory_push(Arena *arena, String path, String dir)
-{
-  String result = string_join(arena, path, S("\\"));
-  result = string_join(arena, result, dir);
-  return result;
-}
-
-fz_internal void
-file_watch_init(Arena *arena, File_Watcher *watch, String path)
-{
-  if (file_exists(path))
-  {
-    watch->path = string_copy(arena, path);
-    watch->last_write_time = file_get_last_write_time(path);
-  }
-  else
-  {
-    // @TODO(fz): Log error better (we cant use logging as of nwo because of circular dependncy between files and loggin
-    printf("Tried to init a file watch with a path that wasn't found: " S_FMT, S_ARG(path));
-  }
-}
-
 fz_internal u64
 file_get_last_write_time(String path)
 {
@@ -425,25 +327,6 @@ file_get_last_write_time(String path)
   {
     FILETIME t = data.ftLastWriteTime;
     result = ((u64)t.dwHighDateTime << 32) | (u64)t.dwLowDateTime;
-  }
-  return result;
-}
-
-fz_internal b32
-file_watch_changed(File_Watcher *watch)
-{
-  b32 result = false;
-  u64 new_time = file_get_last_write_time(watch->path);
-  if (new_time != watch->last_write_time)
-  {
-    watch->last_write_time = new_time;
-
-    f64 current_time = time_seconds();
-    if ((current_time - watch->last_triggered_time) > 0.1)
-    {
-      watch->last_triggered_time = current_time;
-      result = true;
-    }
   }
   return result;
 }
@@ -512,13 +395,11 @@ directory_create(String path)
   memory_copy(buffer, path.cstring, path.count);
   buffer[path.count] = 0;
 
-  // CreateDirectory succeeds only if the full parent path already exists
   if (CreateDirectoryA(buffer, 0))
   {
     return true;
   }
 
-  // If it already exists and is a directory, treat as success
   DWORD error = GetLastError();
   if (error == ERROR_ALREADY_EXISTS)
   {
@@ -542,7 +423,6 @@ full_path_from_relative_path(Arena* arena, String relative_path)
     return result;
   }
   
-  // Get executable's full path
   char exe_path[MAX_PATH];
   DWORD exe_len = GetModuleFileNameA(NULL, exe_path, MAX_PATH);
   if(exe_len == 0)
@@ -550,15 +430,13 @@ full_path_from_relative_path(Arena* arena, String relative_path)
     return result;
   }
   
-  // Find last backslash to get directory only
   char* last_slash = exe_path + exe_len - 1;
   while(last_slash > exe_path && *last_slash != '\\' && *last_slash != '/')
   {
     last_slash--;
   }
-  *(last_slash + 1) = '\0';  // Keep the backslash
+  *(last_slash + 1) = '\0';
   
-  // Combine exe directory with relative path
   size_t exe_dir_len = strlen(exe_path);
   size_t combined_len = exe_dir_len + relative_path.count + 1;
   char* combined = push_array(arena, char, combined_len);
@@ -566,11 +444,9 @@ full_path_from_relative_path(Arena* arena, String relative_path)
   memcpy(combined + exe_dir_len, relative_path.cstring, relative_path.count);
   combined[combined_len - 1] = '\0';
   
-  // NOW resolve the path (this handles .. and . properly)
   DWORD required_size = GetFullPathNameA(combined, 0, 0, 0);
   if(required_size == 0)
   {
-    printf("GetFullPathNameA failed (first call)\n");
     return result;
   }
   
@@ -578,7 +454,6 @@ full_path_from_relative_path(Arena* arena, String relative_path)
   DWORD written = GetFullPathNameA(combined, required_size, (char*)buffer, 0);
   if(written == 0)
   {
-    printf("GetFullPathNameA failed (second call)\n");
     return result;
   }
   
@@ -587,8 +462,543 @@ full_path_from_relative_path(Arena* arena, String relative_path)
   return result;
 }
 
+#elif OS_LINUX
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#ifndef PATH_MAX
+  #define PATH_MAX 4096
+#endif
+
+fz_internal b32 linux_is_dot_dir(const char* name);
+fz_internal b32 linux_collect_recursive(Arena* arena, String_List* out, String dir_path);
+fz_internal void linux_collect_non_recursive(Arena* arena, String_List* out, String dir_path);
+
+fz_internal b32
+linux_is_dot_dir(const char* name)
+{
+  return (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0)));
+}
+
+fz_internal b32
+linux_collect_recursive(Arena* arena, String_List* out, String dir_path)
+{
+  b32 found_file = 0;
+  Scratch scratch = scratch_begin(&arena, 1);
+  char* cpath = (char*)push_array(scratch.arena, u8, dir_path.count + 1);
+  memory_copy(cpath, dir_path.cstring, dir_path.count);
+  cpath[dir_path.count] = 0;
+
+  DIR* dir = opendir(cpath);
+  if (!dir)
+  {
+    scratch_end(&scratch);
+    return 0;
+  }
+
+  struct dirent* entry;
+  while ((entry = readdir(dir)) != NULL)
+  {
+    if (linux_is_dot_dir(entry->d_name)) continue;
+
+    String name = string_new((u64)strlen(entry->d_name), (u8*)entry->d_name);
+    String full_path = string_join(arena, string_join(arena, dir_path, S("/")), name);
+
+    b32 is_dir = false;
+    if (entry->d_type == DT_DIR)
+    {
+      is_dir = true;
+    }
+    else if (entry->d_type == DT_UNKNOWN)
+    {
+      is_dir = is_directory(full_path);
+    }
+
+    if (is_dir)
+    {
+      b32 subtree_has_files = linux_collect_recursive(arena, out, full_path);
+      if (!subtree_has_files)
+      {
+        string_list_push(arena, out, full_path);
+      }
+      found_file |= subtree_has_files;
+    }
+    else
+    {
+      string_list_push(arena, out, full_path);
+      found_file = 1;
+    }
+  }
+
+  closedir(dir);
+  scratch_end(&scratch);
+  return found_file;
+}
+
+fz_internal void
+linux_collect_non_recursive(Arena* arena, String_List* out, String dir_path)
+{
+  Scratch scratch = scratch_begin(&arena, 1);
+  char* cpath = (char*)push_array(scratch.arena, u8, dir_path.count + 1);
+  memory_copy(cpath, dir_path.cstring, dir_path.count);
+  cpath[dir_path.count] = 0;
+
+  DIR* dir = opendir(cpath);
+  if (!dir)
+  {
+    scratch_end(&scratch);
+    return;
+  }
+
+  struct dirent* entry;
+  while ((entry = readdir(dir)) != NULL)
+  {
+    if (linux_is_dot_dir(entry->d_name)) continue;
+
+    String name = string_new((u64)strlen(entry->d_name), (u8*)entry->d_name);
+    String full_path = string_join(arena, string_join(arena, dir_path, S("/")), name);
+    string_list_push(arena, out, full_path);
+  }
+
+  closedir(dir);
+  scratch_end(&scratch);
+}
+
+fz_internal b32
+file_create(String path)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int fd = open(cpath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  scratch_end(&scratch);
+
+  if (fd < 0) return false;
+  close(fd);
+  return true;
+}
+
+fz_internal b32
+file_delete(String path)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int result = unlink(cpath);
+  scratch_end(&scratch);
+  return (result == 0);
+}
+
+fz_internal u32
+file_write(String path, u8* data, u64 data_size)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int fd = open(cpath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  scratch_end(&scratch);
+  if (fd < 0) return 0;
+
+  ssize_t bytes_written = write(fd, data, data_size);
+  close(fd);
+  return (bytes_written > 0) ? (u32)bytes_written : 0;
+}
+
+fz_internal u32
+file_write_string(String path, String data)
+{
+  return file_write(path, data.cstring, data.count);
+}
+
+fz_internal u32
+file_append(String path, u8* data, u64 data_size)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int fd = open(cpath, O_WRONLY | O_CREAT | O_APPEND, 0644);
+  scratch_end(&scratch);
+  if (fd < 0) return 0;
+
+  ssize_t bytes_written = write(fd, data, data_size);
+  close(fd);
+  return (bytes_written > 0) ? (u32)bytes_written : 0;
+}
+
+fz_internal b32
+file_wipe(String path)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int fd = open(cpath, O_WRONLY | O_TRUNC);
+  scratch_end(&scratch);
+  if (fd < 0) return false;
+
+  close(fd);
+  return true;
+}
+
+fz_internal u32
+file_size(String path)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  struct stat st;
+  int res = stat(cpath, &st);
+  scratch_end(&scratch);
+
+  if (res != 0) return 0;
+  return (u32)st.st_size;
+}
+
+fz_internal String
+file_load(Arena* arena, String path)
+{
+  String result = {0};
+
+  Scratch scratch = scratch_begin(&arena, 1);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  int fd = open(cpath, O_RDONLY);
+  scratch_end(&scratch);
+  if (fd < 0) return result;
+
+  struct stat st;
+  if (fstat(fd, &st) == 0)
+  {
+    u64 sz = (u64)st.st_size;
+    u8* buffer = push_array(arena, u8, sz + 1);
+    ssize_t bytes_read = read(fd, buffer, sz);
+    if (bytes_read == (ssize_t)sz)
+    {
+      buffer[sz] = '\0';
+      result.cstring = buffer;
+      result.count = sz;
+    }
+  }
+
+  close(fd);
+  return result;
+}
+
+fz_internal String_List
+file_get_files_in_path(Arena* arena, String path, b32 recursive)
+{
+  String_List result = string_list_new();
+
+  if (!directory_exists(path))
+  {
+    if (file_exists(path))
+    {
+      string_list_push(arena, &result, string_copy(arena, path));
+    }
+    return result;
+  }
+
+  if (recursive)
+  {
+    linux_collect_recursive(arena, &result, path);
+  }
+  else
+  {
+    linux_collect_non_recursive(arena, &result, path);
+  }
+
+  return result;
+}
+
+fz_internal String
+directory_get_current_working_directory(void)
+{
+  static u8 buffer[PATH_MAX];
+
+  char* cwd = getcwd((char*)buffer, sizeof(buffer));
+  if (!cwd)
+  {
+    return S("");
+  }
+
+  u64 len = (u64)strlen(cwd);
+  return (String){ .count = len, .cstring = buffer };
+}
+
+fz_internal u64
+file_get_last_write_time(String path)
+{
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  struct stat st;
+  int res = stat(cpath, &st);
+  scratch_end(&scratch);
+
+  if (res != 0) return 0;
+  return ((u64)st.st_mtim.tv_sec * 1000000000ULL) + (u64)st.st_mtim.tv_nsec;
+}
+
+fz_internal b32
+is_directory(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  struct stat st;
+  int res = stat(cpath, &st);
+  scratch_end(&scratch);
+
+  if (res != 0) return false;
+  return S_ISDIR(st.st_mode);
+}
+
+fz_internal b32
+is_file(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  struct stat st;
+  int res = stat(cpath, &st);
+  scratch_end(&scratch);
+
+  if (res != 0) return false;
+  return S_ISREG(st.st_mode);
+}
+
+fz_internal b32
+directory_exists(String path)
+{
+  return is_directory(path);
+}
+
+fz_internal b32
+file_exists(String path)
+{
+  return is_file(path);
+}
+
+fz_internal b32
+directory_create(String path)
+{
+  if (path.count == 0 || path.cstring == 0) return false;
+
+  Scratch scratch = scratch_begin(0, 0);
+  char* cpath = (char*)push_array(scratch.arena, u8, path.count + 1);
+  memory_copy(cpath, path.cstring, path.count);
+  cpath[path.count] = 0;
+
+  if (mkdir(cpath, 0755) == 0)
+  {
+    scratch_end(&scratch);
+    return true;
+  }
+
+  b32 exists = (errno == EEXIST) && is_directory(path);
+  scratch_end(&scratch);
+  return exists;
+}
+
+fz_internal String
+full_path_from_relative_path(Arena* arena, String relative_path)
+{
+  String result = {0};
+  if (relative_path.count == 0 || relative_path.cstring == 0) return result;
+
+  Scratch scratch = scratch_begin(&arena, 1);
+  char exe_path[PATH_MAX];
+  ssize_t bytes_read = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+  if (bytes_read <= 0)
+  {
+    scratch_end(&scratch);
+    return result;
+  }
+  exe_path[bytes_read] = 0;
+
+  char* last_slash = strrchr(exe_path, '/');
+  if (last_slash)
+  {
+    *(last_slash + 1) = 0;
+  }
+
+  size_t exe_dir_len = strlen(exe_path);
+  size_t combined_len = exe_dir_len + relative_path.count + 1;
+  char* combined = push_array(scratch.arena, char, combined_len);
+  memory_copy(combined, exe_path, exe_dir_len);
+  memory_copy(combined + exe_dir_len, relative_path.cstring, relative_path.count);
+  combined[combined_len - 1] = 0;
+
+  char resolved[PATH_MAX];
+  if (realpath(combined, resolved) != NULL)
+  {
+    u64 res_len = (u64)strlen(resolved);
+    u8* buffer = push_array(arena, u8, res_len + 1);
+    memory_copy(buffer, resolved, res_len);
+    buffer[res_len] = 0;
+
+    result.count = res_len;
+    result.cstring = buffer;
+  }
+
+  scratch_end(&scratch);
+  return result;
+}
+
 #else
 # error Operating System not supported
 #endif
+
+// Cross-Platform Utilities
+fz_internal String
+file_get_extension(String path)
+{
+  String result = {0};
+
+  if(path.count == 0 || path.cstring == 0) return result;
+
+  s64 last_dot = -1;
+
+  for(s64 i = 0; i < (s64)path.count; ++i)
+  {
+    u8 c = path.cstring[i];
+
+    if(c == '/' || c == '\\')
+    {
+      last_dot = -1;
+    }
+    else if(c == '.')
+    {
+      last_dot = i;
+    }
+  }
+
+  if(last_dot < 0 || last_dot + 1 >= (s64)path.count) return result;
+
+  result.cstring = path.cstring + last_dot + 1;
+  result.count    = path.count - (last_dot + 1);
+
+  return result;
+}
+
+fz_internal String 
+file_get_name_no_extension(String path)
+{
+  String result = S("");
+  u64 dot_position;
+  if (string_find_last(path, S("."), &dot_position))
+  {
+    result.cstring = path.cstring;
+    result.count   = dot_position;
+    for (s64 i = (s64)result.count - 1; i >= 0; i -= 1)
+    {
+      if (result.cstring[i] == '\\' || result.cstring[i] == '/')
+      {
+        result.cstring = result.cstring + i + 1;
+        result.count   = result.count - i - 1;
+        break;
+      }
+    }
+  }
+  return result;
+}
+
+fz_internal String 
+directory_pop(String path)
+{
+  s64 index = -1;
+  for (s64 i = (s64)path.count - 1; i >= 0; i--)
+  {
+    if (path.cstring[i] == '\\' || path.cstring[i] == '/')
+    {
+      index = i;
+      break;
+    }
+  }
+
+  if (index < 0)
+  {
+    return S("");
+  }
+  String result;
+  result.cstring = path.cstring;
+  result.count   = (u64)index;
+
+  return result;
+}
+
+fz_internal String 
+directory_push(Arena *arena, String path, String dir)
+{
+#if OS_WINDOWS
+  String sep = S("\\");
+#else
+  String sep = S("/");
+#endif
+  String result = string_join(arena, path, sep);
+  result = string_join(arena, result, dir);
+  return result;
+}
+
+fz_internal void
+file_watch_init(Arena *arena, File_Watcher *watch, String path)
+{
+  if (file_exists(path))
+  {
+    watch->path = string_copy(arena, path);
+    watch->last_write_time = file_get_last_write_time(path);
+  }
+  else
+  {
+    printf("Tried to init a file watch with a path that wasn't found: " S_FMT "\n", S_ARG(path));
+  }
+}
+
+fz_internal b32
+file_watch_changed(File_Watcher *watch)
+{
+  b32 result = false;
+  u64 new_time = file_get_last_write_time(watch->path);
+  if (new_time != watch->last_write_time)
+  {
+    watch->last_write_time = new_time;
+
+    f64 current_time = time_seconds();
+    if ((current_time - watch->last_triggered_time) > 0.1)
+    {
+      watch->last_triggered_time = current_time;
+      result = true;
+    }
+  }
+  return result;
+}
 
 #endif // FILES_H

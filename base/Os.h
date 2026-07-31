@@ -6,6 +6,8 @@ fz_internal void message_box_with_debugger(String title, String content, String 
 
 #if OS_WINDOWS
 # include "Os/Os_Win32.c"
+#elif OS_LINUX
+# include "Os/Os_Linux.c"
 #else
 # error Operating System not supported
 #endif

@@ -21,12 +21,12 @@ typedef enum Cursor_Type
   Cursor_Size_All,
 } Cursor_Type;
 
-fz_internal V2f32 cursor_get_position(Window *window);
-fz_internal void  cursor_lock(Window *window);
+fz_internal V2f32 cursor_get_position(OS_Window *window);
+fz_internal void  cursor_lock(OS_Window *window);
 fz_internal void  cursor_unlock();
 fz_internal b32   cursor_is_locked();
 fz_internal void  cursor_hide(b32 hide);
-fz_internal void  cursor_set_position(Window *window, s32 x, s32 y);
+fz_internal void  cursor_set_position(OS_Window *window, s32 x, s32 y);
 fz_internal void  cursor_set_icon(Cursor_Type type);
 
 // @Section: Errors

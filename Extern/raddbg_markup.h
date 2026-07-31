@@ -7,6 +7,15 @@
 ////////////////////////////////
 //~ Implementation Overrides
 
+// @NOTE(fz): Linux compatibility
+#if !defined(_MSC_VER)
+  #include <stdint.h>
+  #define __int64   long long
+  #define __int32   int
+  #define __int16   short
+  #define __int8    char
+#endif
+
 #if !defined(RADDBG_MARKUP_VSNPRINTF)
 # define RADDBG_MARKUP_DEFAULT_VSNPRINTF 1
 # define RADDBG_MARKUP_VSNPRINTF vsnprintf
@@ -14,6 +23,10 @@
 
 #if !defined(RADDBG_MARKUP_STL_TYPE_VIEWS)
 # define RADDBG_MARKUP_STL_TYPE_VIEWS 1
+#endif
+
+#if !defined(_WIN32) && !defined(RADDBG_MARKUP_STUBS)
+#  define RADDBG_MARKUP_STUBS 1
 #endif
 
 ////////////////////////////////

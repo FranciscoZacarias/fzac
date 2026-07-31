@@ -108,45 +108,64 @@
 # define ARCH_LITTLE_ENDIAN 1
 #endif
 
-#if COMPILER_MSVC
-# define thread_static __declspec(thread)
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
+#  define thread_static _Thread_local
+#elif COMPILER_MSVC
+#  define thread_static __declspec(thread)
 #elif COMPILER_CLANG || COMPILER_GCC
-# define thread_static __thread
+#  define thread_static __thread
 #else
-# define thread_static
+#  define thread_static
 #endif
 
 #if OS_WINDOWS
-# if COMPILER_MSVC
-#  define shared_function C_LINKAGE __declspec(dllexport)
-# else
-#  define shared_function C_LINKAGE __attribute__((dllexport))
-# endif
+#  if COMPILER_MSVC
+#    define shared_function C_LINKAGE __declspec(dllexport)
+#  else
+#    define shared_function C_LINKAGE __attribute__((dllexport))
+#  endif
+#elif OS_MAC || OS_LINUX || defined(__GNUC__) || defined(__clang__)
+#  define shared_function C_LINKAGE __attribute__((visibility("default")))
 #else
-# define shared_function C_LINKAGE
+#  define shared_function C_LINKAGE
 #endif
 
 #if OS_WINDOWS
-# ifndef WIN32_LEAN_AND_MEAN
-#  define WIN32_LEAN_AND_MEAN
-# endif
-# ifdef UNICODE
-#  undef UNICODE
-# endif
-# if COMPILER_MSVC
-#  pragma warning(push)
-#  pragma warning(disable: 4042)
-# endif
-# include <windows.h>
-# ifdef min
-#  undef min
-# endif
-# ifdef max
-#  undef max
-# endif
-# if COMPILER_MSVC
-#  pragma warning(pop)
-# endif
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifdef UNICODE
+#    undef UNICODE
+#  endif
+#  if COMPILER_MSVC
+#    pragma warning(push)
+#    pragma warning(disable: 4042)
+#  endif
+#  include <windows.h>
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#    undef max
+#  endif
+#  if COMPILER_MSVC
+#    pragma warning(pop)
+#  endif
+#elif OS_LINUX
+#  include <unistd.h>
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
+#  include <time.h>
+#  include <pthread.h>
+#elif OS_MAC
+#  include <unistd.h>
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
+#  include <time.h>
+#  include <pthread.h>
+#  include <mach/mach_time.h>
 #endif
 
-#endif
+#endif // CONTEXT_CRACKING_H

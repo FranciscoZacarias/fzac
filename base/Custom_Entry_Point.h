@@ -1,7 +1,7 @@
 #ifndef CUSTOM_ENTRY_POINT_H
 #define CUSTOM_ENTRY_POINT_H
 
-#include "..\modules\Command_Line.h"
+#include "../modules/Command_Line.h"
 #define enum_type(name, type, to_string) enum // This macro is so that the metaprogram knows what enum is being defined
 
 #if METAPROGRAM
@@ -46,7 +46,7 @@
     {
       default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY, &global_headers_extra_data);  
     }
-    printf("Metaprogram Finished!\n");
+    printf("Metaprogram Finished!/n");
     arena_free(DefaultMetaprogram.arena);
   }
 #else

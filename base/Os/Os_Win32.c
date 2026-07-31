@@ -17,7 +17,7 @@ message_box_with_debugger(String title, String content, String file, u32 line)
   {
     if(raddbg_is_attached())
     {
-      body = Sf(scratch.arena, S_FMT " line:%u\n" S_FMT "\n\nDebugger attached. Press 'Break' to trap, or 'Close' to dismiss.", S_ARG(file), line, S_ARG(content));
+      body = Sf(scratch.arena, S_FMT " line:%u\n" S_FMT "\n\nDebugger attached. Press 'OK' to trap, or 'Cancel' to dismiss.", S_ARG(file), line, S_ARG(content));
       int result = MessageBoxA(NULL, (LPCSTR)body.cstring, (LPCSTR)title.cstring, MB_OKCANCEL | MB_ICONERROR | MB_TASKMODAL);
       if(result == IDOK)
       {
