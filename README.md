@@ -158,7 +158,6 @@ The base layer includes:
 - `Math`: Linear math functions
 - `Allocators`: Custom allocators
   - Arena Allocator
-  - Pool Allocator
   - Scratch memory functions for short lived memory.
 - `Context_Cracking`: Parses platform (OS, Compiler, CPU Arch ... ) into macros.
 - `Core`: Defines data types and some helper macros
@@ -176,7 +175,8 @@ The base layer includes:
 - `Art`: Colors and color related functions.
 - `Camera2D`: Implementation for 2D camera.
 - `Code_Generation`: Code generation module that powers all `.cgen` files.
-- `String_Builder`: String builder 
+- `Simple_Renderer2D`: 2D Screen space renderer to just put quads on the screen. Supports color, textures and text.
+- `String_Builder`: String builder
 - `Command_Line`: Command line parser
 - `Files`: File related functions
 - `Lexer`: Lexer implementation
