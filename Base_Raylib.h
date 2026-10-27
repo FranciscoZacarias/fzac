@@ -1,12 +1,12 @@
-#ifndef BASE_RAYLIB_H
-#define BASE_RAYLIB_H
+#ifndef FZAC_BASE_RAYLIB_H
+#define FZAC_BASE_RAYLIB_H
 
 /* Same base as Base.h, with raylib as the platform, graphics, input, audio and math layer.
    Build raylib once with Extern/raylib/build_raylib.bat, then link with /LIBPATH:<fzac>/Extern/raylib/lib
    Not available in this mode (raylib replaces them): Window, Platform, OpenGL, Vulkan, Simple_Renderer2D, Camera2D, Camera3D
    Not ported to this mode yet: Geometry, Art, UI, Immediate_UI */
 
-#ifdef BASE_H
+#ifdef FZAC_BASE_H
 # error "Include either Base.h or Base_Raylib.h, not both"
 #endif
 
@@ -57,4 +57,4 @@
 
 #include "base/Custom_Entry_Point.h"
 
-#endif // BASE_RAYLIB_H
+#endif // FZAC_BASE_RAYLIB_H

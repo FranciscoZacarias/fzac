@@ -1,5 +1,5 @@
-#ifndef WARNINGS_H
-#define WARNINGS_H
+#ifndef FZAC_WARNINGS_H
+#define FZAC_WARNINGS_H
 
 // Check native compiler macros directly so diagnostic pragmas execute
 // regardless of header include ordering.
@@ -43,4 +43,4 @@
   #endif
 #endif
 
-#endif // WARNINGS_H
+#endif // FZAC_WARNINGS_H

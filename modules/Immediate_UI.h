@@ -1,5 +1,5 @@
-#ifndef FZ_IMMEDIATE_UI_H
-#define FZ_IMMEDIATE_UI_H
+#ifndef FZAC_IMMEDIATE_UI_H
+#define FZAC_IMMEDIATE_UI_H
 
 #if FZ_RAYLIB
 # error "Immediate_UI.h is not supported with Base_Raylib.h yet"
@@ -40,4 +40,4 @@ struct UI_Context
   f32 delta_time;
 };
 
-#endif // FZ_IMMEDIATE_UI_H
+#endif // FZAC_IMMEDIATE_UI_H

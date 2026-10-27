@@ -1,5 +1,5 @@
-#ifndef ARENA_H
-#define ARENA_H
+#ifndef FZAC_ARENA_H
+#define FZAC_ARENA_H
 
 #ifndef ARENA_RESERVE_SIZE
 # define ARENA_RESERVE_SIZE megabytes(64)
@@ -84,8 +84,9 @@ _array_add_impl(void* array, u32* count, u32 capacity, u64 element_size)
 {
   if (*count >= capacity)
   {
-    // @TODO(Fz): error
-    assert(false);
+    char message[256];
+    stbsp_snprintf(message, sizeof(message), "Array_Members overflow: capacity=%u element_size=%llu", capacity, element_size);
+    fatal_error(message);
   }
 
   void* result = (u8*)array + (*count * element_size);
@@ -119,17 +120,16 @@ arena_alloc_sized(u64 reserve, u64 commit)
   void* memory = memory_reserve(reserve);
   if (!memory)
   {
-    // @TODO(Fz): emit_fatal(S("Failed to reserve virtual memory for arena."));
-    assert(!"arena_alloc_sized: memory_reserve failed");
-    return NULL;
+    char message[256];
+    stbsp_snprintf(message, sizeof(message), "Arena failed to reserve virtual memory. reserve=%llu", reserve);
+    fatal_error(message);
   }
 
   if (!memory_commit(memory, commit))
   {
-    // @TODO(Fz): emit_fatal(S("Failed to commit initial memory for arena."));
-    assert(!"arena_alloc_sized: memory_commit failed");
-    memory_free(memory, reserve); // free BEFORE nulling the pointer
-    return NULL;
+    char message[256];
+    stbsp_snprintf(message, sizeof(message), "Arena failed to commit initial memory. commit=%llu", commit);
+    fatal_error(message);
   }
 
   Arena* arena      = (Arena*) memory;
@@ -168,9 +168,9 @@ _push_array_no_zero(Arena* arena, u64 size)
   /* Check for integer overflow and reserved overflow in one place. */
   if (new_position < position_aligned || new_position > arena->reserved)
   {
-    // @TODO(Fz): emit_error(Sf(..., "Arena out of memory. size=%llu pos=%llu reserved=%llu", size, arena->position, arena->reserved));
-    assert(!"_push_array_no_zero: arena out of memory");
-    return NULL;
+    char message[256];
+    stbsp_snprintf(message, sizeof(message), "Arena out of memory. size=%llu position=%llu reserved=%llu", size, arena->position, arena->reserved);
+    fatal_error(message);
   }
 
   if (arena->committed < new_position)
@@ -181,9 +181,9 @@ _push_array_no_zero(Arena* arena, u64 size)
 
     if (!memory_commit((u8*)arena + arena->committed, commit_size))
     {
-      // @TODO(Fz): emit_error(S("Arena failed to commit more memory."));
-      assert(!"_push_array_no_zero: memory_commit failed during grow");
-      return NULL;
+      char message[256];
+      stbsp_snprintf(message, sizeof(message), "Arena failed to commit more memory. commit_size=%llu committed=%llu", commit_size, arena->committed);
+      fatal_error(message);
     }
 
     arena->committed = commit_clamped;
@@ -256,4 +256,4 @@ arena_temp_end(Scratch* temp)
   arena_pop_to(temp->arena, temp->temp_position);
 }
 
-#endif // ARENA_H
+#endif // FZAC_ARENA_H

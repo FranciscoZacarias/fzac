@@ -1,5 +1,5 @@
-#ifndef FZ_GEOMETRY_H
-#define FZ_GEOMETRY_H
+#ifndef FZAC_GEOMETRY_H
+#define FZAC_GEOMETRY_H
 
 #if FZ_RAYLIB
 # error "Geometry.h is not supported with Base_Raylib.h yet"
@@ -55,4 +55,4 @@ box_intersect(Box *box_a, Box box_b)
   return result;
 }
 
-#endif // FZ_GEOMETRY_H
+#endif // FZAC_GEOMETRY_H

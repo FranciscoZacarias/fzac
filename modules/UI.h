@@ -1,5 +1,5 @@
-#ifndef UI_H
-#define UI_H
+#ifndef FZAC_UI_H
+#define FZAC_UI_H
 
 #if FZ_RAYLIB
 # error "UI.h is not supported with Base_Raylib.h yet"
@@ -430,4 +430,4 @@ fz_internal void inline _ui_error(String message, String file, u32 line);
 #include "UI/UI.c"
 #include "UI/UI_Widgets.c"
 
-#endif // UI_H
+#endif // FZAC_UI_H

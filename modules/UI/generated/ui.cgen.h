@@ -1,7 +1,7 @@
 /* Generated code */
 
-#ifndef UI_GENERATED_H
-#define UI_GENERATED_H
+#ifndef FZAC_UI_GENERATED_H
+#define FZAC_UI_GENERATED_H
 
 typedef enum
 {
@@ -158,4 +158,4 @@ typedef enum
   ui_stack_assert_top_at(corner_roundness_px,0); \
 
 
-#endif // UI_GENERATED_H
+#endif // FZAC_UI_GENERATED_H

@@ -1,5 +1,5 @@
-#ifndef CONTEXT_CRACKING_H
-#define CONTEXT_CRACKING_H
+#ifndef FZAC_CONTEXT_CRACKING_H
+#define FZAC_CONTEXT_CRACKING_H
 
 #if defined(__cplusplus)
 # define C_LINKAGE extern "C"
@@ -172,4 +172,4 @@
 #  include <mach/mach_time.h>
 #endif
 
-#endif // CONTEXT_CRACKING_H
+#endif // FZAC_CONTEXT_CRACKING_H

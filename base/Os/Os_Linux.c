@@ -1,6 +1,23 @@
 #include <stdio.h>
 #include <signal.h>
 
+fz_internal b32
+debugger_is_attached()
+{
+  return raddbg_is_attached();
+}
+
+fz_internal void
+fatal_error(const char* message)
+{
+  fprintf(stderr, "Fatal Error: %s\n", message);
+  if (debugger_is_attached())
+  {
+    raise(SIGTRAP);
+  }
+  exit(1);
+}
+
 fz_internal void
 message_box(String title, String content, String file, u32 line)
 {
@@ -20,7 +37,7 @@ message_box_with_debugger(String title, String content, String file, u32 line)
 
   for(;;)
   {
-    if (raddbg_is_attached())
+    if (debugger_is_attached())
     {
       fprintf(stderr, "Debugger attached. Trapping into debugger...\n");
       scratch_end(&scratch);

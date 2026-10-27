@@ -1,5 +1,5 @@
-#ifndef OPENGL_WIN32_H
-#define OPENGL_WIN32_H
+#ifndef FZAC_OPENGL_WIN32_H
+#define FZAC_OPENGL_WIN32_H
 
 #pragma comment(lib, "opengl32.lib")
 
@@ -360,4 +360,4 @@ _win32_load_wgl_functions()
   return true;
 }
 
-#endif // OPENGL_WIN32_H
+#endif // FZAC_OPENGL_WIN32_H

@@ -118,8 +118,8 @@ OpenGL_Function_Table (return name args call_args)
 @Generator(Opengl.cgen.h)
 {
 
-  `#ifndef OPENGL_FUNCTIONS_H
-#define OPENGL_FUNCTIONS_H
+  `#ifndef FZAC_OPENGL_FUNCTIONS_H
+#define FZAC_OPENGL_FUNCTIONS_H
 
 fz_internal b32 _opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */\n\n`
 
@@ -144,7 +144,7 @@ $(name) $(args)
   return __$(name) $(call_args);
 }\n\n`
 
-  `#endif // OPENGL_FUNCTIONS_H`
+  `#endif // FZAC_OPENGL_FUNCTIONS_H`
 }
 
 @Generator(Opengl.cgen.c)

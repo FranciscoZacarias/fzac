@@ -1,5 +1,5 @@
-#ifndef FZ_SIMPLE_RENDERER2D_H
-#define FZ_SIMPLE_RENDERER2D_H
+#ifndef FZAC_SIMPLE_RENDERER2D_H
+#define FZAC_SIMPLE_RENDERER2D_H
 
 #if FZ_RAYLIB
 # error "Simple_Renderer2D.h is replaced by raylib in Base_Raylib.h"
@@ -1098,4 +1098,4 @@ _sr2d_error(String message, String file, u32 line)
 }
 #endif // DEBUG
 
-#endif // FZ_SIMPLE_RENDERER2D_H
+#endif // FZAC_SIMPLE_RENDERER2D_H

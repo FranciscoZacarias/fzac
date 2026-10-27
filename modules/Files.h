@@ -1,5 +1,5 @@
-#ifndef FILES_H
-#define FILES_H
+#ifndef FZAC_FILES_H
+#define FZAC_FILES_H
 
 #include "Timing.h"
 
@@ -1001,4 +1001,4 @@ file_watch_changed(File_Watcher *watch)
   return result;
 }
 
-#endif // FILES_H
+#endif // FZAC_FILES_H

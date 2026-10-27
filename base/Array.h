@@ -1,5 +1,5 @@
-#ifndef FZ_ARRAY_H
-#define FZ_ARRAY_H
+#ifndef FZAC_ARRAY_H
+#define FZAC_ARRAY_H
 
 // Static Array ------------------------------------------------------------------------
 
@@ -146,4 +146,4 @@ dynamic_array_maybe_grow_impl(Dynamic_Array_Base* array, u64 element_size, u64 a
 
 
 
-#endif // FZ_ARRAY_H
+#endif // FZAC_ARRAY_H

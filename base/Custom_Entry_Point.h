@@ -1,5 +1,5 @@
-#ifndef CUSTOM_ENTRY_POINT_H
-#define CUSTOM_ENTRY_POINT_H
+#ifndef FZAC_CUSTOM_ENTRY_POINT_H
+#define FZAC_CUSTOM_ENTRY_POINT_H
 
 #include "../modules/Command_Line.h"
 #define enum_type(name, type, to_string) enum // This macro is so that the metaprogram knows what enum is being defined
@@ -104,4 +104,4 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
 # error fzac doesn't even know what OS this is
 #endif
 
-#endif // CUSTOM_ENTRY_POINT_H
+#endif // FZAC_CUSTOM_ENTRY_POINT_H

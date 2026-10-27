@@ -1,5 +1,5 @@
-#ifndef OPENGL_CONSTANTS_H
-#define OPENGL_CONSTANTS_H
+#ifndef FZAC_OPENGL_CONSTANTS_H
+#define FZAC_OPENGL_CONSTANTS_H
 
 typedef void GLvoid;
 typedef u32  GLenum;
@@ -1470,4 +1470,4 @@ typedef const GLubyte* (*PFNglGetStringPROC)(GLenum name);
 # define GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW 0x82ED
 #endif // GL_VERSION_4_6
 
-#endif // OPENGL_CONSTANTS_H
+#endif // FZAC_OPENGL_CONSTANTS_H

@@ -87,7 +87,7 @@
 
 @Generator(ui.cgen.h)
 {
-  `#ifndef UI_GENERATED_H\n#define UI_GENERATED_H\n\n`
+  `#ifndef FZAC_UI_GENERATED_H\n#define FZAC_UI_GENERATED_H\n\n`
 
   // Generate enums
   `typedef enum\n`
@@ -170,7 +170,7 @@
 
   `\n`
 
-  `\n#endif // UI_GENERATED_H`
+  `\n#endif // FZAC_UI_GENERATED_H`
 }
 
 @Generator(ui.cgen.c)

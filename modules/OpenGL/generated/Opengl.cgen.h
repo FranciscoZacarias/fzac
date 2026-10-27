@@ -1,7 +1,7 @@
 /* Generated code */
 
-#ifndef OPENGL_FUNCTIONS_H
-#define OPENGL_FUNCTIONS_H
+#ifndef FZAC_OPENGL_FUNCTIONS_H
+#define FZAC_OPENGL_FUNCTIONS_H
 
 fz_internal b32 _opengl_load_functions(); /* Loads all opengl functions in the on the code gen Table */
 
@@ -1136,4 +1136,4 @@ glCheckFramebufferStatus (GLenum target)
   return __glCheckFramebufferStatus (target);
 }
 
-#endif // OPENGL_FUNCTIONS_H
+#endif // FZAC_OPENGL_FUNCTIONS_H

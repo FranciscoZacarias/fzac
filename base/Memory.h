@@ -1,5 +1,5 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef FZAC_MEMORY_H
+#define FZAC_MEMORY_H
 
 fz_internal void* memory_reserve(u64 size); /* Reserves a block of virtual address space without committing physical memory */
 fz_internal b32   memory_commit(void *ptr, u64 size); /* Commits physical memory to a reserved region */
@@ -47,4 +47,4 @@ memory_get_page_size()
 
 #endif // OS_WINDOWS
 
-#endif // MEMORY_H
+#endif // FZAC_MEMORY_H

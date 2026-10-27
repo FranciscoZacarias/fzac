@@ -381,8 +381,8 @@ Vulkan_Device_Function_Void_Table (name args call_args)
 
 @Generator(Vulkan.cgen.h)
 {
-`#ifndef VULKAN_FUNCTIONS_H
-#define VULKAN_FUNCTIONS_H
+`#ifndef FZAC_VULKAN_FUNCTIONS_H
+#define FZAC_VULKAN_FUNCTIONS_H
 
 #define check_vk_result(result, message) if (result != VK_SUCCESS) { log_error("Error: %s, code %x", message, result); }
 
@@ -450,7 +450,7 @@ $(name) $(args)
   __$(name) $(call_args);
 }\n\n`
 
-`#endif // VULKAN_FUNCTIONS_H`
+`#endif // FZAC_VULKAN_FUNCTIONS_H`
 }
 
 @Generator(Vulkan.cgen.c)

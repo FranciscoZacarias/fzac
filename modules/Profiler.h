@@ -1,5 +1,5 @@
-#ifndef PROFILER_H
-#define PROFILER_H
+#ifndef FZAC_PROFILER_H
+#define FZAC_PROFILER_H
 
 #include "Timing.h"
 
@@ -197,7 +197,7 @@ _profiler_recording_stop()
   ProfileContext.active_recording->time_us_end   = time_microseconds();
   ProfileContext.active_recording->time_us_total = ProfileContext.active_recording->time_us_end - ProfileContext.active_recording->time_us_start; 
  
-  String_Builder builder = string_builder_init(kilobytes(64));
+  String_Builder builder = string_builder_init(scratch.arena, kilobytes(64));
   string_builder_pushf(&builder, "[Recording %u - "S_FMT"]\n\n", ProfileContext.recordings_count, S_ARG(_profiler_format_us(scratch.arena, ProfileContext.active_recording->time_us_end - ProfileContext.active_recording->time_us_start)));
 
   Array_Members(event_stack, Profiler_Event);
@@ -270,8 +270,6 @@ _profiler_recording_stop()
 
   String result = string_builder_to_string(scratch.arena, &builder);
   file_write(ProfileContext.file_output, result.cstring, result.count > PROFILER_MAX_WRITE_CHARACTERS  ? PROFILER_MAX_WRITE_CHARACTERS : result.count);
-
-  string_builder_free(&builder);
 
   ProfileContext.active_recording = NULL;
   scratch_end(&scratch);
@@ -393,4 +391,4 @@ _profiler_format_us(Arena *arena, u64 us)
   return result;
 }
 
-#endif // PROFILER_H
+#endif // FZAC_PROFILER_H

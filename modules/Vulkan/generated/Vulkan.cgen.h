@@ -1,7 +1,7 @@
 /* Generated code */
 
-#ifndef VULKAN_FUNCTIONS_H
-#define VULKAN_FUNCTIONS_H
+#ifndef FZAC_VULKAN_FUNCTIONS_H
+#define FZAC_VULKAN_FUNCTIONS_H
 
 #define check_vk_result(result, message) if (result != VK_SUCCESS) { log_error("Error: %s, code %x", message, result); }
 
@@ -1020,4 +1020,4 @@ vkCmdSetStencilReference (VkCommandBuffer commandBuffer, VkStencilFaceFlags face
   __vkCmdSetStencilReference (commandBuffer, faceMask, reference);
 }
 
-#endif // VULKAN_FUNCTIONS_H
+#endif // FZAC_VULKAN_FUNCTIONS_H

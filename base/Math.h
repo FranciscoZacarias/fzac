@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef FZAC_MATH_H
+#define FZAC_MATH_H
 
 #define RAYMATH_STATIC_INLINE
 #include "Extern/raylib/raymath.h"
@@ -25,4 +25,4 @@ v2s32_sub(V2s32 a, V2s32 b)
   return result;
 }
 
-#endif // MATH_H
+#endif // FZAC_MATH_H

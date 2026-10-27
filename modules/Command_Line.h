@@ -1,5 +1,5 @@
-#ifndef COMMAND_LINE_H
-#define COMMAND_LINE_H
+#ifndef FZAC_COMMAND_LINE_H
+#define FZAC_COMMAND_LINE_H
 
 // The acceptable commands are:
 // --key "this is my value" -no-string
@@ -223,4 +223,4 @@ command_line_parse(String input)
   return result;
 }
 
-#endif // COMMAND_LINE_H
+#endif // FZAC_COMMAND_LINE_H

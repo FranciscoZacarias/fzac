@@ -1,5 +1,5 @@
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef FZAC_LEXER_H
+#define FZAC_LEXER_H
 
 #include "String_Builder.h"
 #include "Files.h"
@@ -22,8 +22,7 @@
 #define MAX_LEXER_SCRATCH_BUFFER_SIZE kilobytes(8)
 #define MAX_LOOKAHEAD_TOKENS 8
 
-// @TODO(fz): Fix static asserts
-// static_assert(is_power_of_two(MAX_CONCURRENT_TOKENS), "MAX_CONCURRENT_TOKENS Must be a power of two");
+static_assert(is_power_of_two(MAX_LOOKAHEAD_TOKENS), "MAX_LOOKAHEAD_TOKENS must be a power of two");
 
 typedef enum 
 {
@@ -200,6 +199,7 @@ fz_internal void lexer_parse_line_comment(Lexer* lexer, Token* token); /* Parses
 fz_internal void lexer_parse_block_comment(Lexer* lexer, Token* token); /* Parses a block comment defined by slash asterisk up to asterisk slash */
 fz_internal Token_Kind lexer_classify_trivia(u8 c);
 fz_internal b32        lexer_should_emit_trivia(Lexer* lexer, Token_Kind kind);
+fz_internal String     _lexer_copy_source_without_carriage_returns(Lexer* lexer, s32 start, s32 end); /* Copies a source range, dropping carriage returns like lexer_peek_character does */
 
 
 // @Section: Implementation
@@ -595,12 +595,31 @@ lexer_parse_trivia(Lexer* lexer, Token* token)
   lexer_parse_single_character_token(lexer, token, kind);
 }
 
+fz_internal String
+_lexer_copy_source_without_carriage_returns(Lexer* lexer, s32 start, s32 end)
+{
+  u64 count = (u64)(end - start);
+  u8* data  = push_array_no_zero(lexer->arena, u8, count + 1);
+  u64 write = 0;
+  for (s32 i = start; i < end; i += 1)
+  {
+    u8 c = lexer->source.cstring[i];
+    if (c != '\r')
+    {
+      data[write] = c;
+      write += 1;
+    }
+  }
+  data[write] = 0;
+  String result = { write, data };
+  return result;
+}
+
 fz_internal void
 lexer_parse_string_literal(Lexer* lexer, Token* token)
 {
-  // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
-  u32 scratch_position = 0;
   lexer_eat_character(lexer); // Skip opening "
+  s32 start = lexer->source_cursor;
   for (;;)
   {
     s16 c_s16 = lexer_peek_character(lexer);
@@ -608,20 +627,18 @@ lexer_parse_string_literal(Lexer* lexer, Token* token)
     u8 c = (u8)c_s16;
     if (c == '"') break; // Don't include closing "
     lexer_eat_character(lexer);
-    if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = c;
     if (c == '\\')
     {
       s16 esc = lexer_peek_character(lexer);
       if (esc != -1)
       {
         lexer_eat_character(lexer);
-        if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = (u8)esc;
       }
     }
   }
+  s32 end = lexer->source_cursor;
   lexer_eat_character(lexer); // Skip closing "
-  lexer->scratch_buffer[scratch_position] = '\0';
-  token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
+  token->value = _lexer_copy_source_without_carriage_returns(lexer, start, end);
   token->kind  = Token_String_Literal;
   token->l1    = lexer->current_line_number;
   token->c1    = lexer->current_character_index;
@@ -630,9 +647,8 @@ lexer_parse_string_literal(Lexer* lexer, Token* token)
 fz_internal void
 lexer_parse_string_backtick(Lexer* lexer, Token* token)
 {
-  // @TODO(fz): We have to change this to use a dynamic buffer, since it's reasonable to think strings could be larget than MAX_LEXER_SCRATCH_BUFFER_SIZE
-  u32 scratch_position = 0;
   lexer_eat_character(lexer); // Skip opening `
+  s32 start = lexer->source_cursor;
   for (;;)
   {
     s16 c_s16 = lexer_peek_character(lexer);
@@ -640,20 +656,18 @@ lexer_parse_string_backtick(Lexer* lexer, Token* token)
     u8 c = (u8)c_s16;
     if (c == '`') break; // Don't include closing `
     lexer_eat_character(lexer);
-    if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = c;
     if (c == '\\')
     {
       s16 esc = lexer_peek_character(lexer);
       if (esc != -1)
       {
         lexer_eat_character(lexer);
-        if (scratch_position + 1 < MAX_LEXER_SCRATCH_BUFFER_SIZE) lexer->scratch_buffer[scratch_position++] = (u8)esc;
       }
     }
   }
+  s32 end = lexer->source_cursor;
   lexer_eat_character(lexer); // Skip closing `
-  lexer->scratch_buffer[scratch_position] = '\0';
-  token->value = string_copy(lexer->arena, (String){scratch_position, lexer->scratch_buffer});
+  token->value = _lexer_copy_source_without_carriage_returns(lexer, start, end);
   token->kind  = Token_String_Backtick;
   token->l1    = lexer->current_line_number;
   token->c1    = lexer->current_character_index;
@@ -762,37 +776,29 @@ lexer_make_token_from_next_n_characters(Lexer* lexer, Token* token, Token_Kind k
 fz_internal void
 lexer_parse_block_comment(Lexer* lexer, Token* token)
 {
+  s32 start = lexer->source_cursor;
   lexer_eat_character(lexer);
   lexer_eat_character(lexer);
 
-  String_Builder buffer = string_builder_init(512);
+  for (;;)
   {
-    string_builder_push(&buffer, "/*"); // '/*' have already been eaten
-    for (;;)
+    s16 c_s16 = lexer_peek_character(lexer);
+    if (c_s16 == -1) break;
+    u8 c = (u8)c_s16;
+    lexer_eat_character(lexer);
+
+    s16 next_c = lexer_peek_character(lexer);
+    if (c == '*' && next_c == '/')
     {
-      s16 c_s16 = lexer_peek_character(lexer);
-      if (c_s16 == -1) break;
-      u8 c = (u8)c_s16;
-
-      string_builder_pushf(&buffer, "%c", c);
       lexer_eat_character(lexer);
-
-      s16 next_c = lexer_peek_character(lexer);
-
-      if (c == '*' && next_c == '/')
-      {
-        lexer_eat_character(lexer); // eat next_c
-        string_builder_push(&buffer, "/");
-        break;
-      }
+      break;
     }
-
-    token->value = string_copy(lexer->arena, (String){buffer.count, buffer.data});
-    token->kind  = Token_Comment_Block;
-    token->l1    = lexer->current_line_number;
-    token->c1    = lexer->current_character_index;
   }
-  string_builder_free(&buffer);
+
+  token->value = _lexer_copy_source_without_carriage_returns(lexer, start, lexer->source_cursor);
+  token->kind  = Token_Comment_Block;
+  token->l1    = lexer->current_line_number;
+  token->c1    = lexer->current_character_index;
 }
 
 fz_internal Token*
@@ -1070,4 +1076,4 @@ lexer_current_token(Lexer* lexer)
   return &lexer->incoming_tokens[lexer->incoming_tokens_head];
 }
 
-#endif // LEXER_H
+#endif // FZAC_LEXER_H

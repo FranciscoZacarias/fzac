@@ -1,5 +1,5 @@
-#ifndef ART_H
-#define ART_H
+#ifndef FZAC_ART_H
+#define FZAC_ART_H
 
 #if FZ_RAYLIB
 # error "Art.h is not supported with Base_Raylib.h yet"
@@ -207,4 +207,4 @@ hsv_from_rgba(RGBA rgba)
   return (HSV){h, s, v};
 }
 
-#endif // ART_H
+#endif // FZAC_ART_H

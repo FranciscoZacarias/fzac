@@ -1,5 +1,5 @@
-#ifndef DEFAULT_METAPROGRAM_H
-#define DEFAULT_METAPROGRAM_H
+#ifndef FZAC_DEFAULT_METAPROGRAM_H
+#define FZAC_DEFAULT_METAPROGRAM_H
 
 #include "Logging.h"
 #include "List_Todos.h"
@@ -259,7 +259,8 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
         {
           lexer_eat_token(&lexer);
           DM_Code_Function parsed_function = {0};
-          String_Builder return_type_builder = string_builder_init(kilobytes(1));
+          Scratch builder_scratch = arena_temp_begin(scratch.arena);
+          String_Builder return_type_builder = string_builder_init(builder_scratch.arena, kilobytes(1));
           String last_identifier = string_zero();
           token = lexer_peek_token(&lexer);
           while (token->kind != Token_Open_Parentheses && token->kind != Token_End_Of_File)
@@ -283,10 +284,9 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
           assert(last_identifier.count > 0 && "Expected fz_internal name before '('");
           parsed_function.name = string_copy(dm->arena, last_identifier);
           parsed_function.return_type = string_builder_to_string(dm->arena, &return_type_builder);
-          string_builder_free(&return_type_builder);
           assert(token->kind == Token_Open_Parentheses && "Expected '('");
           lexer_eat_token(&lexer);
-          String_Builder arguments_builder = string_builder_init(kilobytes(1));
+          String_Builder arguments_builder = string_builder_init(builder_scratch.arena, kilobytes(1));
           token = lexer_peek_token(&lexer);
           while (token->kind != Token_Close_Parentheses && token->kind != Token_End_Of_File)
           {
@@ -297,7 +297,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
           assert(token->kind == Token_Close_Parentheses && "Expected ')' to close argument list");
           lexer_eat_token(&lexer);
           parsed_function.arguments = string_builder_to_string(dm->arena, &arguments_builder);
-          string_builder_free(&arguments_builder);
+          arena_temp_end(&builder_scratch);
           token = lexer_peek_token(&lexer);
           while (token->kind != Token_Semicolon  &&
                 token->kind != Token_Open_Brace &&
@@ -532,7 +532,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     file_delete(global_header_path);
   }
   file_create(global_header_path);
-  String_Builder global_header_builder = string_builder_init(kilobytes(64));
+  String_Builder global_header_builder = string_builder_init(scratch.arena, kilobytes(64));
   string_builder_push(&global_header_builder, "#ifndef GLOBAL_HEADERS_H\n#define GLOBAL_HEADERS_H\n\n/* Generated File */\n");
 
   String metaprogram_global_header_path = string_join(scratch.arena, src_directory, S(METAPROGRAM_METAPROGRAM_GLOBAL_HEADERS_PATH));
@@ -541,7 +541,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     file_delete(metaprogram_global_header_path);
   }
   file_create(metaprogram_global_header_path);
-  String_Builder metaprogram_global_header_builder = string_builder_init(kilobytes(64));
+  String_Builder metaprogram_global_header_builder = string_builder_init(scratch.arena, kilobytes(64));
   string_builder_push(&metaprogram_global_header_builder, "#ifndef METAPROGRAM_GLOBAL_HEADERS_H\n#define METAPROGRAM_GLOBAL_HEADERS_H\n\n/* Generated File */\n");
 
   //
@@ -679,7 +679,6 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     message_box(S("Default Metaprogram"), S("Error writing buffer to file"), S(__FILE__), __LINE__);
   }
 
-  string_builder_free(&global_header_builder);
 
   // Metaprogram fz_global headers
   
@@ -692,10 +691,9 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     message_box(S("Default Metaprogram"), S("Error writing buffer to file"), S(__FILE__), __LINE__);
   }
 
-  string_builder_free(&metaprogram_global_header_builder);
 
   // Metaprogram generated code
-  String_Builder metaprogram_generated_builder = string_builder_init(thousand(5));
+  String_Builder metaprogram_generated_builder = string_builder_init(scratch.arena, thousand(5));
 
   string_builder_push(&metaprogram_generated_builder, "#ifndef METAPROGRAM_GENERATED\n#define METAPROGRAM_GENERATED\n\n/* Extra coded passed by the user metaprogram */\n\n");
   string_builder_push_string(&metaprogram_generated_builder, *global_headers_extra_data);
@@ -716,7 +714,6 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
     message_box(S("Default Metaprogram"), S("Error writing to metaprogram_generated.h"), S(__FILE__), __LINE__);
   }
     
-  string_builder_free(&metaprogram_generated_builder);
 
   scratch_end(&scratch);
 
@@ -741,7 +738,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
         }
         else if (string_equals(arg.value, S("loc"), true) || string_equals(arg.value, S("lines-of-code"), true))
         {
-          String_Builder loc_builder = string_builder_init(thousand(32));
+          String_Builder loc_builder = string_builder_init(scratch.arena, thousand(32));
 
           u32 total_loc  = 0;
           u32 total_sloc = 0;
@@ -768,7 +765,7 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
         }
         else if (string_equals(arg.value, S("h"), true) || string_equals(arg.value, S("help"), true))
         {
-          String_Builder builder = string_builder_init(thousand(1));
+          String_Builder builder = string_builder_init(scratch.arena, thousand(1));
           string_builder_push(&builder, 
           "\nUsage:\n"
           "No args: Runs userspace metaprogram + default metaprogram\n"
@@ -785,4 +782,4 @@ default_metaprogram(Default_Metaprogram *dm, Command_Line *command_line, String 
   scratch_end(&scratch);
 }
 
-#endif // DEFAULT_METAPROGRAM_H
+#endif // FZAC_DEFAULT_METAPROGRAM_H

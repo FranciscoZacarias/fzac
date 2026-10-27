@@ -1,5 +1,5 @@
-#ifndef FZ_VULKAN_H
-#define FZ_VULKAN_H
+#ifndef FZAC_VULKAN_H
+#define FZAC_VULKAN_H
 
 #if FZ_RAYLIB
 # error "Vulkan.h is replaced by raylib in Base_Raylib.h"
@@ -79,4 +79,4 @@ vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUt
 }
 
 
-#endif // FZ_VULKAN_H
+#endif // FZAC_VULKAN_H

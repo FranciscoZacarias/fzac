@@ -1,5 +1,5 @@
-#ifndef THREAD_CONTEXT_H
-#define THREAD_CONTEXT_H
+#ifndef FZAC_THREAD_CONTEXT_H
+#define FZAC_THREAD_CONTEXT_H
 
 #define DEFAULT_ARENAS_PER_THREAD_CONTEXT 2
 
@@ -103,4 +103,4 @@ _thread_context_get_scratch(Arena **conflicts, u64 count)
   return result;
 }
 
-#endif // THREAD_CONTEXT_H
+#endif // FZAC_THREAD_CONTEXT_H

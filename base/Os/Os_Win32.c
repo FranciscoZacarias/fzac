@@ -39,6 +39,25 @@ console_attach()
   }
 }
 
+fz_internal b32
+debugger_is_attached()
+{
+  return IsDebuggerPresent() || raddbg_is_attached();
+}
+
+fz_internal void
+fatal_error(const char* message)
+{
+  OutputDebugStringA(message);
+  OutputDebugStringA("\n");
+  if (debugger_is_attached())
+  {
+    __debugbreak();
+  }
+  MessageBoxA(NULL, message, "Fatal Error", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+  ExitProcess(1);
+}
+
 fz_internal void
 message_box(String title, String content, String file, u32 line)
 {
@@ -56,14 +75,14 @@ message_box_with_debugger(String title, String content, String file, u32 line)
 
   for(;;)
   {
-    if(raddbg_is_attached())
+    if(debugger_is_attached())
     {
       body = Sf(scratch.arena, S_FMT " line:%u\n" S_FMT "\n\nDebugger attached. Press 'OK' to trap, or 'Cancel' to dismiss.", S_ARG(file), line, S_ARG(content));
       int result = MessageBoxA(NULL, (LPCSTR)body.cstring, (LPCSTR)title.cstring, MB_OKCANCEL | MB_ICONERROR | MB_TASKMODAL);
       if(result == IDOK)
       {
         scratch_end(&scratch);
-        raddbg_break();
+        __debugbreak();
         return;
       }
       break;

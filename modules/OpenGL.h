@@ -1,5 +1,5 @@
-#ifndef OPENGL_H
-#define OPENGL_H
+#ifndef FZAC_OPENGL_H
+#define FZAC_OPENGL_H
 
 #if FZ_RAYLIB
 # error "OpenGL.h is replaced by raylib in Base_Raylib.h"
@@ -212,4 +212,4 @@ _opengl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 # error Operating System not supported
 #endif
 
-#endif // OPENGL_H
+#endif // FZAC_OPENGL_H

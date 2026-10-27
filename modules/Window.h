@@ -1,5 +1,5 @@
-#ifndef WINDOW_CREATION
-#define WINDOW_CREATION
+#ifndef FZAC_WINDOW_H
+#define FZAC_WINDOW_H
 
 #if FZ_RAYLIB
 # error "Window.h is replaced by raylib in Base_Raylib.h"
@@ -341,4 +341,4 @@ fz_internal s32   get_window_y();
 fz_internal V2s32 get_window_position();
 fz_internal b32   is_window_focused();
 
-#endif // WINDOW_CREATION
+#endif // FZAC_WINDOW_H

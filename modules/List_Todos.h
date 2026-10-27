@@ -1,5 +1,5 @@
-#ifndef LIST_TODOS_H
-#define LIST_TODOS_H
+#ifndef FZAC_LIST_TODOS_H
+#define FZAC_LIST_TODOS_H
 
 /*
   Lists all @TODO(<name>) in all files. Written as a metaprogram command
@@ -183,7 +183,8 @@ list_todos(String src_directory)
 fz_internal void
 print_list_todos(List_Todos *todos)
 {
-  String_Builder builder = string_builder_init(kilobytes(64));
+  Scratch scratch = scratch_begin(0,0);
+  String_Builder builder = string_builder_init(scratch.arena, kilobytes(64));
   s32 total_todos = 0;
 
   for (u32 i = 0; i < todos->files_count; i += 1)
@@ -213,14 +214,8 @@ print_list_todos(List_Todos *todos)
   }
 
   string_builder_pushf(&builder, "TOTAL TODOS: %d\n", total_todos);
-  Scratch scratch = scratch_begin(0,0);
-  {
-    String todos_string = string_builder_to_string(scratch.arena, &builder);
-    string_print(todos_string);
-  }
+  string_print((String){builder.count, builder.data});
   scratch_end(&scratch);
-
-  string_builder_free(&builder);
 }
 
-#endif // LIST_TODOS_H
+#endif // FZAC_LIST_TODOS_H

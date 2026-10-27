@@ -1,6 +1,6 @@
 
-#ifndef CORE_H
-#define CORE_H
+#ifndef FZAC_CORE_H
+#define FZAC_CORE_H
 
 /* === Macro Helpers === */
 #define statement(m) do{ m }while(0)
@@ -53,10 +53,15 @@
 # define assert_break()
 # define assert(condition)
 # define assert_unreachable()
-# define static_assert(condition,label)
 # define assert_expr(condition) (0)
 # define breakpoint()
 #endif
+
+#if !defined(__cplusplus) && !defined(static_assert)
+# define static_assert(condition,label) _Static_assert(condition, label)
+#endif
+
+fz_internal void fatal_error(const char* message); /* Shows the message, breaks into an attached debugger and exits the process. Works in every build. Defined in Os */
 
 /* === Code === */
 #define c_array_count(a) (sizeof(a)/sizeof((a)[0]))
@@ -183,4 +188,4 @@ typedef s64 b64;
 #define PI32 (f32) 3.1415927
 #define PI64 (f64) 3.141592653589793
 
-#endif // CORE_H
+#endif // FZAC_CORE_H

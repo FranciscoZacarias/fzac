@@ -1,5 +1,5 @@
-#ifndef CAMERA2D_H
-#define CAMERA2D_H
+#ifndef FZAC_CAMERA2D_H
+#define FZAC_CAMERA2D_H
 
 #if FZ_RAYLIB
 # error "Camera2D.h is replaced by raylib in Base_Raylib.h"
@@ -22,7 +22,7 @@ fz_internal void     camera2d_zoom(Camera2D *camera2d, f32 delta, u32 window_wid
 fz_internal void     camera2d_move(Camera2D *camera2d, Vector2 delta, u32 window_width, u32 window_height);
 fz_internal void     camera2d_reset(Camera2D *camera2d); /* Resets camera zoom and position */
 
-#endif // CAMERA2D_H
+#endif // FZAC_CAMERA2D_H
 
 fz_internal Camera2D
 camera2d_init(u32 window_width, u32 window_height)

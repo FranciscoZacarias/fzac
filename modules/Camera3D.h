@@ -1,5 +1,5 @@
-#ifndef CAMERA3D_H
-#define CAMERA3D_H
+#ifndef FZAC_CAMERA3D_H
+#define FZAC_CAMERA3D_H
 
 #if FZ_RAYLIB
 # error "Camera3D.h is replaced by raylib in Base_Raylib.h"
@@ -62,7 +62,7 @@ fz_internal void      camera3d_look_at(Camera3D *camera, Vector3 target);
 fz_internal void      camera3d_set_euler(Camera3D *camera, f32 pitch, f32 yaw, f32 roll);
 fz_internal void      camera3d_set_speed(Camera3D *camera, u32 speed);
 
-#endif // CAMERA3D_H
+#endif // FZAC_CAMERA3D_H
 
 fz_internal Camera3D*
 camera3d_init(Arena *arena, Window *window, f32 speed, f32 near_plane, f32 far_plane)

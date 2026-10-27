@@ -1,5 +1,5 @@
-#ifndef FZ_LOGGING_H
-#define FZ_LOGGING_H
+#ifndef FZAC_LOGGING_H
+#define FZAC_LOGGING_H
 
 #include <stdarg.h>
 
@@ -103,9 +103,14 @@ log_fatal_popup(String msg, const char* src_file, int src_line)
   Scratch scratch = scratch_begin(0, 0);
   String  file    = string_new(cstring_length((u8*)src_file), (u8*)src_file);
   String  body    = Sf(scratch.arena, "Fatal Error\n" S_FMT "\n\nat " S_FMT ":%d", S_ARG(msg), S_ARG(file), src_line);
-  message_box(S("Fatal Error"), body, file, (u32)src_line);
-  // @TODO(fz): previously it has message_box_with_debugger.
-  // We need a debugger check here in order ot use it, otherwise its just annoying to use this if there is no debugger and we cant close it with enter.
+  if (debugger_is_attached())
+  {
+    message_box_with_debugger(S("Fatal Error"), body, file, (u32)src_line);
+  }
+  else
+  {
+    message_box(S("Fatal Error"), body, file, (u32)src_line);
+  }
   scratch_end(&scratch);
 }
 
@@ -291,4 +296,4 @@ logging_remove_hook(s32 idx)
 #define log_error_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Error, __FILE__, __LINE__, str); } } while(0)
 #define log_fatal_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Fatal, __FILE__, __LINE__, str); } } while(0)
 
-#endif // FZ_LOGGING_H
+#endif // FZAC_LOGGING_H

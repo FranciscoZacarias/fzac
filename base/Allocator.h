@@ -1,5 +1,5 @@
-#ifndef ALLOCATOR_H
-#define ALLOCATOR_H
+#ifndef FZAC_ALLOCATOR_H
+#define FZAC_ALLOCATOR_H
 
 /* @File: Implements memory allocators and thread context (used for temporary memory) */ 
 
@@ -43,4 +43,4 @@ fz_global Allocator MallocAllocator = {
   .context       = NULL,
 };
 
-#endif // ALLOCATOR_H
+#endif // FZAC_ALLOCATOR_H

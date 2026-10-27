@@ -1,5 +1,5 @@
-#ifndef CODE_GENERATION_H
-#define CODE_GENERATION_H
+#ifndef FZAC_CODE_GENERATION_H
+#define FZAC_CODE_GENERATION_H
 
 /*
   How to:
@@ -313,7 +313,7 @@ cgen_execute_commands(CGen_Context *ctx)
     {
       CGen_Generator *generator = &file->generators[generator_index];
 
-      String_Builder buffer = string_builder_init(kilobytes(32));
+      String_Builder buffer = string_builder_init(scratch.arena, kilobytes(32));
       string_builder_pushf(&buffer, "/* Generated code */\n\n");
 
       if (generator->custom_file_name.count > 0)
@@ -329,7 +329,7 @@ cgen_execute_commands(CGen_Context *ctx)
         {
           case CGen_Command_Kind_String:
           {
-            string_builder_push(&buffer, (const char*)command->string.data.cstring);
+            string_builder_push_string(&buffer, command->string.data);
           }
           break;
 
@@ -338,7 +338,7 @@ cgen_execute_commands(CGen_Context *ctx)
             for (u32 row_index = 0; row_index < command->table->rows_count; row_index += 1)
             {
               String final_string = _cgen_string_replace_arguments(scratch.arena, command->string, command->table, row_index);
-              string_builder_pushf(&buffer, (const char*)final_string.cstring);
+              string_builder_push_string(&buffer, final_string);
             }
           }
           break;
@@ -361,7 +361,6 @@ cgen_execute_commands(CGen_Context *ctx)
       {
         _cgen_error(Sf(scratch.arena, "Unable to write buffer to "S_FMT"\n", S_ARG(output_file)));
       }
-      string_builder_free(&buffer);
     }
   }
   scratch_end(&scratch);
@@ -919,4 +918,4 @@ _cgen_token_is_acceptable_row_value(Token *token)
   return result;
 }
 
-#endif // CODE_GENERATION_H
+#endif // FZAC_CODE_GENERATION_H

@@ -1,11 +1,10 @@
-#ifndef BASE_H
-#define BASE_H
+#ifndef FZAC_BASE_H
+#define FZAC_BASE_H
 
-#ifdef BASE_RAYLIB_H
+#ifdef FZAC_BASE_RAYLIB_H
 # error "Include either Base.h or Base_Raylib.h, not both"
 #endif
 
-// @TODO(fz): We probably want to rename all if guards in the library and prefix them with FZAC_
 #include "base/Warnings.h"
 
 #define RADDBG_MARKUP_IMPLEMENTATION
@@ -41,4 +40,4 @@
 #include "Default_Metaprogram.h"
 #endif
 
-#endif // BASE_H
+#endif // FZAC_BASE_H

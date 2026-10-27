@@ -1,5 +1,5 @@
-#ifndef FZ_VULKAN_WIN32_H
-#define FZ_VULKAN_WIN32_H
+#ifndef FZAC_VULKAN_WIN32_H
+#define FZAC_VULKAN_WIN32_H
 
 static HMODULE vulkan_library = NULL;
 
@@ -40,4 +40,4 @@ vulkan_init()
   return result;
 }
 
-#endif // FZ_VULKAN_WIN32_H
+#endif // FZAC_VULKAN_WIN32_H

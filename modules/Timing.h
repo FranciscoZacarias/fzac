@@ -1,5 +1,5 @@
-#ifndef TIMING_H
-#define TIMING_H
+#ifndef FZAC_TIMING_H
+#define FZAC_TIMING_H
 
 typedef struct Timer Timer;
 struct Timer
@@ -287,4 +287,4 @@ datetime_to_string(Arena *arena, Date_Time dt, b32 include_ms)
   return result;
 }
 
-#endif // TIMING_H
+#endif // FZAC_TIMING_H

@@ -1,5 +1,5 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef FZAC_STRING_H
+#define FZAC_STRING_H
 
 // @Section: 8 bit characters
 fz_internal b32 char_is_alpha(u8 c); /* Check if character is alphabetic. */
@@ -848,4 +848,4 @@ s64_from_string(String str, s64* out)
 }
 
 
-#endif // STRING_H
+#endif // FZAC_STRING_H

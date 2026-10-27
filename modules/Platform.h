@@ -1,5 +1,5 @@
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#ifndef FZAC_PLATFORM_H
+#define FZAC_PLATFORM_H
 
 #if FZ_RAYLIB
 # error "Platform.h is replaced by raylib in Base_Raylib.h"
@@ -39,4 +39,4 @@ fz_internal void message_box(String title, String content, String file, u32 line
 # error Operating System not supported
 #endif
 
-#endif // PLATFORM_H
+#endif // FZAC_PLATFORM_H
