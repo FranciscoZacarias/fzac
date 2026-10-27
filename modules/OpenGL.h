@@ -1,6 +1,10 @@
 #ifndef OPENGL_H
 #define OPENGL_H
 
+#if FZ_RAYLIB
+# error "OpenGL.h is replaced by raylib in Base_Raylib.h"
+#endif
+
 // Opengl Debug:
 // Define DEBUG_OPENGL_CHECK_ERRORS to call opengl_check_errors() after EVERY gl fz_internal call
 // Define DEBUG to enable debug output and opengl debug message callback

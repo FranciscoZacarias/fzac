@@ -5,33 +5,33 @@ ui_init(UI_Font font)
 {
   UIColorThemeDark = (UI_Color_Theme)
   {
-    .light_border_color        = v4f32(0.72f, 0.72f, 0.72f, 1.0f),
-    .light_border_hover_color  = v4f32(0.93f, 0.93f, 0.93f, 1.0f),
-    .light_border_active_color = v4f32(0.96f, 0.96f, 0.96f, 1.0f),
+    .light_border_color        = (Vector4){0.72f, 0.72f, 0.72f, 1.0f},
+    .light_border_hover_color  = (Vector4){0.93f, 0.93f, 0.93f, 1.0f},
+    .light_border_active_color = (Vector4){0.96f, 0.96f, 0.96f, 1.0f},
 
-    .light_background_color        = v4f32(0.12f, 0.09f, 0.06f, 1.0f),
-    .light_background_hover_color  = v4f32(0.16f, 0.12f, 0.08f, 1.0f),
-    .light_background_active_color = v4f32(0.20f, 0.15f, 0.10f, 1.0f),
+    .light_background_color        = (Vector4){0.12f, 0.09f, 0.06f, 1.0f},
+    .light_background_hover_color  = (Vector4){0.16f, 0.12f, 0.08f, 1.0f},
+    .light_background_active_color = (Vector4){0.20f, 0.15f, 0.10f, 1.0f},
 
-    .dark_border_color        = v4f32(0.22f, 0.14f, 0.08f, 1.0f),
-    .dark_border_hover_color  = v4f32(0.32f, 0.20f, 0.12f, 1.0f),
-    .dark_border_active_color = v4f32(0.42f, 0.26f, 0.16f, 1.0f),
+    .dark_border_color        = (Vector4){0.22f, 0.14f, 0.08f, 1.0f},
+    .dark_border_hover_color  = (Vector4){0.32f, 0.20f, 0.12f, 1.0f},
+    .dark_border_active_color = (Vector4){0.42f, 0.26f, 0.16f, 1.0f},
 
-    .dark_background_color         = v4f32(0.07f, 0.06f, 0.05f, 1.0f),
-    .dark_background_hover_color   = v4f32(0.05f, 0.05f, 0.05f, 1.0f),
-    .dark_background_active_color  = v4f32(0.10f, 0.08f, 0.06f, 1.0f),
+    .dark_background_color         = (Vector4){0.07f, 0.06f, 0.05f, 1.0f},
+    .dark_background_hover_color   = (Vector4){0.05f, 0.05f, 0.05f, 1.0f},
+    .dark_background_active_color  = (Vector4){0.10f, 0.08f, 0.06f, 1.0f},
 
-    .interactable_border_color        = v4f32(0.68f, 0.39f, 0.00f, 1.0f),
-    .interactable_border_hover_color  = v4f32(0.93f, 0.93f, 0.93f, 1.0f),
-    .interactable_border_active_color = v4f32(0.77f, 0.59f, 0.1f, 1.0f),
+    .interactable_border_color        = (Vector4){0.68f, 0.39f, 0.00f, 1.0f},
+    .interactable_border_hover_color  = (Vector4){0.93f, 0.93f, 0.93f, 1.0f},
+    .interactable_border_active_color = (Vector4){0.77f, 0.59f, 0.1f, 1.0f},
 
-    .interactable_background_color        = v4f32(0.68f, 0.39f, 0.00f, 1.0f),
-    .interactable_background_hover_color  = v4f32(0.80f, 0.40f, 0.00f, 1.0f),
-    .interactable_background_active_color = v4f32(0.77f, 0.59f, 0.1f, 1.0f),
+    .interactable_background_color        = (Vector4){0.68f, 0.39f, 0.00f, 1.0f},
+    .interactable_background_hover_color  = (Vector4){0.80f, 0.40f, 0.00f, 1.0f},
+    .interactable_background_active_color = (Vector4){0.77f, 0.59f, 0.1f, 1.0f},
 
-    .text_color        = v4f32(0.79f, 0.76f, 0.71f, 1.0f),
-    .text_hover_color  = v4f32(1.0f, 1.0f, 1.0f, 1.0f),
-    .text_active_color = v4f32(0.92f, 0.92f, 0.92f, 1.0f),
+    .text_color        = (Vector4){0.79f, 0.76f, 0.71f, 1.0f},
+    .text_hover_color  = (Vector4){1.0f, 1.0f, 1.0f, 1.0f},
+    .text_active_color = (Vector4){0.92f, 0.92f, 0.92f, 1.0f},
   };
 
   memory_zero_struct(&UIContext);
@@ -206,7 +206,7 @@ _ui_node_from_string(String unique, String string, UI_Node_Flags flags)
   node->string            = string_copy(UIContext.frame_arena, string);
   node->string_clean      = _ui_clean_string(UIContext.frame_arena, string);
   UI_Text_Metrics metrics = ui_measure_text(node->string_clean);
-  node->clean_string_dimensions = v2f32(metrics.width, metrics.height);
+  node->clean_string_dimensions = (Vector2){metrics.width, metrics.height};
 
   UI_Color_Theme_Style color_style = ui_stack_color_theme_style_top();
 
@@ -313,7 +313,7 @@ _ui_node_from_string(String unique, String string, UI_Node_Flags flags)
 
   if (!ui_stack_background_color_is_at_bottom())
   {
-    V4f32 color = ui_stack_background_color_top();
+    Vector4 color = ui_stack_background_color_top();
     node->color_theme.background_color        = color;
     node->color_theme.background_hover_color  = color;
     node->color_theme.background_active_color = color;
@@ -592,15 +592,15 @@ _ui_update_tree_nodes(UI_Node* node)
     // Interaction
     // ----------- 
     {
-      V4f32 border_color            = node->color_theme.border_color;
-      V4f32 border_hover_color      = node->color_theme.border_hover_color;
-      V4f32 border_active_color     = node->color_theme.border_active_color;
-      V4f32 background_color        = node->color_theme.background_color;
-      V4f32 background_hover_color  = node->color_theme.background_hover_color;
-      V4f32 background_active_color = node->color_theme.background_active_color;
-      V4f32 text_color              = node->color_theme.text_color;
-      V4f32 text_hover_color        = node->color_theme.text_hover_color;
-      V4f32 text_active_color       = node->color_theme.text_active_color;
+      Vector4 border_color            = node->color_theme.border_color;
+      Vector4 border_hover_color      = node->color_theme.border_hover_color;
+      Vector4 border_active_color     = node->color_theme.border_active_color;
+      Vector4 background_color        = node->color_theme.background_color;
+      Vector4 background_hover_color  = node->color_theme.background_hover_color;
+      Vector4 background_active_color = node->color_theme.background_active_color;
+      Vector4 text_color              = node->color_theme.text_color;
+      Vector4 text_hover_color        = node->color_theme.text_hover_color;
+      Vector4 text_active_color       = node->color_theme.text_active_color;
 
       // Start with base colors
       node->target_border_color     = border_color;
@@ -618,9 +618,9 @@ _ui_update_tree_nodes(UI_Node* node)
           cached_node->hover_t = clamp(cached_node->hover_t - UIContext.delta_time * UIContext.animation_speed, 0, 1);
         }
 
-        node->target_border_color     = v4f32_lerp(node->target_border_color,     border_hover_color,     cached_node->hover_t);
-        node->target_background_color = v4f32_lerp(node->target_background_color, background_hover_color, cached_node->hover_t);
-        node->target_text_color       = v4f32_lerp(node->target_text_color,       text_hover_color,       cached_node->hover_t);
+        node->target_border_color     = Vector4Lerp(node->target_border_color,     border_hover_color,     cached_node->hover_t);
+        node->target_background_color = Vector4Lerp(node->target_background_color, background_hover_color, cached_node->hover_t);
+        node->target_text_color       = Vector4Lerp(node->target_text_color,       text_hover_color,       cached_node->hover_t);
       }
   
       if (has_flags(node->flags, UI_Node_Flags_Mouse_Clickable))
@@ -634,9 +634,9 @@ _ui_update_tree_nodes(UI_Node* node)
           cached_node->active_t = clamp(cached_node->active_t - UIContext.delta_time * UIContext.animation_speed, 0, 1);
         }
 
-        node->target_border_color     = v4f32_lerp(node->target_border_color,     border_active_color,     cached_node->active_t);
-        node->target_background_color = v4f32_lerp(node->target_background_color, background_active_color, cached_node->active_t);
-        node->target_text_color       = v4f32_lerp(node->target_text_color,       text_active_color,       cached_node->active_t);
+        node->target_border_color     = Vector4Lerp(node->target_border_color,     border_active_color,     cached_node->active_t);
+        node->target_background_color = Vector4Lerp(node->target_background_color, background_active_color, cached_node->active_t);
+        node->target_text_color       = Vector4Lerp(node->target_text_color,       text_active_color,       cached_node->active_t);
       }
     }
   }
@@ -687,7 +687,7 @@ _ui_render_ui_tree(UI_Node *node)
     if (has_flags(node->flags, UI_Node_Flags_Resizable))
     {
       V2s32 absolute_bot_right = v2s32_add(absolute_top_left, node->bounds.size);
-      _ui_push_draw_rect_command(v2f32(absolute_bot_right.x - (UIContext.resize_area_side), absolute_bot_right.y - (UIContext.resize_area_side)), v2f32(UIContext.resize_area_side, UIContext.resize_area_side), COLOR_CLEAR, 0.0f, 0.0f, 0.0f, 1.0f, COLOR_YELLOW(1));
+      _ui_push_draw_rect_command((Vector2){absolute_bot_right.x - (UIContext.resize_area_side), absolute_bot_right.y - (UIContext.resize_area_side)}, (Vector2){UIContext.resize_area_side, UIContext.resize_area_side}, COLOR_CLEAR, 0.0f, 0.0f, 0.0f, 1.0f, COLOR_YELLOW(1));
     }
   }
 
@@ -695,11 +695,11 @@ _ui_render_ui_tree(UI_Node *node)
   {
     if (node->texture.handle >= 0)
     {
-      _ui_push_draw_rect_with_texture_command(node->texture.handle, node->uv_min, node->uv_max, v2f32((f32)absolute_top_left.x, (f32)absolute_top_left.y), v2f32((f32)node->bounds.size.x, (f32)node->bounds.size.y), node->target_background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, node->target_border_color);
+      _ui_push_draw_rect_with_texture_command(node->texture.handle, node->uv_min, node->uv_max, (Vector2){(f32)absolute_top_left.x, (f32)absolute_top_left.y}, (Vector2){(f32)node->bounds.size.x, (f32)node->bounds.size.y}, node->target_background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, node->target_border_color);
     }
     else
     {
-      _ui_push_draw_rect_command(v2f32((f32)absolute_top_left.x, (f32)absolute_top_left.y), v2f32((f32)node->bounds.size.x, (f32)node->bounds.size.y), node->target_background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, node->target_border_color);
+      _ui_push_draw_rect_command((Vector2){(f32)absolute_top_left.x, (f32)absolute_top_left.y}, (Vector2){(f32)node->bounds.size.x, (f32)node->bounds.size.y}, node->target_background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, node->target_border_color);
     }
 
     if (UIContext.debug.draw_cursor)
@@ -707,18 +707,18 @@ _ui_render_ui_tree(UI_Node *node)
       f32 size = 3;
       V2s32 cursor_top_left = v2s32_add(absolute_top_left, node->cursor);
       V2s32 center = v2s32((u32)(cursor_top_left.x-(size/2)), (u32)(cursor_top_left.y-(size/2)));
-      _ui_push_draw_rect_command(v2f32((f32)center.x,(f32)center.y), v2f32(size,size), COLOR_GREEN(0.8f), 0, 0, 0, 0, COLOR_WHITE(1));
+      _ui_push_draw_rect_command((Vector2){(f32)center.x,(f32)center.y}, (Vector2){size,size}, COLOR_GREEN(0.8f), 0, 0, 0, 0, COLOR_WHITE(1));
     }
     if (UIContext.debug.draw_clip)
     {
-      V4f32 background_color = COLOR_CLEAR;
+      Vector4 background_color = COLOR_CLEAR;
 #if DEBUG
       if (!node->should_render && UIContext.debug.draw_stuff_that_shouldnt_render && node->hash != UIContext.root->hash)
       {
         background_color = COLOR_YELLOW(0.2f);
       }
 #endif
-      _ui_push_draw_rect_command(v2f32_add(v2f32((f32)absolute_top_left.x, (f32)absolute_top_left.y), v2f32((f32)node->clip.top_left.x, (f32)node->clip.top_left.y)), v2f32((f32)node->clip.size.x,(f32)node->clip.size.y), background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, COLOR_YELLOW(0.6f));
+      _ui_push_draw_rect_command(Vector2Add((Vector2){(f32)absolute_top_left.x, (f32)absolute_top_left.y}, (Vector2){(f32)node->clip.top_left.x, (f32)node->clip.top_left.y}), (Vector2){(f32)node->clip.size.x,(f32)node->clip.size.y}, background_color, 0, node->color_theme.corner_roundness_px, 0.0f, (f32)node->color_theme.border_thickness_px, COLOR_YELLOW(0.6f));
     }
 
     // Draw text
@@ -749,7 +749,7 @@ _ui_render_ui_tree(UI_Node *node)
           text_position.x += abs(text_width_half - clip_width_half);
         }
       }
-      _ui_push_draw_text_command(v2f32((f32)text_position.x, (f32)text_position.y), ((f32)node->clip.size.x - node->cursor.x), (f32)node->clip.size.y, node->target_text_color, node->string_clean);
+      _ui_push_draw_text_command((Vector2){(f32)text_position.x, (f32)text_position.y}, ((f32)node->clip.size.x - node->cursor.x), (f32)node->clip.size.y, node->target_text_color, node->string_clean);
     }
   }
 
@@ -933,7 +933,7 @@ _ui_tree_next(UI_Node *node)
 }
 
 fz_internal void
-_ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
+_ui_push_draw_rect_command(Vector2 top_left, Vector2 size, Vector4 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, Vector4 border_color)
 {
   UI_Command *command;
   array_members_add(command, UIContext.commands);
@@ -951,7 +951,7 @@ _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation
 }
 
 fz_internal void
-_ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color)
+_ui_push_draw_rect_with_texture_command(s32 texture_index, Vector2 uv_min, Vector2 uv_max, Vector2 top_left, Vector2 size, Vector4 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, Vector4 border_color)
 {
   UI_Command *command;
   array_members_add(command, UIContext.commands);
@@ -973,9 +973,9 @@ _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 u
 }
 
 fz_internal void
-_ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 color, String text)
+_ui_push_draw_text_command(Vector2 top_left, f32 max_width, f32 max_height, Vector4 color, String text)
 {
-  // @TODO(fz): This max_width/max_height are probably just a V2f32 size?
+  // @TODO(fz): This max_width/max_height are probably just a Vector2 size?
 
   UI_Command *command;
   array_members_add(command, UIContext.commands);

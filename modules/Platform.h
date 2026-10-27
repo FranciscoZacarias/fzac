@@ -1,10 +1,11 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "Window.h"
+#if FZ_RAYLIB
+# error "Platform.h is replaced by raylib in Base_Raylib.h"
+#endif
 
-// @Section: Console
-fz_internal void console_attach(); /* Opens application terminal */
+#include "Window.h"
 
 // @Section: Clipboard
 fz_internal void   clipboard_write(String str);
@@ -21,7 +22,7 @@ typedef enum Cursor_Type
   Cursor_Size_All,
 } Cursor_Type;
 
-fz_internal V2f32 cursor_get_position(OS_Window *window);
+fz_internal Vector2 cursor_get_position(OS_Window *window);
 fz_internal void  cursor_lock(OS_Window *window);
 fz_internal void  cursor_unlock();
 fz_internal b32   cursor_is_locked();

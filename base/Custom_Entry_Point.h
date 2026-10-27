@@ -6,7 +6,6 @@
 
 #if METAPROGRAM
   #include "Code_Generation.h"
-  #include "Platform.h"
   #include "Default_Metaprogram.h"
   
   fz_global Default_Metaprogram DefaultMetaprogram;
@@ -46,7 +45,7 @@
     {
       default_metaprogram(&DefaultMetaprogram, &cmd_line, METAPROGRAM_SRC_DIRECTORY, &global_headers_extra_data);  
     }
-    printf("Metaprogram Finished!/n");
+    printf("Metaprogram Finished!\n");
     arena_free(DefaultMetaprogram.arena);
   }
 #else

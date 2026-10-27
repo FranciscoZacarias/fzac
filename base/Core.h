@@ -37,7 +37,7 @@
 #if DEBUG
 # define assert_break() (*(volatile int*)0 = 0)
 # define assert(condition) statement(if (!(condition)){ assert_break(); })
-# define assert_unreachable() assert_break(0)
+# define assert_unreachable() assert_break()
 # define assert_expr(condition) ((condition) ? 0 : (assert_break(), 0))
 
 /* === breakpoints === */
@@ -70,10 +70,10 @@
 #define case_fallthrough /* Used to explicitly say we want this switch case to fall through the next one */
 
 /* === Numbers === */
-#define kilobytes(n) ((u64)(n * 1024))
-#define megabytes(n) ((u64)(n * 1024 * 1024))
-#define gigabytes(n) ((u64)(n * 1024 * 1024 * 1024))
-#define terabytes(n) ((u64)(n * 1024 * 1024 * 1024 * 1024))
+#define kilobytes(n) ((u64)(n) * 1024)
+#define megabytes(n) ((u64)(n) * 1024 * 1024)
+#define gigabytes(n) ((u64)(n) * 1024 * 1024 * 1024)
+#define terabytes(n) ((u64)(n) * 1024 * 1024 * 1024 * 1024)
 
 #define thousand(n) ((n)*1000)
 #define million(n)  ((n)*1000000llu)

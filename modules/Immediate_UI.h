@@ -1,6 +1,10 @@
 #ifndef FZ_IMMEDIATE_UI_H
 #define FZ_IMMEDIATE_UI_H
 
+#if FZ_RAYLIB
+# error "Immediate_UI.h is not supported with Base_Raylib.h yet"
+#endif
+
 typedef struct UI_Node UI_Node;
 struct UI_Node
 {
@@ -14,7 +18,7 @@ struct UI_Node
 
   String string;
   String string_clean;
-  V2f32  string_clean_dimensions;
+  Vector2  string_clean_dimensions;
 };
 
 typedef struct UI_Context UI_Context;

@@ -1,6 +1,10 @@
 #ifndef FZ_VULKAN_H
 #define FZ_VULKAN_H
 
+#if FZ_RAYLIB
+# error "Vulkan.h is replaced by raylib in Base_Raylib.h"
+#endif
+
 #if OS_WINDOWS
   #define VK_USE_PLATFORM_WIN32_KHR
 #elif OS_LINUX

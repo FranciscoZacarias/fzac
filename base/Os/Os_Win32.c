@@ -1,3 +1,44 @@
+#if defined(NOUSER)
+# define MB_OK         0x00000000L
+# define MB_OKCANCEL   0x00000001L
+# define MB_ICONERROR  0x00000010L
+# define MB_TASKMODAL  0x00002000L
+# define IDOK          1
+# define IDCANCEL      2
+__declspec(dllimport) int __stdcall MessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+#endif
+
+fz_internal void
+console_attach()
+{
+  b32 attached = AttachConsole(ATTACH_PARENT_PROCESS);
+
+  if (!attached)
+  {
+    AllocConsole();
+  }
+
+  FILE *fp;
+
+  freopen_s(&fp, "CONOUT$", "w", stdout);
+  freopen_s(&fp, "CONOUT$", "w", stderr);
+  freopen_s(&fp, "CONIN$",  "r", stdin);
+
+  setvbuf(stdout, 0, _IONBF, 0);
+  setvbuf(stderr, 0, _IONBF, 0);
+
+  // Enable ANSI escape sequences
+  HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (handle != INVALID_HANDLE_VALUE)
+  {
+    DWORD mode = 0;
+    if (GetConsoleMode(handle, &mode))
+    {
+      SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    }
+  }
+}
+
 fz_internal void
 message_box(String title, String content, String file, u32 line)
 {

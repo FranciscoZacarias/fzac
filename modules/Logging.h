@@ -280,14 +280,14 @@ logging_remove_hook(s32 idx)
 #define log_fatal_str(str) log_write_string(Log_Level_Fatal, __FILE__, __LINE__, str)
 
 #define log_trace_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Trace, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
-#define log_info_if (cond, fmt, ...) do { if(cond) { log_write(Log_Level_Info, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
-#define log_warn_if (cond, fmt, ...) do { if(cond) { log_write(Log_Level_Warn, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_info_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Info, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
+#define log_warn_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Warn, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
 #define log_error_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Error, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
 #define log_fatal_if(cond, fmt, ...) do { if(cond) { log_write(Log_Level_Fatal, __FILE__, __LINE__, fmt, ##__VA_ARGS__); } } while(0)
 
 #define log_trace_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Trace, __FILE__, __LINE__, str); } } while(0)
-#define log_info_if_str (cond, str)  do { if(cond) { log_write_string(Log_Level_Info, __FILE__, __LINE__, str); } } while(0)
-#define log_warn_if_str (cond, str)  do { if(cond) { log_write_string(Log_Level_Warn, __FILE__, __LINE__, str); } } while(0)
+#define log_info_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Info, __FILE__, __LINE__, str); } } while(0)
+#define log_warn_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Warn, __FILE__, __LINE__, str); } } while(0)
 #define log_error_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Error, __FILE__, __LINE__, str); } } while(0)
 #define log_fatal_if_str(cond, str)  do { if(cond) { log_write_string(Log_Level_Fatal, __FILE__, __LINE__, str); } } while(0)
 

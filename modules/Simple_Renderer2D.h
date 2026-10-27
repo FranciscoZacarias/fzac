@@ -1,6 +1,10 @@
 #ifndef FZ_SIMPLE_RENDERER2D_H
 #define FZ_SIMPLE_RENDERER2D_H
 
+#if FZ_RAYLIB
+# error "Simple_Renderer2D.h is replaced by raylib in Base_Raylib.h"
+#endif
+
 /*
   This is just easily put quads on the screen. 
   The renderer is very dumb and could use a lot of work (just for rendering quads!).
@@ -30,7 +34,7 @@
       handle_window_events();
       handle_input();
 
-      sr2d_draw_quad_color_ext(v2f32(10, 10), v2f32(100, 100), rgba(1.0f, 0.0f, 0.0f, 1.0f),
+      sr2d_draw_quad_color_ext((Vector2){10, 10}, (Vector2){100, 100}, rgba(1.0f, 0.0f, 0.0f, 1.0f),
                                0.0f, 2.0f, 0.0f, 2.0f, COLOR_GREEN(1));
     
       sr2d_end_frame(get_window_width(), get_window_height(), rgba(0.4f, 0.0f, 0.4f, 1.0f));
@@ -117,8 +121,8 @@ struct SR2D_Texture
 {
   String           name;
   SR2D_Texture_Atlas *atlas;
-  V2f32            uv_min;
-  V2f32            uv_max;
+  Vector2            uv_min;
+  Vector2            uv_max;
 };
 
 typedef struct SR2D_Font SR2D_Font;
@@ -145,10 +149,10 @@ struct SR2D_Text_Metrics
 typedef struct SR2D_Quad SR2D_Quad;
 struct SR2D_Quad
 {
-  V2f32 top_left;
-  V2f32 size;
-  V2f32 uv_min;
-  V2f32 uv_max;
+  Vector2 top_left;
+  Vector2 size;
+  Vector2 uv_min;
+  Vector2 uv_max;
   u32   color;
   u32   texture_id;
   f32   rotation;
@@ -178,7 +182,7 @@ struct SR2D_Text_Params
 {
   SR2D_Font         *font;
   String          text;
-  V2f32           top_left;
+  Vector2           top_left;
   RGBA            color;
   f32             rotation;
   f32             roundness;
@@ -243,7 +247,7 @@ struct SR2D_Context
 };
 
 fz_global SR2D_Context SR2D_RenderContext;
-fz_global V2f32        SR2D_UnitQuadVertices[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+fz_global Vector2        SR2D_UnitQuadVertices[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 fz_global u16          SR2D_UnitQuadIndices[] = { 0, 1, 2, 2, 3, 0 };
 
 #if DEBUG
@@ -378,27 +382,27 @@ fz_internal void sr2d_init(s32 window_width, s32 window_height, b32 vsync);
 fz_internal void sr2d_set_screen_size(s32 width, s32 height);
 fz_internal void sr2d_end_frame(u32 window_width, u32 window_height, RGBA background_color);
 
-fz_internal void sr2d_draw_quad(SR2D_Texture *texture, V2f32 top_left, V2f32 size, RGBA color);
+fz_internal void sr2d_draw_quad(SR2D_Texture *texture, Vector2 top_left, Vector2 size, RGBA color);
 
-fz_internal void               sr2d_draw_text(SR2D_Font *font, String text, V2f32 top_left, RGBA color);
-fz_internal void               sr2d_draw_text_ext(SR2D_Font *font, String text, V2f32 top_left, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
-fz_internal void               sr2d_draw_text_clamped(SR2D_Font *font, String text, V2f32 top_left, f32 max_width, RGBA color);
+fz_internal void               sr2d_draw_text(SR2D_Font *font, String text, Vector2 top_left, RGBA color);
+fz_internal void               sr2d_draw_text_ext(SR2D_Font *font, String text, Vector2 top_left, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
+fz_internal void               sr2d_draw_text_clamped(SR2D_Font *font, String text, Vector2 top_left, f32 max_width, RGBA color);
 fz_internal void               sr2d_draw_text_params(SR2D_Text_Params params);
 fz_internal SR2D_Text_Metrics   sr2d_measure_text(SR2D_Font *font, String text);
 fz_internal SR2D_Texture_Atlas* sr2d_load_texture_atlas(Arena *arena, String path, String name);
 fz_internal SR2D_Font*          sr2d__load_font(Arena *arena, String full_path);
 fz_internal u32                sr2d_compile_shader_from_cstring(String name, const char* source, GLenum shader_type);
 fz_internal u32                sr2d_compile_shader_from_string(String name, String *source, GLenum shader_type);
-fz_internal V2f32              sr2d_center_text_in_rect(SR2D_Text_Metrics metrics, V2f32 top_left, V2f32 size);
+fz_internal Vector2              sr2d_center_text_in_rect(SR2D_Text_Metrics metrics, Vector2 top_left, Vector2 size);
 
-fz_internal void sr2d_draw_quad_ext(SR2D_Texture *texture, V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
-fz_internal void sr2d_draw_quad_color(V2f32 top_left, V2f32 size, RGBA color);
-fz_internal void sr2d_draw_quad_color_ext(V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
-fz_internal void sr2d_draw_quad_atlas_ext(SR2D_Texture_Atlas *texture_atlas, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
+fz_internal void sr2d_draw_quad_ext(SR2D_Texture *texture, Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
+fz_internal void sr2d_draw_quad_color(Vector2 top_left, Vector2 size, RGBA color);
+fz_internal void sr2d_draw_quad_color_ext(Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
+fz_internal void sr2d_draw_quad_atlas_ext(SR2D_Texture_Atlas *texture_atlas, Vector2 uv_min, Vector2 uv_max, Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color);
 fz_internal SR2D_Text_Params sr2d_text_params_default();
 
 fz_internal u32  _sr2d_pack_color(RGBA color);
-fz_internal void _sr2d_draw_quad(SR2D_Texture_Atlas *texture_atlas, V2f32 top_left, V2f32 size, V2f32 uv_min, V2f32 uv_max, f32 rotation, u32 color, f32 roundness, f32 smoothness, f32 border_thickness, u32 border_color);
+fz_internal void _sr2d_draw_quad(SR2D_Texture_Atlas *texture_atlas, Vector2 top_left, Vector2 size, Vector2 uv_min, Vector2 uv_max, f32 rotation, u32 color, f32 roundness, f32 smoothness, f32 border_thickness, u32 border_color);
 
 // @Section: Implementation
 
@@ -459,7 +463,7 @@ sr2d_init(s32 window_width, s32 window_height, b32 vsync)
     glVertexArrayElementBuffer(SR2D_RenderContext.vao, SR2D_RenderContext.ebo);
 
     // Binding 0 – unit quad positions (per-vertex)
-    glVertexArrayVertexBuffer(SR2D_RenderContext.vao, 0, SR2D_RenderContext.unit_vbo, 0, sizeof(V2f32));
+    glVertexArrayVertexBuffer(SR2D_RenderContext.vao, 0, SR2D_RenderContext.unit_vbo, 0, sizeof(Vector2));
 
     // Binding 1 – instance data (per-instance)
     glVertexArrayVertexBuffer(SR2D_RenderContext.vao, 1, SR2D_RenderContext.instance_vbo, 0, sizeof(SR2D_Quad));
@@ -661,7 +665,7 @@ _sr2d_pack_color(RGBA color)
 }
 
 fz_internal void
-_sr2d_draw_quad(SR2D_Texture_Atlas *texture_atlas, V2f32 top_left, V2f32 size, V2f32 uv_min, V2f32 uv_max, f32 rotation, u32 color, f32 roundness, f32 smoothness, f32 border_thickness, u32 border_color)
+_sr2d_draw_quad(SR2D_Texture_Atlas *texture_atlas, Vector2 top_left, Vector2 size, Vector2 uv_min, Vector2 uv_max, f32 rotation, u32 color, f32 roundness, f32 smoothness, f32 border_thickness, u32 border_color)
 {
   if (SR2D_RenderContext.screen_quads_count >= SR2D_RenderContext.quads_capacity)
   {
@@ -684,31 +688,31 @@ _sr2d_draw_quad(SR2D_Texture_Atlas *texture_atlas, V2f32 top_left, V2f32 size, V
 }
 
 fz_internal void
-sr2d_draw_quad(SR2D_Texture *texture, V2f32 top_left, V2f32 size, RGBA color)
+sr2d_draw_quad(SR2D_Texture *texture, Vector2 top_left, Vector2 size, RGBA color)
 {
   _sr2d_draw_quad(texture->atlas, top_left, size, texture->uv_min, texture->uv_max, 0, _sr2d_pack_color(color), 0, 0, 0, COLOR_PACKED_CLEAR.v);
 }
 
 fz_internal void
-sr2d_draw_quad_ext(SR2D_Texture *texture, V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
+sr2d_draw_quad_ext(SR2D_Texture *texture, Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
 {
   _sr2d_draw_quad(texture->atlas, top_left, size, texture->uv_min, texture->uv_max, rotation, _sr2d_pack_color(color), roundness, smoothness, border_thickness, _sr2d_pack_color(border_color));
 }
 
 fz_internal void
-sr2d_draw_quad_color(V2f32 top_left, V2f32 size, RGBA color)
+sr2d_draw_quad_color(Vector2 top_left, Vector2 size, RGBA color)
 {
-  _sr2d_draw_quad(SR2D_RenderContext.white_texture, top_left, size, v2f32(0.0f, 0.0f), v2f32(1.0f, 1.0f), 0, _sr2d_pack_color(color), 0, 0, 0, COLOR_PACKED_CLEAR.v);
+  _sr2d_draw_quad(SR2D_RenderContext.white_texture, top_left, size, (Vector2){0.0f, 0.0f}, (Vector2){1.0f, 1.0f}, 0, _sr2d_pack_color(color), 0, 0, 0, COLOR_PACKED_CLEAR.v);
 }
 
 fz_internal void
-sr2d_draw_quad_color_ext(V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
+sr2d_draw_quad_color_ext(Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
 {
-  _sr2d_draw_quad(SR2D_RenderContext.white_texture, top_left, size, v2f32(0.0f, 0.0f), v2f32(1.0f, 1.0f), rotation, _sr2d_pack_color(color), roundness, smoothness, border_thickness, _sr2d_pack_color(border_color));
+  _sr2d_draw_quad(SR2D_RenderContext.white_texture, top_left, size, (Vector2){0.0f, 0.0f}, (Vector2){1.0f, 1.0f}, rotation, _sr2d_pack_color(color), roundness, smoothness, border_thickness, _sr2d_pack_color(border_color));
 }
 
 fz_internal void
-sr2d_draw_quad_atlas_ext(SR2D_Texture_Atlas *texture_atlas, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
+sr2d_draw_quad_atlas_ext(SR2D_Texture_Atlas *texture_atlas, Vector2 uv_min, Vector2 uv_max, Vector2 top_left, Vector2 size, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
 {
   _sr2d_draw_quad(texture_atlas, top_left, size, uv_min, uv_max, rotation, _sr2d_pack_color(color), roundness, smoothness, border_thickness, _sr2d_pack_color(border_color));
 }
@@ -719,7 +723,7 @@ sr2d_text_params_default()
   SR2D_Text_Params params;
   memory_zero_struct(&params);
   params.text             = S("");
-  params.top_left         = v2f32(0.0f, 0.0f);
+  params.top_left         = (Vector2){0.0f, 0.0f};
   params.color            = rgba(0.0f, 0.0f, 0.0f, 1.0f);
   params.border_color     = rgba(0.0f, 0.0f, 0.0f, 0.0f);
   params.max_width        = F32_MAX;
@@ -729,13 +733,13 @@ sr2d_text_params_default()
 }
 
 fz_internal void
-sr2d_draw_text(SR2D_Font *font, String text, V2f32 top_left, RGBA color)
+sr2d_draw_text(SR2D_Font *font, String text, Vector2 top_left, RGBA color)
 {
   sr2d_draw_text_ext(font, text, top_left, color, 0, 0, 0, 0, rgba(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 fz_internal void
-sr2d_draw_text_ext(SR2D_Font *font, String text, V2f32 top_left, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
+sr2d_draw_text_ext(SR2D_Font *font, String text, Vector2 top_left, RGBA color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, RGBA border_color)
 {
   SR2D_Text_Params p = sr2d_text_params_default();
   p.font             = font;
@@ -751,7 +755,7 @@ sr2d_draw_text_ext(SR2D_Font *font, String text, V2f32 top_left, RGBA color, f32
 }
 
 fz_internal void
-sr2d_draw_text_clamped(SR2D_Font *font, String text, V2f32 top_left, f32 max_width, RGBA color)
+sr2d_draw_text_clamped(SR2D_Font *font, String text, Vector2 top_left, f32 max_width, RGBA color)
 {
   SR2D_Text_Params p = sr2d_text_params_default();
   p.font      = font;
@@ -778,7 +782,7 @@ sr2d_draw_text_params(SR2D_Text_Params params)
   Scratch scratch = scratch_begin(0, 0);
   String_List lines = string_split(scratch.arena, params.text, S("\n"));
 
-  V2f32 cursor = params.top_left;
+  Vector2 cursor = params.top_left;
   cursor.y += font->ascent;
 
   for (String_Node *node = lines.first; node; node = node->next)
@@ -797,10 +801,10 @@ sr2d_draw_text_params(SR2D_Text_Params params)
       stbtt_aligned_quad quad;
       stbtt_GetPackedQuad(font->char_data, font->atlas->width, font->atlas->height, c - 32, &cursor.x, &cursor.y, &quad, 0);
 
-      V2f32 uv_min   = v2f32(quad.s0, quad.t0);
-      V2f32 uv_max   = v2f32(quad.s1, quad.t1);
-      V2f32 top_left = v2f32(quad.x0, quad.y0);
-      V2f32 size     = v2f32(quad.x1 - quad.x0, quad.y1 - quad.y0);
+      Vector2 uv_min   = (Vector2){quad.s0, quad.t0};
+      Vector2 uv_max   = (Vector2){quad.s1, quad.t1};
+      Vector2 top_left = (Vector2){quad.x0, quad.y0};
+      Vector2 size     = (Vector2){quad.x1 - quad.x0, quad.y1 - quad.y0};
 
       if (params.max_width > 0)
       {
@@ -1072,10 +1076,10 @@ sr2d_compile_shader_from_string(String name, String *source, GLenum shader_type)
   return sr2d_compile_shader_from_cstring(name, (const char*)source->cstring, shader_type);
 }
 
-fz_internal V2f32
-sr2d_center_text_in_rect(SR2D_Text_Metrics metrics, V2f32 top_left, V2f32 size)
+fz_internal Vector2
+sr2d_center_text_in_rect(SR2D_Text_Metrics metrics, Vector2 top_left, Vector2 size)
 {
-  V2f32 result;
+  Vector2 result;
   result.x = top_left.x + (size.x - metrics.width) * 0.5f;
   result.y = top_left.y + (size.y - metrics.height) * 0.5f;
   return result;

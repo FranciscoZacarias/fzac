@@ -296,23 +296,52 @@ string_replace_first(Arena* arena, String str, String a, String b)
 fz_internal String
 string_replace_all(Arena *arena, String str, String a, String b)
 {
-  String result = str;
-  u64 index = 0;
-  
-  while (string_find_first(result, a, &index))
+  if (a.count == 0 || a.count > str.count)
   {
-    u64 new_size = result.count - a.count + b.count;
-    u8* new_str = push_array(arena, u8, new_size + 1);
-    
-    memory_copy(new_str, result.cstring, index);
-    memory_copy(new_str + index, b.cstring, b.count);
-    memory_copy(new_str + index + b.count, result.cstring + index + a.count, result.count - index - a.count);
-    
-    new_str[new_size] = 0;
-    result.count = new_size;
-    result.cstring = new_str;
+    return str;
   }
-  
+
+  u64 match_count = 0;
+  for (u64 i = 0; i + a.count <= str.count;)
+  {
+    if (memory_equals(str.cstring + i, a.cstring, a.count))
+    {
+      match_count += 1;
+      i += a.count;
+    }
+    else
+    {
+      i += 1;
+    }
+  }
+
+  if (match_count == 0)
+  {
+    return str;
+  }
+
+  u64 new_size = str.count - match_count * a.count + match_count * b.count;
+  u8* new_str  = push_array_no_zero(arena, u8, new_size + 1);
+  u64 write    = 0;
+
+  for (u64 i = 0; i < str.count;)
+  {
+    if (i + a.count <= str.count && memory_equals(str.cstring + i, a.cstring, a.count))
+    {
+      memory_copy(new_str + write, b.cstring, b.count);
+      write += b.count;
+      i += a.count;
+    }
+    else
+    {
+      new_str[write] = str.cstring[i];
+      write += 1;
+      i += 1;
+    }
+  }
+
+  new_str[new_size] = 0;
+  String result = { new_size, new_str };
   return result;
 }
 
@@ -581,7 +610,8 @@ u32_from_string(String string)
 {
   u32 result = 0;
   if (string.count == 0) return 0;
-  if (string.cstring[0] == '-')
+  b32 negative = (string.cstring[0] == '-');
+  if (negative)
   {
     string.cstring += 1;
     string.count   -= 1;
@@ -589,6 +619,10 @@ u32_from_string(String string)
   for (u64 char_index = 0; char_index < string.count; char_index += 1)
   {
     result = result * 10 + (string.cstring[char_index] - '0');
+  }
+  if (negative)
+  {
+    result = 0 - result;
   }
   return result;
 }
@@ -648,7 +682,7 @@ string_list_new()
 fz_internal void
 string_list_push(Arena* arena, String_List* list, String str)
 {
-  String_Node* node = push_array(arena, String_Node, sizeof(String_Node));
+  String_Node* node = push_struct(arena, String_Node);
   node->value = str;
   if (!list->first && !list->last)
   {

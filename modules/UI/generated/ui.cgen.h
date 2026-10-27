@@ -121,10 +121,10 @@ typedef enum
     struct UI_Minimum_height_stack { s32 data[8]; u32 top_index; s32 bottom_val; } minimum_height_stack; /* Minimum height this node can have */ \
     struct UI_Color_theme_style_stack { UI_Color_Theme_Style data[8]; u32 top_index; UI_Color_Theme_Style bottom_val; } color_theme_style_stack; /* Node's colors from UI_Node_COlor_Theme */ \
     struct UI_Texture_stack { UI_Texture data[8]; u32 top_index; UI_Texture bottom_val; } texture_stack; /* Display this image on the node */ \
-    struct UI_Text_color_stack { V4f32 data[8]; u32 top_index; V4f32 bottom_val; } text_color_stack; /*  */ \
-    struct UI_Background_color_stack { V4f32 data[8]; u32 top_index; V4f32 bottom_val; } background_color_stack; /*  */ \
+    struct UI_Text_color_stack { Vector4 data[8]; u32 top_index; Vector4 bottom_val; } text_color_stack; /*  */ \
+    struct UI_Background_color_stack { Vector4 data[8]; u32 top_index; Vector4 bottom_val; } background_color_stack; /*  */ \
     struct UI_Background_transparency_stack { f32 data[8]; u32 top_index; f32 bottom_val; } background_transparency_stack; /*  */ \
-    struct UI_Border_color_stack { V4f32 data[8]; u32 top_index; V4f32 bottom_val; } border_color_stack; /*  */ \
+    struct UI_Border_color_stack { Vector4 data[8]; u32 top_index; Vector4 bottom_val; } border_color_stack; /*  */ \
     struct UI_Border_transparency_stack { f32 data[8]; u32 top_index; f32 bottom_val; } border_transparency_stack; /*  */ \
     struct UI_Border_thickness_stack { s32 data[8]; u32 top_index; s32 bottom_val; } border_thickness_stack; /* Border thickness */ \
     struct UI_Corner_roundness_px_stack { s32 data[8]; u32 top_index; s32 bottom_val; } corner_roundness_px_stack; /* How many pixels will the border be rounded around. */ \

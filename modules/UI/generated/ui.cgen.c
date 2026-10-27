@@ -136,18 +136,18 @@ fz_internal b32  ui_stack_texture_is_at_bottom() { return ui_stack_is_at_bottom(
 fz_internal void ui_stack_texture_assert_top_at(u32 at) { ui_stack_assert_top_at(texture, at); }
 #define ui_texture(val) defer_loop(ui_stack_texture_push(val), ui_stack_texture_pop())
 
-fz_internal void ui_stack_text_color_init(V4f32 bot_val) { ui_stack_init(text_color, bot_val); }
-fz_internal void ui_stack_text_color_push(V4f32 val) { ui_stack_push(text_color, val); }
-fz_internal V4f32 ui_stack_text_color_pop() { return ui_stack_pop(text_color); }
-fz_internal V4f32 ui_stack_text_color_top() { return ui_stack_top(text_color); }
+fz_internal void ui_stack_text_color_init(Vector4 bot_val) { ui_stack_init(text_color, bot_val); }
+fz_internal void ui_stack_text_color_push(Vector4 val) { ui_stack_push(text_color, val); }
+fz_internal Vector4 ui_stack_text_color_pop() { return ui_stack_pop(text_color); }
+fz_internal Vector4 ui_stack_text_color_top() { return ui_stack_top(text_color); }
 fz_internal b32  ui_stack_text_color_is_at_bottom() { return ui_stack_is_at_bottom(text_color); }
 fz_internal void ui_stack_text_color_assert_top_at(u32 at) { ui_stack_assert_top_at(text_color, at); }
 #define ui_text_color(val) defer_loop(ui_stack_text_color_push(val), ui_stack_text_color_pop())
 
-fz_internal void ui_stack_background_color_init(V4f32 bot_val) { ui_stack_init(background_color, bot_val); }
-fz_internal void ui_stack_background_color_push(V4f32 val) { ui_stack_push(background_color, val); }
-fz_internal V4f32 ui_stack_background_color_pop() { return ui_stack_pop(background_color); }
-fz_internal V4f32 ui_stack_background_color_top() { return ui_stack_top(background_color); }
+fz_internal void ui_stack_background_color_init(Vector4 bot_val) { ui_stack_init(background_color, bot_val); }
+fz_internal void ui_stack_background_color_push(Vector4 val) { ui_stack_push(background_color, val); }
+fz_internal Vector4 ui_stack_background_color_pop() { return ui_stack_pop(background_color); }
+fz_internal Vector4 ui_stack_background_color_top() { return ui_stack_top(background_color); }
 fz_internal b32  ui_stack_background_color_is_at_bottom() { return ui_stack_is_at_bottom(background_color); }
 fz_internal void ui_stack_background_color_assert_top_at(u32 at) { ui_stack_assert_top_at(background_color, at); }
 #define ui_background_color(val) defer_loop(ui_stack_background_color_push(val), ui_stack_background_color_pop())
@@ -160,10 +160,10 @@ fz_internal b32  ui_stack_background_transparency_is_at_bottom() { return ui_sta
 fz_internal void ui_stack_background_transparency_assert_top_at(u32 at) { ui_stack_assert_top_at(background_transparency, at); }
 #define ui_background_transparency(val) defer_loop(ui_stack_background_transparency_push(val), ui_stack_background_transparency_pop())
 
-fz_internal void ui_stack_border_color_init(V4f32 bot_val) { ui_stack_init(border_color, bot_val); }
-fz_internal void ui_stack_border_color_push(V4f32 val) { ui_stack_push(border_color, val); }
-fz_internal V4f32 ui_stack_border_color_pop() { return ui_stack_pop(border_color); }
-fz_internal V4f32 ui_stack_border_color_top() { return ui_stack_top(border_color); }
+fz_internal void ui_stack_border_color_init(Vector4 bot_val) { ui_stack_init(border_color, bot_val); }
+fz_internal void ui_stack_border_color_push(Vector4 val) { ui_stack_push(border_color, val); }
+fz_internal Vector4 ui_stack_border_color_pop() { return ui_stack_pop(border_color); }
+fz_internal Vector4 ui_stack_border_color_top() { return ui_stack_top(border_color); }
 fz_internal b32  ui_stack_border_color_is_at_bottom() { return ui_stack_is_at_bottom(border_color); }
 fz_internal void ui_stack_border_color_assert_top_at(u32 at) { ui_stack_assert_top_at(border_color, at); }
 #define ui_border_color(val) defer_loop(ui_stack_border_color_push(val), ui_stack_border_color_pop())

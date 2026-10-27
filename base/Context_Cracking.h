@@ -124,7 +124,7 @@
 #  else
 #    define shared_function C_LINKAGE __attribute__((dllexport))
 #  endif
-#elif OS_MAC || OS_LINUX || defined(__GNUC__) || defined(__clang__)
+#elif OS_MACOS || OS_LINUX || defined(__GNUC__) || defined(__clang__)
 #  define shared_function C_LINKAGE __attribute__((visibility("default")))
 #else
 #  define shared_function C_LINKAGE
@@ -136,6 +136,10 @@
 #  endif
 #  ifdef UNICODE
 #    undef UNICODE
+#  endif
+#  if FZ_RAYLIB
+#    define NOGDI
+#    define NOUSER
 #  endif
 #  if COMPILER_MSVC
 #    pragma warning(push)
@@ -158,7 +162,7 @@
 #  include <fcntl.h>
 #  include <time.h>
 #  include <pthread.h>
-#elif OS_MAC
+#elif OS_MACOS
 #  include <unistd.h>
 #  include <sys/types.h>
 #  include <sys/stat.h>

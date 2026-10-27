@@ -5,11 +5,11 @@ fz_internal void      ui_window_end();
 fz_internal UI_Signal ui_button(String text);
 fz_internal UI_Signal ui_text(String text);
 fz_internal UI_Signal ui_textf(String fmt, ...);
-fz_internal UI_Signal ui_text_colored(String text, V4f32 color);
-fz_internal UI_Signal ui_textf_colored(V4f32 color, String fmt, ...);
+fz_internal UI_Signal ui_text_colored(String text, Vector4 color);
+fz_internal UI_Signal ui_textf_colored(Vector4 color, String fmt, ...);
 fz_internal UI_Signal ui_checkbox(String text, b8 *checked);
-fz_internal UI_Signal ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders);
-fz_internal UI_Signal ui_image(String unique, s32 texture_index, V2f32 uv_min, V2f32 uv_max);
+fz_internal UI_Signal ui_color(String text, Vector4 *color, b8 show_alpha, b8 editable, b8 show_sliders);
+fz_internal UI_Signal ui_image(String unique, s32 texture_index, Vector2 uv_min, Vector2 uv_max);
 fz_internal UI_Signal ui_slider_f32(String unique, String text, f32 *val, f32 min, f32 max, f32 width);
 fz_internal UI_Signal ui_slider_s32(String unique, String text, s32 *val, s32 min, s32 max, f32 width);
 fz_internal UI_Signal ui_slider_u32(String unique, String text, u32 *val, u32 min, u32 max, f32 width);
@@ -151,17 +151,17 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle quad
         {
-          V2f32 window_center = v2f32(UIContext.window_width/2, UIContext.window_height/2);
-          V2f32 top_left = v2f32(window_center.x - (middle_quad_height/2), window_center.y - (middle_quad_height/2));
-          V2f32 size = v2f32(middle_quad_height, middle_quad_height);
+          Vector2 window_center = (Vector2){UIContext.window_width/2, UIContext.window_height/2};
+          Vector2 top_left = (Vector2){window_center.x - (middle_quad_height/2), window_center.y - (middle_quad_height/2)};
+          Vector2 size = (Vector2){middle_quad_height, middle_quad_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -169,7 +169,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
             
-            _ui_push_draw_rect_command(v2f32(0,0), v2f32(UIContext.window_width, UIContext.window_height), background_color, 0.0f, 0.0f, 0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,0}, (Vector2){UIContext.window_width, UIContext.window_height}, background_color, 0.0f, 0.0f, 0.0f, 1.0f, border_color);
 
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
@@ -191,24 +191,24 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle top
         {
-          V2f32 window_center = v2f32(UIContext.window_width/2, UIContext.window_height/2);
-          V2f32 size          = v2f32(middle_quad_height, small_quads_height);
-          V2f32 top_left      = v2f32(window_center.x - size.x/2, window_center.y - (middle_quad_height/2) - size.y - quads_padding);
+          Vector2 window_center = (Vector2){UIContext.window_width/2, UIContext.window_height/2};
+          Vector2 size          = (Vector2){middle_quad_height, small_quads_height};
+          Vector2 top_left      = (Vector2){window_center.x - size.x/2, window_center.y - (middle_quad_height/2) - size.y - quads_padding};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
           {
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
-            _ui_push_draw_rect_command(v2f32(0,0), v2f32(UIContext.window_width, UIContext.window_height/2), background_color,0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,0}, (Vector2){UIContext.window_width, UIContext.window_height/2}, background_color,0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width;
@@ -229,24 +229,24 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle left
         {
-          V2f32 window_center = v2f32(UIContext.window_width/2, UIContext.window_height/2);
-          V2f32 size          = v2f32(small_quads_height, middle_quad_height);
-          V2f32 top_left      = v2f32(window_center.x - (middle_quad_height/2) - size.x - quads_padding, window_center.y - size.y/2);
+          Vector2 window_center = (Vector2){UIContext.window_width/2, UIContext.window_height/2};
+          Vector2 size          = (Vector2){small_quads_height, middle_quad_height};
+          Vector2 top_left      = (Vector2){window_center.x - (middle_quad_height/2) - size.x - quads_padding, window_center.y - size.y/2};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
           {
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
-            _ui_push_draw_rect_command(v2f32(0,0), v2f32(UIContext.window_width/2, UIContext.window_height), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,0}, (Vector2){UIContext.window_width/2, UIContext.window_height}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width/2;
@@ -267,24 +267,24 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle right
         {
-          V2f32 window_center = v2f32(UIContext.window_width/2, UIContext.window_height/2);
-          V2f32 size          = v2f32(small_quads_height, middle_quad_height);
-          V2f32 top_left      = v2f32(window_center.x + (middle_quad_height/2) + quads_padding, window_center.y - size.y/2);
+          Vector2 window_center = (Vector2){UIContext.window_width/2, UIContext.window_height/2};
+          Vector2 size          = (Vector2){small_quads_height, middle_quad_height};
+          Vector2 top_left      = (Vector2){window_center.x + (middle_quad_height/2) + quads_padding, window_center.y - size.y/2};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
           {
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
-            _ui_push_draw_rect_command(v2f32(UIContext.window_width/2,0), v2f32(UIContext.window_width/2, UIContext.window_height), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){UIContext.window_width/2,0}, (Vector2){UIContext.window_width/2, UIContext.window_height}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width/2;
@@ -305,24 +305,24 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle bottom
         {
-          V2f32 window_center = v2f32(UIContext.window_width/2, UIContext.window_height/2);
-          V2f32 size          = v2f32(middle_quad_height, small_quads_height);
-          V2f32 top_left      = v2f32(window_center.x - size.x/2, window_center.y + (middle_quad_height/2) + quads_padding);
+          Vector2 window_center = (Vector2){UIContext.window_width/2, UIContext.window_height/2};
+          Vector2 size          = (Vector2){middle_quad_height, small_quads_height};
+          Vector2 top_left      = (Vector2){window_center.x - size.x/2, window_center.y + (middle_quad_height/2) + quads_padding};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
           {
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
-            _ui_push_draw_rect_command(v2f32(0,UIContext.window_height/2), v2f32(UIContext.window_width, UIContext.window_height/2), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,UIContext.window_height/2}, (Vector2){UIContext.window_width, UIContext.window_height/2}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width;
@@ -344,29 +344,29 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
       // Left side
       {
-        V2f32 top_left_base;
+        Vector2 top_left_base;
         top_left_base.x = distance/2;
         top_left_base.y = half_screen_height - (total_height/2);
 
         // Top
         {
-          V2f32 top_left = top_left_base;
-          V2f32 size     = v2f32(snap_width, small_quads_height);
+          Vector2 top_left = top_left_base;
+          Vector2 size     = (Vector2){snap_width, small_quads_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
           {
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
-            _ui_push_draw_rect_command(v2f32(0,0), v2f32(UIContext.window_width*0.2f, UIContext.window_height/2), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,0}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height/2}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -387,19 +387,19 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle
         {
-          V2f32 top_left;
+          Vector2 top_left;
           top_left.x = top_left_base.x;
           top_left.y = top_left_base.y + small_quads_height + quads_padding;
 
-          V2f32 size = v2f32(snap_width, middle_quad_height);
+          Vector2 size = (Vector2){snap_width, middle_quad_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -407,7 +407,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
 
-            _ui_push_draw_rect_command(v2f32(0,0), v2f32(UIContext.window_width*0.2f, UIContext.window_height), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,0}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -428,19 +428,19 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Bottom
         {
-          V2f32 top_left;
+          Vector2 top_left;
           top_left.x = top_left_base.x;
           top_left.y = top_left_base.y + small_quads_height + quads_padding + middle_quad_height + quads_padding;
 
-          V2f32 size = v2f32(snap_width, small_quads_height);
+          Vector2 size = (Vector2){snap_width, small_quads_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -448,7 +448,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
 
-            _ui_push_draw_rect_command(v2f32(0,UIContext.window_height/2), v2f32(UIContext.window_width*0.2f, UIContext.window_height/2), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){0,UIContext.window_height/2}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height/2}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -470,22 +470,22 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
       // Right side
       {
-        V2f32 top_left_base;
+        Vector2 top_left_base;
         top_left_base.x = UIContext.window_width - (distance/2) - snap_width;
         top_left_base.y = half_screen_height - (total_height/2);
 
         // Top
         {
-          V2f32 top_left = top_left_base;
-          V2f32 size     = v2f32(snap_width, small_quads_height);
+          Vector2 top_left = top_left_base;
+          Vector2 size     = (Vector2){snap_width, small_quads_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -493,7 +493,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
 
-            _ui_push_draw_rect_command(v2f32(UIContext.window_width - UIContext.window_width*0.2f,0), v2f32(UIContext.window_width*0.2f, UIContext.window_height/2), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){UIContext.window_width - UIContext.window_width*0.2f,0}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height/2}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -514,19 +514,19 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Middle
         {
-          V2f32 top_left;
+          Vector2 top_left;
           top_left.x = top_left_base.x;
           top_left.y = top_left_base.y + small_quads_height + quads_padding;
 
-          V2f32 size = v2f32(snap_width, middle_quad_height);
+          Vector2 size = (Vector2){snap_width, middle_quad_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -534,7 +534,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
 
-            _ui_push_draw_rect_command(v2f32(UIContext.window_width - UIContext.window_width*0.2f,0), v2f32(UIContext.window_width*0.2f, UIContext.window_height), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){UIContext.window_width - UIContext.window_width*0.2f,0}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -555,21 +555,21 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
 
         // Bottom
         {
-          V2f32 top_left;
+          Vector2 top_left;
           top_left.x = top_left_base.x;
           top_left.y = top_left_base.y +
                       small_quads_height + quads_padding +
                       middle_quad_height + quads_padding;
 
-          V2f32 size = v2f32(snap_width, small_quads_height);
+          Vector2 size = (Vector2){snap_width, small_quads_height};
 
           UI_Rect quad;
           quad.top_left = v2s32(top_left.x, top_left.y);
           quad.size     = v2s32(size.x, size.y);
 
-          V4f32 background_color = UIContext.color_theme.light_background_color;
+          Vector4 background_color = UIContext.color_theme.light_background_color;
           background_color.w = 0.5f;
-          V4f32 border_color = UIContext.color_theme.interactable_background_color;
+          Vector4 border_color = UIContext.color_theme.interactable_background_color;
           border_color.w = 0.5f;
 
           if (_ui_is_mouse_in_rect(quad))
@@ -577,7 +577,7 @@ ui_window_begin(String text, s32 x, s32 y, s32 width, s32 height)
             background_color.w = 0.6f;
             border_color.w     = 1.0f;
 
-            _ui_push_draw_rect_command(v2f32(UIContext.window_width - UIContext.window_width*0.2f, UIContext.window_height/2), v2f32(UIContext.window_width*0.2f, UIContext.window_height/2), background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
+            _ui_push_draw_rect_command((Vector2){UIContext.window_width - UIContext.window_width*0.2f, UIContext.window_height/2}, (Vector2){UIContext.window_width*0.2f, UIContext.window_height/2}, background_color, 0.0f,0.0f,0.0f, 1.0f, border_color);
             if (is_button_up(Mouse_Button_Left) && was_button_down(Mouse_Button_Left))
             {
               f32 target_w = UIContext.window_width * 0.2f;
@@ -692,13 +692,13 @@ ui_textf(String fmt, ...)
 }
 
 fz_internal UI_Signal
-ui_text_colored(String text, V4f32 color)
+ui_text_colored(String text, Vector4 color)
 {
   return ui_textf_colored(color, text);
 }
 
 fz_internal UI_Signal
-ui_textf_colored(V4f32 color, String fmt, ...)
+ui_textf_colored(Vector4 color, String fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -851,7 +851,7 @@ ui_checkbox(String text, b8 *checked)
 }
 
 fz_internal UI_Signal
-ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders)
+ui_color(String text, Vector4 *color, b8 show_alpha, b8 editable, b8 show_sliders)
 {
   UI_Signal color_widget_signal = (UI_Signal){0};
 
@@ -1012,7 +1012,7 @@ ui_color(String text, V4f32 *color, b8 show_alpha, b8 editable, b8 show_sliders)
 }
 
 fz_internal UI_Signal
-ui_image(String unique, s32 texture_handle, V2f32 uv_min, V2f32 uv_max)
+ui_image(String unique, s32 texture_handle, Vector2 uv_min, Vector2 uv_max)
 {
   UI_Texture texture = {texture_handle};
   UI_Signal image_signal = {0};

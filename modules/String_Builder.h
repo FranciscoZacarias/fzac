@@ -88,6 +88,11 @@ string_builder_pushf(String_Builder* builder, const char* fmt, ...)
 
   for (;;)
   {
+    if (builder->count >= builder->capacity)
+    {
+      if (!_string_builder_grow(builder, builder->count + 1)) { return; }
+    }
+
     u64 available = builder->capacity - builder->count;
 
     va_list args;

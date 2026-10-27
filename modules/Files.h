@@ -65,7 +65,7 @@ fz_internal void
 win32_log_error(const char* msg, String path)
 {
   char buffer[512];
-  wsprintfA(buffer, "%s: %.*s\n", msg, (s32)path.count, path.cstring);
+  stbsp_snprintf(buffer, sizeof(buffer), "%s: %.*s\n", msg, (s32)path.count, path.cstring);
   OutputDebugStringA(buffer);
 }
 

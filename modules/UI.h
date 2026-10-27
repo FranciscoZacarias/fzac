@@ -1,6 +1,10 @@
 #ifndef UI_H
 #define UI_H
 
+#if FZ_RAYLIB
+# error "UI.h is not supported with Base_Raylib.h yet"
+#endif
+
 /*
   // @TODO(fz): Text input line
   // @TODO(fz): Text input multi line
@@ -141,49 +145,49 @@ fz_internal UI_Text_Metrics ui_measure_text(String text); // @NOTE(fz): Define i
 typedef struct UI_Color_Theme UI_Color_Theme;
 struct UI_Color_Theme
 {
-  V4f32 light_border_color;
-  V4f32 light_border_hover_color;
-  V4f32 light_border_active_color;
+  Vector4 light_border_color;
+  Vector4 light_border_hover_color;
+  Vector4 light_border_active_color;
   
-  V4f32 dark_border_color;
-  V4f32 dark_border_hover_color;
-  V4f32 dark_border_active_color;
+  Vector4 dark_border_color;
+  Vector4 dark_border_hover_color;
+  Vector4 dark_border_active_color;
 
-  V4f32 light_background_color;
-  V4f32 light_background_hover_color;
-  V4f32 light_background_active_color;
+  Vector4 light_background_color;
+  Vector4 light_background_hover_color;
+  Vector4 light_background_active_color;
 
-  V4f32 dark_background_color;
-  V4f32 dark_background_hover_color;
-  V4f32 dark_background_active_color;
+  Vector4 dark_background_color;
+  Vector4 dark_background_hover_color;
+  Vector4 dark_background_active_color;
 
-  V4f32 interactable_border_color;
-  V4f32 interactable_border_hover_color;
-  V4f32 interactable_border_active_color;
+  Vector4 interactable_border_color;
+  Vector4 interactable_border_hover_color;
+  Vector4 interactable_border_active_color;
 
-  V4f32 interactable_background_color;
-  V4f32 interactable_background_hover_color;
-  V4f32 interactable_background_active_color;
+  Vector4 interactable_background_color;
+  Vector4 interactable_background_hover_color;
+  Vector4 interactable_background_active_color;
 
-  V4f32 text_color;
-  V4f32 text_hover_color;
-  V4f32 text_active_color;
+  Vector4 text_color;
+  Vector4 text_hover_color;
+  Vector4 text_active_color;
 };
 
 typedef struct UI_Node_Color_Theme UI_Node_Color_Theme;
 struct UI_Node_Color_Theme
 {
-  V4f32 border_color;
-  V4f32 border_hover_color;
-  V4f32 border_active_color;
+  Vector4 border_color;
+  Vector4 border_hover_color;
+  Vector4 border_active_color;
 
-  V4f32 background_color;
-  V4f32 background_hover_color;
-  V4f32 background_active_color;
+  Vector4 background_color;
+  Vector4 background_hover_color;
+  Vector4 background_active_color;
 
-  V4f32 text_color;
-  V4f32 text_hover_color;
-  V4f32 text_active_color;
+  Vector4 text_color;
+  Vector4 text_hover_color;
+  Vector4 text_active_color;
 
   s32 border_thickness_px;
   s32 corner_roundness_px;
@@ -215,18 +219,18 @@ struct UI_Node
   // String
   String string;
   String string_clean; /* String with everything after ## stripped */
-  V2f32 clean_string_dimensions; /* String dimensions */
+  Vector2 clean_string_dimensions; /* String dimensions */
 
   // Style
   UI_Node_Color_Theme color_theme;
-  V4f32 target_border_color;
-  V4f32 target_background_color;
-  V4f32 target_text_color;
+  Vector4 target_border_color;
+  Vector4 target_background_color;
+  Vector4 target_text_color;
 
   // Texture
   UI_Texture texture;
-  V2f32 uv_min;
-  V2f32 uv_max;
+  Vector2 uv_min;
+  Vector2 uv_max;
 };
 
 typedef struct UI_Node_Cache UI_Node_Cache;
@@ -266,9 +270,9 @@ typedef struct UI_Command UI_Command;
 struct UI_Command
 {
   UI_Command_Kind kind;
-  V2f32 top_left;
-  V2f32 size;
-  V4f32 color;
+  Vector2 top_left;
+  Vector2 size;
+  Vector4 color;
 
   union
   {
@@ -278,11 +282,11 @@ struct UI_Command
       f32   roundness;
       f32   smoothness;
       f32   border_thickness;
-      V4f32 border_color;
+      Vector4 border_color;
 
       s32 texture_index;
-      V2f32 uv_min;
-      V2f32 uv_max;
+      Vector2 uv_min;
+      Vector2 uv_max;
     } rect;
 
     struct
@@ -410,9 +414,9 @@ fz_internal void           _ui_fill_signals_from_node(UI_Signal* signal);
 fz_internal String         _ui_clean_string(Arena* arena, String string);
 fz_internal void           _ui_purge_old_cached_nodes();
 fz_internal UI_Node *      _ui_tree_next(UI_Node *node);
-fz_internal void           _ui_push_draw_rect_command(V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
-fz_internal void           _ui_push_draw_rect_with_texture_command(s32 texture_index, V2f32 uv_min, V2f32 uv_max, V2f32 top_left, V2f32 size, V4f32 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, V4f32 border_color);
-fz_internal void           _ui_push_draw_text_command(V2f32 top_left, f32 max_width, f32 max_height, V4f32 color, String text);
+fz_internal void           _ui_push_draw_rect_command(Vector2 top_left, Vector2 size, Vector4 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, Vector4 border_color);
+fz_internal void           _ui_push_draw_rect_with_texture_command(s32 texture_index, Vector2 uv_min, Vector2 uv_max, Vector2 top_left, Vector2 size, Vector4 color, f32 rotation, f32 roundness, f32 smoothness, f32 border_thickness, Vector4 border_color);
+fz_internal void           _ui_push_draw_text_command(Vector2 top_left, f32 max_width, f32 max_height, Vector4 color, String text);
 fz_internal void inline    _ui_error(String message, String file, u32 line);
 
 #if DEBUG

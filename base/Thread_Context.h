@@ -54,6 +54,7 @@ thread_context_init_and_attach(Thread_Context* thread_context)
 fz_internal void
 thread_context_free()
 {
+  arena_free(ThreadContextThreadLocal->temporary_storage);
   for(u64 i = 0; i < c_array_count(ThreadContextThreadLocal->temporary_arenas); i += 1)
   {
     arena_free(ThreadContextThreadLocal->temporary_arenas[i]);

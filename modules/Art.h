@@ -1,6 +1,10 @@
 #ifndef ART_H
 #define ART_H
 
+#if FZ_RAYLIB
+# error "Art.h is not supported with Base_Raylib.h yet"
+#endif
+
 typedef struct RGBA_Packed RGBA_Packed;
 struct RGBA_Packed
 {

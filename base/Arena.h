@@ -68,7 +68,7 @@ fz_internal void    arena_temp_end(Scratch* temp);  /* Rolls back to the positio
     if ((name##_count) == 0)                 \
     {                                        \
       message_box(S("Arena Array Underflow"),\
-        St("array_pop on empty array"),\
+        S("array_pop on empty array"),\
         S(__FILE__), __LINE__);              \
       assert(false);                         \
     }                                        \

@@ -1,6 +1,10 @@
 #ifndef WINDOW_CREATION
 #define WINDOW_CREATION
 
+#if FZ_RAYLIB
+# error "Window.h is replaced by raylib in Base_Raylib.h"
+#endif
+
 /*
   @Module: Handles window related functionality, such as window creation and input.
 */

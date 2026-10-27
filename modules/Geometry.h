@@ -1,32 +1,36 @@
 #ifndef FZ_GEOMETRY_H
 #define FZ_GEOMETRY_H
 
+#if FZ_RAYLIB
+# error "Geometry.h is not supported with Base_Raylib.h yet"
+#endif
+
 typedef struct Line_Segment Line_Segment;
 struct Line_Segment
 {
-  V3f32 begin;
-  V3f32 end;
+  Vector3 begin;
+  Vector3 end;
 };
 
 typedef struct Box Box;
 struct Box
 {
-  V3f32 min; // smallest coordinate along each axis
-  V3f32 max; // largest coordinate along each axis
+  Vector3 min; // smallest coordinate along each axis
+  Vector3 max; // largest coordinate along each axis
 };
 #define box(min,max) (Box){ min, max }
 #define box_const(min,max) { min, max }
 
-fz_internal V3f32 box_get_dimensions(Box *box);
-fz_internal b8    box_is_point_inside(Box *box, V3f32 point);
+fz_internal Vector3 box_get_dimensions(Box *box);
+fz_internal b8    box_is_point_inside(Box *box, Vector3 point);
 fz_internal b8    box_intersect(Box *box_a, Box box_b);
 
 // @Section: Implementation
 
-fz_internal V3f32
+fz_internal Vector3
 box_get_dimensions(Box *box)
 {
-  V3f32 result;
+  Vector3 result;
   result.x = box->max.x - box->min.x;
   result.y = box->max.y - box->min.y;
   result.z = box->max.z - box->min.z;
@@ -34,7 +38,7 @@ box_get_dimensions(Box *box)
 }
 
 fz_internal b8
-box_is_point_inside(Box *box, V3f32 point)
+box_is_point_inside(Box *box, Vector3 point)
 {
   b8 result = point.x >= box->min.x && point.x <= box->max.x &&
               point.y >= box->min.y && point.y <= box->max.y &&
