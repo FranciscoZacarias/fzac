@@ -136,13 +136,14 @@ enum
   Emit_Block_Comments     = (1 << 4), /* Emits a block comment made with made with */
   Emit_String_Backtick    = (1 << 5), /* Emits a Token_String_Backtick like `This is a backtick string` instead of each individual token */
 
-  Emit_All = Emit_String_Literals|Emit_Character_Literals|Emit_Line_Comments|Emit_Block_Comments,
+  Emit_All = Emit_String_Literals|Emit_Character_Literals|Emit_Line_Comments|Emit_Block_Comments|Emit_String_Backtick, /* Everything except Emit_Hash_Comments, which would swallow C preprocessor lines */
 };
 
 typedef struct Lexer Lexer;
 struct Lexer
 {
   Arena* arena;
+  b32    owns_arena; /* False when the caller passed the arena in, so lexer_free leaves it alone */
   u8 scratch_buffer[MAX_LEXER_SCRATCH_BUFFER_SIZE]; /* Scratch buffer for storing identifier values and parsing tokens */
 
   // Character stream
@@ -328,6 +329,7 @@ lexer_init_with_single_file_path(Lexer* lexer, String path, Trivia_Flags trivia_
   memory_zero_struct(lexer);
 
   lexer->arena  = arena_alloc();
+  lexer->owns_arena = true;
   lexer->file_path = path;
   lexer->source = file_load(lexer->arena, path);
   lexer->current_line_number     = 1;
@@ -351,8 +353,27 @@ lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, E
   memory_zero_struct(lexer);
 
   lexer->arena     = arena_alloc();
+  lexer->owns_arena = true;
   lexer->file_path = string_zero();
   lexer->source    = string_copy(lexer->arena, source);
+  lexer->current_line_number     = 1;
+  lexer->current_character_index = 1;
+  lexer->trivia_flags            = trivia_flags;
+  lexer->emit_structures         = emit_structures;
+
+  return true;
+}
+
+fz_internal b32
+lexer_init_from_string_with_arena(Lexer* lexer, Arena* arena, String source, Trivia_Flags trivia_flags, Emit_Structures emit_structures)
+{
+  if (source.count == 0) return false;
+  memory_zero_struct(lexer);
+
+  lexer->arena      = arena;
+  lexer->owns_arena = false;
+  lexer->file_path  = string_zero();
+  lexer->source     = string_copy(lexer->arena, source);
   lexer->current_line_number     = 1;
   lexer->current_character_index = 1;
   lexer->trivia_flags            = trivia_flags;
@@ -364,8 +385,11 @@ lexer_init_from_string(Lexer* lexer, String source, Trivia_Flags trivia_flags, E
 fz_internal void
 lexer_free(Lexer* lexer)
 {
-  arena_free(lexer->arena);
-  lexer = NULL;
+  if (lexer->owns_arena)
+  {
+    arena_free(lexer->arena);
+  }
+  memory_zero_struct(lexer);
 }
 
 fz_internal s16

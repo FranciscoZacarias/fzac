@@ -204,6 +204,28 @@ log_write_string(Log_Level level, const char* src_file, int src_line, String msg
   scratch_end(&scratch);
 }
 
+#if FZ_RAYLIB
+fz_internal void
+_logging_raylib_trace_callback(int raylib_level, const char* text, va_list args)
+{
+  Log_Level level = Log_Level_Info;
+  switch (raylib_level)
+  {
+    case LOG_TRACE:   level = Log_Level_Trace; break;
+    case LOG_DEBUG:   level = Log_Level_Trace; break;
+    case LOG_INFO:    level = Log_Level_Info;  break;
+    case LOG_WARNING: level = Log_Level_Warn;  break;
+    case LOG_ERROR:   level = Log_Level_Error; break;
+    case LOG_FATAL:   level = Log_Level_Fatal; break;
+  }
+
+  Scratch scratch = scratch_begin(0, 0);
+  String msg = string_from_format_va(scratch.arena, text, args);
+  log_write_string(level, "raylib", 0, msg);
+  scratch_end(&scratch);
+}
+#endif
+
 fz_internal b32
 logging_init(Log_Level min_level, String file_path, b8 use_short_logs)
 {
@@ -228,6 +250,9 @@ logging_init(Log_Level min_level, String file_path, b8 use_short_logs)
   }
   GlobalLogger.inited = true;
   GlobalLogger.short_terminal_logs = use_short_logs;
+#if FZ_RAYLIB
+  SetTraceLogCallback(_logging_raylib_trace_callback);
+#endif
   return true;
 }
 
@@ -241,6 +266,9 @@ logging_free(void)
     file_write(GlobalLogger.file_path, GlobalLogger.file_buf, written);
   }
   memory_zero_struct(&GlobalLogger);
+#if FZ_RAYLIB
+  SetTraceLogCallback(NULL);
+#endif
 }
 
 fz_internal void

@@ -58,7 +58,11 @@
 #endif
 
 #if !defined(__cplusplus) && !defined(static_assert)
-# define static_assert(condition,label) _Static_assert(condition, label)
+# if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define static_assert(condition,label) _Static_assert(condition, label)
+# else
+#  define static_assert(condition,label) typedef char glue(static_assert_failed_, __COUNTER__)[(condition) ? 1 : -1]
+# endif
 #endif
 
 fz_internal void fatal_error(const char* message); /* Shows the message, breaks into an attached debugger and exits the process. Works in every build. Defined in Os */

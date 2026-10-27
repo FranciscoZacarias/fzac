@@ -1,183 +1,146 @@
-# Structure
-Include `Base.h` to include all the `base\` headers in the project. These are the  bare minimum functionality for the library which are to be included in each project.
-For `modules\` each file can be included individually into the program as a single module.
+# fzac
 
-# Example
+Personal C library. Include one base header, then opt into modules.
+
+- `Base.h`: fzac's own platform layer (Window, OpenGL, Simple_Renderer2D...).
+- `Base_Raylib.h`: same base, with raylib as the platform, graphics, input, audio and math layer.
+
+Both share arenas, strings, arrays, math (raymath), Os and the `entry_point` convention.
+
+# Example: Base_Raylib.h
+
+```c
+#include "Base_Raylib.h"
+#include "Logging.h"
+#include "Hash_Map.h"
+
+#include "metaprogram/global_headers.h"
+
+fz_internal void
+entry_point(Command_Line* command_line)
+{
+  logging_init(Log_Level_Info, S("app.log"), true); // raylib logs go through Logging too
+
+  InitWindow(1280, 720, "app");
+  while (!WindowShouldClose())
+  {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    DrawText("Hello", 10, 10, 20, DARKGRAY);
+    EndDrawing();
+    clear_temporary_storage();
+  }
+  CloseWindow();
+}
+```
+
+# Example: Base.h
 
 ```c
 #include "Base.h"
 #include "Window.h"
 #include "OpenGL.h"
 
-/* This is the output of the metaprogram that generates the forward declarations for everything.
-   So, in this codebase, we don't need to forward declare anything or do things in any specific order,
-   since the metaprogram generates headers automatically.
-*/
-#include "global_headers.h" 
+#include "metaprogram/global_headers.h"
 
-/* For enums to be forward declared, they have to be defined with the macro enum_type(name, type).
-   This is the only way to make the metaprogrma know what is the identifier and type that it should typedef this enum to.
-   Third argument is if we want to generate a to_string array.
-*/
-enum_type(My_Enum, u32, )
+fz_internal void
+entry_point(Command_Line* command_line)
 {
-  My_Enum_None = 0,
-  My_Enum_One,
-  My_Enum_Two
-};
-
-global Window *gWindow = NULL;
-global Arena *gArena   = NULL;
-global b8 gShouldQuit  = false;
-
-global u32 TriangleVAO = 0;
-global u32 TriangleVBO = 0;
-
-global u32 TriangleVSProgram = 0;
-global u32 TriangleFSProgram = 0;
-global u32 TrianglePipeline  = 0;
-
-// Opengl setup
-global f32 vertices[] = {
-  // pos         // color
-  0.0f,  0.7f,   1.0f, 0.0f, 0.0f,
- -0.7f, -0.7f,   0.0f, 1.0f, 0.0f,
-  0.7f, -0.7f,   0.0f, 0.0f, 1.0f,
-};
-
-global const char *TriangleVS =
-  "#version 460 core                         \n"
-  "layout(location=0) in vec2 a_pos;         \n"
-  "layout(location=1) in vec3 a_color;       \n"
-  "out vec3 v_color;                         \n"
-  "out                                       \n"
-  "gl_PerVertex                              \n"
-  "{                                         \n"
-  "  vec4 gl_Position;                       \n"
-  "};                                        \n"
-  "void main()                               \n"
-  "{                                         \n"
-  "  gl_Position = vec4(a_pos,0.0,1.0);      \n"
-  "  v_color = a_color;                      \n"
-  "}                                         \n";
-
-global const char *TriangleFS =
-  "#version 460 core                         \n"
-  "in vec3 v_color;                          \n"
-  "out vec4 frag_color;                      \n"
-  "void main()                               \n"
-  "{                                         \n"
-  "  frag_color = vec4(v_color,1.0);         \n"
-  "}                                         \n";
-
-function void
-handle_input()
-{
-  if (input_is_key_clicked(Keyboard_Key_ESCAPE))
-  {
-    gShouldQuit = true;
-  }
-}
-
-function void
-metaprogram_entry_point(Arena* arena, Command_Line *command_line, String project_path)
-{
-}
-
-function void
-entry_point(Command_Line *command_line)
-{ 
   console_attach();
-  gWindow = window_create(NULL, S("OpenGL Example "), 600, 400, 30, 30);
-  opengl_init(gWindow);
+  window_create(S("app"), 1280, 720, 30, 30);
+  opengl_init(true);
 
-  // Opengl Setup
-  {
-    TriangleVSProgram = glCreateShaderProgramv(GL_VERTEX_SHADER,   1, &TriangleVS);
-    TriangleFSProgram = glCreateShaderProgramv(GL_FRAGMENT_SHADER, 1, &TriangleFS);
-
-    glCreateProgramPipelines(1, &TrianglePipeline);
-    glUseProgramStages(TrianglePipeline, GL_VERTEX_SHADER_BIT,   TriangleVSProgram);
-    glUseProgramStages(TrianglePipeline, GL_FRAGMENT_SHADER_BIT, TriangleFSProgram);
-
-    glCreateBuffers(1, &TriangleVBO);
-    glNamedBufferStorage(TriangleVBO, sizeof(vertices), vertices, 0);
-
-    glCreateVertexArrays(1, &TriangleVAO);
-
-    glVertexArrayVertexBuffer(TriangleVAO, 0, TriangleVBO, 0, sizeof(f32)*5);
-
-    glEnableVertexArrayAttrib(TriangleVAO, 0);
-    glVertexArrayAttribFormat(TriangleVAO, 0, 2, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribBinding(TriangleVAO, 0, 0);
-
-    glEnableVertexArrayAttrib(TriangleVAO, 1);
-    glVertexArrayAttribFormat(TriangleVAO, 1, 3, GL_FLOAT, GL_FALSE, sizeof(f32)*2);
-    glVertexArrayAttribBinding(TriangleVAO, 1, 0);
-  }
-
-
-  while (!gShouldQuit)
+  while (!is_key_clicked(Keyboard_Key_ESCAPE))
   {
     window_update_events();
-    handle_input();
-
-    // Opengl Draw
-    {
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0,0,gWindow->width,gWindow->height);
-      glClearColor(0.1f,0.1f,0.1f,1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glBindProgramPipeline(TrianglePipeline);
-      glBindVertexArray(TriangleVAO);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
-    }
-
-    window_swap_buffers(gWindow);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    window_swap_buffers();
     clear_temporary_storage();
   }
 }
 ```
 
-# Structure
-- `base\`: Core library.
-- `modules\`: Opt-In modules provided by the library.
-- `extern\`: Opt-in external code imported into this library.
+# Building
 
-> `Opt-in` means that it has to be explicitly included by the user
+Copy `templates\build.bat` next to your `src\` folder, with fzac at `src\fzac`. Set `USE_RAYLIB=1` for Base_Raylib projects; raylib.lib is built automatically the first time.
+
+```
+build              debug build, runs the metaprogram first
+build release      optimized build
+build all          rebuild metaprogram.exe, then the app
+build metaprogram  only rebuild metaprogram.exe
+build profile      defines USE_PROFILER
+build raylib       force a rebuild of raylib.lib
+```
+
+Expected layout:
+
+```
+build.bat
+src\entry_point.c
+src\metaprogram\metaprogram_entry_point.c
+src\fzac\
+```
 
 # Metaprogram
 
-This codebase includes a default metaprogram that generates the headers and forward declarations for
-enums, structs and functions. Additionally to the default metaprogram, you can implement the function `metaprogram_entry_point` 
-to implement a project specific metaprogram.
+Generates forward declarations for every `fz_internal` function, struct and enum in `src\` into `src\metaprogram\global_headers.h`, so nothing needs declaring in order.
+
+```c
+// metaprogram_entry_point.c
+#include "Base.h"
+
+fz_internal void
+metaprogram_entry_point(Default_Metaprogram *dm, Command_Line *command_line, String project_path, b32 *run_default_metaprogram, String *global_headers_extra_data)
+{
+}
+```
+
+Enums are forward declared through `enum_type`. The third argument is `1` to generate a `<name>_to_string` array, `0` otherwise:
+
+```c
+enum_type(My_Enum, u32, 1)
+{
+  My_Enum_None = 0,
+  My_Enum_One,
+};
+```
 
 # Base
 
-The base layer includes:
-- `Math`: Linear math functions
-- `Allocators`: Custom allocators
-  - Arena Allocator
-  - Scratch memory functions for short lived memory.
-- `Context_Cracking`: Parses platform (OS, Compiler, CPU Arch ... ) into macros.
-- `Core`: Defines data types and some helper macros
-- `Os`: Operating system specific core functions
-- `Custom_Entry_Point`: Defines the entry_point function that has to be implemented by the user. 
-- `Memory`: OS Dependent implementation of memory functions (Reserve, Free, etc... ).
-- `String`: Immutable count based strings.
-- `Thread_Context`: Implementes a thread context that includes temporary memory.
+- `Core`, `Context_Cracking`: types, macros, platform detection.
+- `Memory`, `Arena`, `Allocator`, `Thread_Context`: arenas, scratch and temporary memory.
+- `Array`: `Static_Array(T)` (fixed capacity) and `Dynamic_Array(T)` (allocator backed).
+- `String`: count based strings and string lists.
+- `Math`: raymath plus `V2s32`.
+- `Os`: message boxes, console, `fatal_error`.
+- `Custom_Entry_Point`: calls the user's `entry_point`.
+
+```c
+Static_Array(Entity) entities;
+static_array_init_arena(&entities, arena, 128);
+static_array_add(&entities, entity);
+
+Dynamic_Array(u32) ids;
+dynamic_array_init(&ids);
+dynamic_array_add(&ids, 42);
+dynamic_array_free(&ids);
+```
 
 # Modules
 
-- `OpenGL`: Opengl macros, bindings and helpers.
-- `Platform`: Generic platform functions.
-- `Window`: Window and Input implementation.
-- `Art`: Colors and color related functions.
-- `Camera2D`: Implementation for 2D camera.
-- `Code_Generation`: Code generation module that powers all `.cgen` files.
-- `Simple_Renderer2D`: 2D Screen space renderer to just put quads on the screen. Supports color, textures and text.
-- `String_Builder`: String builder
-- `Command_Line`: Command line parser
-- `Files`: File related functions
-- `Lexer`: Lexer implementation
-- `Timing`: Timing functions
+Usable with both bases:
+- `Hash_Map`: arena backed map with u64 or String keys.
+- `String_Builder`: append strings into a caller's arena.
+- `Logging`: leveled logs to terminal, file and hooks.
+- `Files`, `Timing`, `Command_Line`, `Lexer`, `Profiler`, `Code_Generation`, `List_Todos`.
+
+```c
+Hash_Map map = hash_map_init(arena, 64, sizeof(Entity));
+hash_map_put_string(&map, S("player"), &player);
+Entity* found = hash_map_get_string(&map, S("player"));
+```
+
+Base.h only:
+- `Window`, `Platform`, `OpenGL`, `Vulkan`, `Simple_Renderer2D`, `Camera2D`, `Camera3D`, `Art`, `Geometry`, `UI`, `Immediate_UI`.
